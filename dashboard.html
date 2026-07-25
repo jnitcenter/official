@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard | JN IT CENTER</title>
+
+<link rel="stylesheet" href="dashboard.css">
+
+</head>
+
+<body>
+
+<header class="dashboard-header">
+
+<div class="logo-area">
+
+<img src="images/logo.png" alt="Logo">
+
+<div>
+
+<h2>JN IT CENTER</h2>
+
+<span>User Dashboard</span>
+
+</div>
+
+</div>
+
+<div class="header-right">
+
+<div id="liveTime"></div>
+
+<div class="header-right">
+
+    <div id="dateTime"></div>
+
+    <button id="profileBtn" class="green-btn">
+👤 My Profile
+</button>
+
+    <button id="logoutBtn" class="logout-btn">
+        Logout
+    </button>
+
+</div>
+
+</header>
+
+<div class="dashboard-container">
+
+<div class="dashboard-top">
+
+<div class="dashboard-card">
+
+<h2>👋 Welcome</h2>
+
+<p>Welcome to JN IT CENTER Dashboard</p>
+
+</div>
+
+<div class="dashboard-card">
+
+<h2>💰 Wallet Balance</h2>
+
+<h1 id="userBalance">৳ 0</h1>
+
+<button class="green-btn" onclick="openBalancePopup()">
+
+Add Balance
+
+</button>
+
+</div>
+
+<div class="dashboard-card">
+
+<h2>👤 My Account</h2>
+
+<p>Status : Active</p>
+
+<p>Role : <span id="userName">Loading...</span></p>
+
+<p>Panel : JN IT CENTER</p>
+
+</div>
+
+</div>
+
+<div class="dashboard-content">
+
+<div class="left-side">
+    <!-- SERVICES -->
+
+    <div id="serviceList"></div>
+
+</section>
+
+<!-- MY ORDERS -->
+
+<section class="dashboard-card">
+
+    <h2>📦 My Orders</h2>
+
+    <!-- =========================
+TRANSACTION STATEMENT
+========================= -->
+
+<section class="dashboard-card">
+
+    <h2>💳 Transaction Statement</h2>
+
+    <table class="transaction-table">
+
+        <thead>
+
+            <tr>
+
+                <th>Date & Time</th>
+                <th>Type</th>
+                <th>Method</th>
+                <th>TRX ID</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="transactionTable">
+
+            <!-- Firebase থেকে Auto Load হবে -->
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<section class="dashboard-card">
+
+    <h2>🛠 All Services</h2>
+
+    <table class="order-table">
+
+        <thead>
+
+            <tr>
+
+                <th>Service</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Result</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="myOrders">
+
+        </tbody>
+
+    </table>
+
+</section>
+
+</div>
+
+<!-- RIGHT SIDE -->
+
+<div class="right-side">
+
+<section class="dashboard-card">
+
+<h2>📢 Notice Board</h2>
+
+<p>✅ Welcome to JN IT CENTER.</p>
+
+<p>📌 Latest updates will appear here.</p>
+
+</section>
+
+<section class="dashboard-card">
+
+<h2>📊 Recent Activity</h2>
+
+<ul class="activity-list">
+
+<li>🟢 Login Successful</li>
+
+<li>💰 Wallet Ready</li>
+
+<li>📦 Services Loaded</li>
+
+</ul>
+
+</section>
+
+</div>
+</div>
+<!-- right-side -->
+
+</div>
+<!-- dashboard-content -->
+
+</div>
+<!-- dashboard-container -->
+
+<footer class="dashboard-footer">
+
+    © 2026 JN IT CENTER | All Rights Reserved.
+
+</footer>
+
+
+<!-- =========================
+ADD BALANCE POPUP
+========================= -->
+
+<div id="balancePopup" class="popup">
+
+    <div class="popup-content">
+
+        <span class="close" onclick="closeBalancePopup()">&times;</span>
+
+        <h2>Add Balance</h2>
+
+        <label>Payment Method</label>
+
+        <label>Payment Method</label>
+
+<select id="paymentMethod" onchange="loadPaymentNumber()">
+
+    <option value="Bkash">Bkash</option>
+    <option value="Nagad">Nagad</option>
+    <option value="Rocket">Rocket</option>
+
+</select>
+
+<div id="paymentNumber"
+style="
+margin:10px 0;
+padding:10px;
+background:#111827;
+border-radius:8px;
+color:#00ff66;
+font-weight:bold;
+text-align:center;
+">
+Loading...
+</div>
+
+<label>Amount</label>
+
+<input
+type="number"
+id="balanceAmount"
+placeholder="Enter Amount">
+
+<label>TRX ID</label>
+
+<input
+type="text"
+id="trxId"
+placeholder="Enter TRX ID">
+
+        <button
+        class="green-btn"
+        onclick="submitBalanceRequest()">
+
+            Submit Request
+
+        </button>
+
+    </div>
+
+</div>
+
+<!-- Transaction Details Popup -->
+
+</div>
+<div id="transactionPopup" class="popup">
+
+    <div class="popup-content">
+
+        <span class="close"
+        onclick="closeTransactionPopup()">&times;</span>
+
+        <h2>Transaction Details</h2>
+
+        <p><strong>Date :</strong> <span id="tDate"></span></p>
+
+        <p><strong>Type :</strong> <span id="tType"></span></p>
+
+        <p><strong>Method :</strong> <span id="tMethod"></span></p>
+
+        <p><strong>TRX ID :</strong> <span id="tTrx"></span></p>
+
+        <p><strong>Amount :</strong> <span id="tAmount"></span></p>
+
+        <p><strong>Status :</strong> <span id="tStatus"></span></p>
+
+    </div>
+
+</div>
+
+<!-- =========================
+PROFILE MODAL
+========================= -->
+
+</div>
+<script type="module" src="script.js"></script>
+</body>
+</html>

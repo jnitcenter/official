@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>My Profile | JN IT CENTER</title>
+
+<link rel="stylesheet" href="profile.css">
+
+</head>
+
+<body>
+
+<div class="profile-container">
+
+<div class="profile-card">
+
+<h2>👤 My Profile</h2>
+
+<img
+id="profileImage"
+src="images/default-user.png"
+class="profile-image">
+
+<input
+type="file"
+id="photoInput"
+hidden>
+
+<button id="changePhotoBtn">
+
+📷 Change Photo
+
+</button>
+
+<label>Full Name</label>
+
+<input
+type="text"
+id="profileName">
+
+<label>Username</label>
+
+<input
+type="text"
+id="profileUsername">
+
+<label>Email</label>
+
+<input
+type="email"
+id="profileEmail"
+readonly>
+
+<label>Phone Number</label>
+
+<input
+type="text"
+id="profilePhone">
+
+<hr>
+
+<h3>🔒 Change Password</h3>
+
+<label>Current Password</label>
+
+<input
+type="password"
+id="currentPassword">
+
+<label>New Password</label>
+
+<input
+type="password"
+id="newPassword">
+
+<label>Confirm Password</label>
+
+<input
+type="password"
+id="confirmPassword">
+
+<button id="changePasswordBtn">
+
+🔒 Change Password
+
+</button>
+
+<br><br>
+
+<button id="saveProfileBtn">
+
+💾 Save Changes
+
+</button>
+
+<br><br>
+
+<a href="dashboard.html">
+
+⬅ Back Dashboard
+
+</a>
+
+</div>
+
+</div>
+
+<script type="module" src="profile.js"></script>
+
+</body>
+</html>

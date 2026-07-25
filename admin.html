@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Panel | JN IT CENTER</title>
+
+<link rel="stylesheet" href="admin.css">
+
+</head>
+
+<body>
+
+<!-- =========================
+HEADER
+========================= -->
+
+<header class="admin-header">
+
+    <div class="admin-logo">
+
+        <img src="images/logo.png" alt="Logo">
+
+        <div>
+            <h2>JN IT CENTER</h2>
+            <p>Admin Panel</p>
+        </div>
+
+    </div>
+
+    <div class="admin-header-right">
+
+        <div class="datetime-box">
+
+            <span id="liveDateTime"></span>
+
+        </div>
+
+        <button id="logoutBtn" class="logout-btn">
+            🚪 Logout
+        </button>
+
+    </div>
+
+</header>
+
+<!-- =========================
+WELCOME
+========================= -->
+
+<section class="admin-welcome">
+
+<h1>👑 Welcome Admin</h1>
+
+<p>
+Manage your Digital Service Portal from one place.
+</p>
+
+</section>
+
+<!-- =========================
+PROFILE
+========================= -->
+<section class="admin-profile-card">
+
+<div class="profile-left">
+
+<img src="images/logo.png">
+
+</div>
+
+<div class="profile-right">
+
+<h2>Administrator</h2>
+
+<p>
+<strong>Name :</strong>
+Admin
+</p>
+
+<p>
+<strong>Role :</strong>
+Super Admin
+</p>
+
+<p>
+
+<strong>Status :</strong>
+
+<span class="online">
+
+🟢 Online
+
+</span>
+
+</p>
+
+</div>
+
+</section>
+
+<!-- =========================
+STATS
+========================= -->
+
+<section class="admin-stats">
+
+    <div class="stat-card">
+
+        <h3>👥 Users</h3>
+
+        <h1 id="totalUsers">0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>📦 Orders</h3>
+
+        <h1 id="totalOrders">0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>💰 User Balance</h3>
+
+        <h1 id="pendingBalance">৳0.00</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>🛠 Services</h3>
+
+        <h1 id="totalServices">0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h3>💵 Revenue</h3>
+
+        <h1 id="totalRevenue">৳0</h1>
+
+    </div>
+
+    <div class="stat-card">
+
+    <h3>📅 Today</h3>
+
+    <h1 id="todayRevenue">
+
+        ৳0
+
+    </h1>
+
+</div>
+
+<div class="stat-card">
+
+    <h3>🗓 This Month</h3>
+
+    <h1 id="monthRevenue">
+
+        ৳0
+
+    </h1>
+
+</div>
+
+  <div class="stat-card">
+
+    <h3>⏳ Pending Requests</h3>
+
+    <h1 id="pendingRequests">
+
+        0
+
+    </h1>
+
+</div>  
+
+</section>
+
+<section class="chart-section">
+
+    <div class="chart-card">
+
+        <h2>📈 Revenue Analytics</h2>
+
+        <canvas id="revenueChart"></canvas>
+
+    </div>
+
+</section>
+
+<section class="chart-section">
+
+    <div class="chart-card">
+
+        <h2>📈 Monthly Revenue</h2>
+
+        <canvas id="monthlyRevenueChart"></canvas>
+
+    </div>
+
+</section>
+
+<!-- =========================
+ORDERS
+========================= -->
+
+<section class="admin-orders">
+
+<h2>📦 Orders</h2>
+
+<input
+    type="text"
+    id="orderSearch"
+    placeholder="🔍 Search order by service, email or status..."
+    style="width:100%;padding:10px;margin:15px 0;border-radius:8px;">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Service</th>
+
+<th>User Information</th>
+
+<th>Price</th>
+
+<th>Status</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="orderTable">
+
+</tbody>
+
+</table>
+
+</section>
+
+<!-- =========================
+BALANCE REQUESTS
+========================= -->
+
+<section class="admin-orders">
+
+    <h2>💰 Balance Requests</h2>
+
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>Email</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>TRX ID</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+        </thead>
+
+        <tbody id="balanceRequestTable">
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<!-- =========================
+USERS MANAGEMENT
+========================= -->
+
+
+<!-- =========================
+MAIN CONTENT
+========================= -->
+
+<div class="admin-content">
+  <!-- =========================
+LEFT SIDE
+========================= -->
+
+<div class="left-panel">
+
+<section class="admin-users">
+
+    <h2>👥 Users Management</h2>
+
+    <input
+    type="text"
+    id="userSearch"
+    placeholder="🔍 Search user by name or email..."
+    style="width:100%;padding:10px;margin:15px 0;border-radius:8px;">
+
+    <table class="users-table">
+
+        <thead>
+
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+        </thead>
+
+        <tbody id="usersTable">
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<!-- =========================
+SERVICE MANAGEMENT
+========================= -->
+
+<section class="service-management">
+
+<h2>🛠 Service Management</h2>
+
+<div class="service-form">
+
+<label>Service Name</label>
+<input type="text" id="serviceName">
+
+<label>Price</label>
+<input type="number" id="servicePrice">
+
+<label>Required Information</label>
+<textarea id="requiredInfo"></textarea>
+
+<label>Description</label>
+<textarea id="serviceDescription"></textarea>
+
+<label>Service Image URL</label>
+<input
+    type="text"
+    id="serviceImage"
+    placeholder="https://example.com/image.png">
+
+<input
+type="checkbox"
+id="serviceActive"
+checked>
+
+Active
+
+</label>
+
+<br><br>
+
+<button
+type="button"
+onclick="saveService()">
+
+💾 Save Service
+
+</button>
+
+<button
+id="updateServiceBtn"
+style="display:none;">
+
+✏️ Update Service
+
+</button>
+
+</div>
+
+<hr>
+
+<input
+type="text"
+id="searchBox"
+placeholder="🔍 Search Service...">
+
+<h3>All Services</h3>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Name</th>
+
+<th>Price</th>
+
+<th>Status</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="serviceList">
+
+</tbody>
+
+</table>
+
+</section>
+
+<section class="admin-section">
+
+    <div class="notice-box">
+
+        <h2>💳 Payment Settings</h2>
+
+        <label>Bkash Number</label>
+        <input type="text" id="bkashNumber">
+
+        <label>Nagad Number</label>
+        <input type="text" id="nagadNumber">
+
+        <label>Rocket Number</label>
+        <input type="text" id="rocketNumber">
+
+        <button
+            class="green-btn"
+            onclick="savePaymentSettings()">
+
+            💾 Save Payment Settings
+
+        </button>
+
+    </div>
+
+</section>
+
+</div>
+
+<!-- =========================
+RIGHT SIDE
+========================= -->
+
+<div class="right-panel">
+<!-- =========================
+ADMIN NOTICE
+========================= -->
+
+<section class="admin-section">
+
+<div class="notice-box">
+
+<h2>📢 Admin Notice</h2>
+
+<textarea
+id="noticeText"
+placeholder="Write notice..."></textarea>
+
+<button id="postNoticeBtn">
+
+📢 Post Notice
+
+</button>
+
+<div class="notice-preview">
+
+<h3>Latest Notice</h3>
+
+<p id="noticePreview">
+
+No notice posted.
+
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- =========================
+UPLOAD
+========================= -->
+
+<section class="admin-section">
+
+</section>
+
+</div>
+
+</div>
+
+<!-- =========================
+NOTICE SCRIPT
+========================= -->
+
+<!-- =========================
+USER DETAILS MODAL
+========================= -->
+
+<div id="userModal" class="user-modal">
+
+    <div class="user-modal-content">
+
+        <span class="close-modal" onclick="closeUserModal()">
+            &times;
+        </span>
+
+        <h2>👤 User Details</h2>
+
+        <div id="userDetails"></div>
+
+    </div>
+
+</div>
+
+<script type="module">
+
+import { db } from "./firebase-config.js";
+
+import {
+collection,
+addDoc
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const postNoticeBtn=document.getElementById("postNoticeBtn");
+
+postNoticeBtn.addEventListener("click",async()=>{
+
+const text=document.getElementById("noticeText").value.trim();
+
+if(text===""){
+
+alert("Please write a notice.");
+
+return;
+
+}
+
+await addDoc(collection(db,"notices"),{
+
+message:text,
+
+createdAt:new Date()
+
+});
+
+document.getElementById("noticePreview").innerText=text;
+
+document.getElementById("noticeText").value="";
+
+alert("✅ Notice Saved!");
+
+});
+
+</script>
+  <!-- =========================
+DATE & TIME
+========================= -->
+
+<script>
+
+function updateDateTime(){
+
+const now=new Date();
+
+document.getElementById("liveDateTime").innerHTML=
+
+now.toLocaleDateString()+" | "+now.toLocaleTimeString();
+
+}
+
+setInterval(updateDateTime,1000);
+
+updateDateTime();
+
+</script>
+
+<!-- =========================
+MAIN ADMIN JS
+========================= -->
+
+<!-- =========================
+ORDER DETAILS MODAL
+========================= -->
+
+<div id="orderModal" class="user-modal">
+
+    <div class="user-modal-content">
+
+        <span class="close-modal" onclick="closeOrderModal()">
+            &times;
+        </span>
+
+        <h2>📦 Order Details</h2>
+
+        <div id="orderDetails"></div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="admin.js"></script>
+
+<!-- =========================
+USER DETAILS MODAL
+========================= -->
+
+
+
+</body>
+
+</html>

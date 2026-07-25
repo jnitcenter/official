@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Upload Result | JN IT CENTER</title>
+
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="admin.css">
+
+</head>
+
+<body>
+
+<div class="upload-page">
+
+<div class="upload-box">
+
+<h2>📤 Upload Result</h2>
+
+<input
+type="hidden"
+id="orderId">
+
+<label>Choose Result File</label>
+
+<input
+    type="text"
+    id="resultLink"
+    placeholder="Paste Google Drive Link">
+
+<label>Admin Note</label>
+
+<textarea
+id="adminNote"
+placeholder="Write admin note..."></textarea>
+
+<button class="green-btn" onclick="saveResult()">
+    📤 Upload Result
+</button>
+
+<br><br>
+
+<a
+href="admin.html"
+class="green-btn">
+
+⬅ Back Dashboard
+
+</a>
+
+</div>
+
+</div>
+
+<script type="module" src="admin-upload.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Place Order</title>
+
+<style>
+
+body{
+background:#0f172a;
+font-family:Arial;
+color:#fff;
+margin:0;
+padding:30px;
+}
+
+.box{
+
+max-width:650px;
+margin:auto;
+background:#1e293b;
+padding:25px;
+border-radius:12px;
+
+}
+
+h2{
+
+text-align:center;
+color:#22c55e;
+
+}
+
+label{
+
+display:block;
+margin-top:18px;
+margin-bottom:6px;
+font-weight:bold;
+
+}
+
+input{
+
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+background:#334155;
+color:white;
+box-sizing:border-box;
+
+}
+
+.dynamicField{
+
+margin-top:18px;
+
+}
+
+button{
+
+margin-top:25px;
+width:100%;
+padding:14px;
+font-size:18px;
+border:none;
+border-radius:8px;
+background:#22c55e;
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:#16a34a;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>🛒 Place Order</h2>
+
+<div class="service-image-box">
+
+   <img
+    id="serviceImage"
+    style="
+        width:220px;
+        height:220px;
+        object-fit:cover;
+        border-radius:12px;
+        display:block;
+        margin:20px auto;
+    "
+>
+
+</div>
+
+<label>Service</label>
+
+<input
+type="text"
+id="serviceName"
+readonly>
+
+<label>Price</label>
+
+<input
+type="text"
+id="price"
+readonly>
+
+<div id="dynamicFields"></div>
+
+<button id="placeOrderBtn">
+
+Place Order
+
+</button>
+
+</div>
+
+<script type="module" src="user.js"></script>
+
+</body>
+
+</html>

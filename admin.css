@@ -1,0 +1,1277 @@
+/* =========================================
+   JN IT CENTER ADMIN PANEL
+   PREMIUM ADMIN CSS
+   PART 1
+========================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    background:#0b1220;
+    color:#fff;
+    font-family:Segoe UI,Arial,sans-serif;
+}
+
+/* HEADER */
+
+.admin-header{
+    width:100%;
+    height:80px;
+    background:#111827;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 35px;
+    position:sticky;
+    top:0;
+    z-index:999;
+    border-bottom:2px solid #22c55e;
+    box-shadow:0 10px 25px rgba(0,0,0,.30);
+}
+
+.admin-logo{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.admin-logo img{
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    border:3px solid #22c55e;
+}
+
+.admin-logo h2{
+    font-size:24px;
+}
+
+.admin-logo p{
+    color:#94a3b8;
+    font-size:14px;
+}
+
+.admin-right{
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
+
+#liveDateTime{
+    color:#d1d5db;
+    font-weight:600;
+}
+
+.logout-btn{
+    background:#ef4444;
+    color:#fff;
+    border:none;
+    padding:10px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.30s;
+}
+
+.logout-btn:hover{
+    background:#dc2626;
+}
+
+/* WELCOME */
+
+.admin-welcome{
+    width:95%;
+    margin:30px auto;
+    padding:35px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#172554,#1e3a8a);
+    border-left:6px solid #22c55e;
+}
+
+.admin-welcome h1{
+    font-size:38px;
+    color:#22c55e;
+    margin-bottom:10px;
+}
+
+.admin-welcome p{
+    color:#d1d5db;
+    font-size:16px;
+}
+
+/* PROFILE */
+
+.admin-profile-card{
+    width:95%;
+    margin:auto;
+    background:#182437;
+    display:flex;
+    align-items:center;
+    gap:25px;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 12px 25px rgba(0,0,0,.30);
+}
+
+.profile-left img{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    border:4px solid #22c55e;
+}
+
+.profile-right h2{
+    color:#22c55e;
+    margin-bottom:10px;
+}
+
+.profile-right p{
+    margin:6px 0;
+    color:#e2e8f0;
+}
+
+.online{
+    color:#22c55e;
+    font-weight:bold;
+}
+/* =========================================
+   PART 2
+   STATS + ORDERS
+========================================= */
+
+/* STATS */
+
+.admin-stats{
+
+width:95%;
+
+margin:30px auto;
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:20px;
+
+}
+
+.stat-card{
+
+background:#182437;
+
+border-radius:18px;
+
+padding:28px;
+
+text-align:center;
+
+border-top:4px solid #22c55e;
+
+box-shadow:0 12px 25px rgba(0,0,0,.30);
+
+transition:.35s;
+
+}
+
+.stat-card:hover{
+
+transform:translateY(-8px);
+
+box-shadow:0 18px 35px rgba(34,197,94,.25);
+
+}
+
+.stat-card h3{
+
+font-size:18px;
+
+margin-bottom:15px;
+
+color:#cbd5e1;
+
+}
+
+.stat-card h1{
+
+font-size:42px;
+
+color:#22c55e;
+
+}
+
+/* ORDERS */
+
+.admin-orders{
+
+width:95%;
+
+margin:35px auto;
+
+background:#182437;
+
+padding:25px;
+
+border-radius:18px;
+
+box-shadow:0 12px 25px rgba(0,0,0,.30);
+
+}
+
+.admin-orders h2{
+
+margin-bottom:20px;
+
+color:#22c55e;
+
+}
+
+.admin-orders table{
+
+width:100%;
+
+border-collapse:collapse;
+
+overflow:hidden;
+
+}
+
+.admin-orders th{
+
+background:#22c55e;
+
+padding:15px;
+
+color:#fff;
+
+font-size:15px;
+
+}
+
+.admin-orders td{
+
+background:#111827;
+
+padding:14px;
+
+color:#e5e7eb;
+
+border-bottom:1px solid #2b3648;
+
+}
+
+.admin-orders tr:hover td{
+
+background:#1b2738;
+
+}
+
+.admin-orders button{
+
+background:#22c55e;
+
+border:none;
+
+padding:8px 12px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+font-weight:bold;
+
+transition:.30s;
+
+}
+
+.admin-orders button:hover{
+
+background:#16a34a;
+
+transform:scale(1.05);
+
+}
+/* =========================================
+   PART 3
+   MAIN LAYOUT + SERVICE MANAGEMENT
+========================================= */
+
+/* MAIN CONTENT */
+
+.admin-content{
+    width:95%;
+    max-width:1400px;
+    margin:30px auto;
+    display:grid;
+    grid-template-columns:minmax(0,2fr) minmax(320px,380px);
+    gap:25px;
+    align-items:start;
+}
+
+.left-panel{
+
+width:100%;
+
+}
+
+.right-panel{
+
+width:100%;
+
+display:flex;
+
+flex-direction:column;
+
+gap:25px;
+
+}
+
+/* SERVICE MANAGEMENT */
+
+.service-management{
+
+background:#182437;
+
+padding:25px;
+
+border-radius:18px;
+
+box-shadow:0 12px 25px rgba(0,0,0,.30);
+
+}
+
+.service-management h2{
+
+margin-bottom:20px;
+
+color:#22c55e;
+
+}
+
+.service-management label{
+
+display:block;
+
+margin:15px 0 8px;
+
+font-weight:bold;
+
+}
+
+.service-management input,
+
+.service-management textarea{
+
+width:100%;
+
+padding:12px;
+
+background:#111827;
+
+border:1px solid #334155;
+
+border-radius:10px;
+
+color:#fff;
+
+outline:none;
+
+margin-bottom:15px;
+
+transition:.3s;
+
+}
+
+.service-management input:focus,
+
+.service-management textarea:focus{
+
+border-color:#22c55e;
+
+box-shadow:0 0 10px rgba(34,197,94,.30);
+
+}
+
+.service-management textarea{
+
+height:110px;
+
+resize:none;
+
+}
+
+.service-management button{
+
+width:100%;
+
+padding:13px;
+
+margin-top:10px;
+
+background:#22c55e;
+
+color:#fff;
+
+border:none;
+
+border-radius:10px;
+
+cursor:pointer;
+
+font-weight:bold;
+
+font-size:15px;
+
+transition:.3s;
+
+}
+
+.service-management button:hover{
+
+background:#16a34a;
+
+transform:translateY(-2px);
+
+}
+
+#searchBox{
+
+margin:20px 0;
+
+}
+
+.service-management table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:20px;
+
+}
+
+.service-management th{
+
+background:#22c55e;
+
+padding:12px;
+
+color:#fff;
+
+}
+
+.service-management td{
+
+background:#111827;
+
+padding:12px;
+
+border-bottom:1px solid #2b3648;
+
+color:#e5e7eb;
+
+}
+
+.service-management tr:hover td{
+
+background:#1b2738;
+
+}
+/* =========================================
+   PART 4 (FINAL)
+   RIGHT PANEL + EFFECTS + RESPONSIVE
+========================================= */
+
+/* RIGHT PANEL */
+
+.admin-section{
+
+background:#182437;
+
+width:100%;
+overflow:hidden;
+
+padding:22px;
+
+border-radius:18px;
+
+box-shadow:0 12px 25px rgba(0,0,0,.30);
+
+}
+
+.admin-section h2{
+
+margin-bottom:18px;
+
+color:#22c55e;
+
+}
+
+.admin-section input,
+.admin-section textarea{
+
+width:100%;
+
+padding:12px;
+
+margin-bottom:15px;
+
+background:#111827;
+
+border:1px solid #334155;
+
+border-radius:10px;
+
+color:#fff;
+
+outline:none;
+
+transition:.30s;
+
+}
+
+.admin-section textarea{
+
+height:110px;
+
+resize:none;
+
+}
+
+.admin-section input:focus,
+.admin-section textarea:focus{
+
+border-color:#22c55e;
+
+box-shadow:0 0 10px rgba(34,197,94,.35);
+
+}
+
+.admin-section button{
+
+width:100%;
+
+padding:13px;
+
+background:#22c55e;
+
+color:#fff;
+
+border:none;
+
+border-radius:10px;
+
+font-size:15px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+transition:.30s;
+
+}
+
+.admin-section button:hover{
+
+background:#16a34a;
+
+transform:translateY(-2px);
+
+}
+
+/* NOTICE */
+
+.notice-preview{
+
+margin-top:18px;
+
+padding:15px;
+
+background:#111827;
+
+border-radius:10px;
+
+color:#d1d5db;
+
+line-height:1.6;
+
+}
+
+/* HOVER */
+
+.admin-profile-card:hover,
+.service-management:hover,
+.admin-section:hover,
+.admin-orders:hover,
+.stat-card:hover{
+
+transform:translateY(-6px);
+
+transition:.30s;
+
+box-shadow:0 18px 35px rgba(34,197,94,.18);
+
+}
+
+/* SCROLLBAR */
+
+::-webkit-scrollbar{
+
+width:10px;
+
+}
+
+::-webkit-scrollbar-track{
+
+background:#0f172a;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+background:#22c55e;
+
+border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+background:#16a34a;
+
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1100px){
+
+.admin-content{
+
+grid-template-columns:1fr;
+
+}
+
+.right-panel{
+
+margin-top:25px;
+
+}
+
+.admin-stats{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+@media(max-width:700px){
+
+.admin-header{
+
+flex-direction:column;
+
+height:auto;
+
+padding:20px;
+
+gap:15px;
+
+}
+
+.admin-logo{
+
+flex-direction:column;
+
+text-align:center;
+
+}
+
+.admin-profile-card{
+
+flex-direction:column;
+
+text-align:center;
+
+}
+
+.admin-stats{
+
+grid-template-columns:1fr;
+
+}
+
+.admin-orders{
+
+overflow-x:auto;
+
+}
+
+.admin-orders table{
+
+min-width:800px;
+
+}
+
+}
+/* =========================================
+   NEW ADMIN TOP LAYOUT
+========================================= */
+
+.admin-top{
+    width:95%;
+    margin:30px auto;
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
+    align-items:stretch;
+}
+
+.admin-welcome{
+    margin:0;
+    height:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.admin-status{
+    text-align:right;
+}
+
+.admin-status small{
+    display:block;
+    color:#cbd5e1;
+    margin-top:8px;
+}
+
+.admin-profile-card{
+    width:100%;
+    margin:0;
+    height:100%;
+    justify-content:flex-start;
+}
+
+.profile-left{
+    flex-shrink:0;
+}
+
+.profile-right{
+    flex:1;
+}
+
+@media(max-width:900px){
+
+.admin-top{
+
+grid-template-columns:1fr;
+
+}
+
+}
+.admin-orders table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.admin-orders th,
+.admin-orders td{
+    padding:15px;
+    text-align:center;
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.admin-orders th{
+    background:#28c85a;
+    color:#fff;
+}
+/* =========================
+USERS MANAGEMENT
+========================= */
+
+.admin-users{
+
+    margin-top:40px;
+    background:#162235;
+    padding:25px;
+    border-radius:18px;
+
+}
+
+.admin-users h2{
+
+    color:#2ecc71;
+    margin-bottom:20px;
+
+}
+
+.users-table{
+
+    width:100%;
+    border-collapse:collapse;
+
+}
+
+.users-table th{
+
+    background:#2ecc71;
+    color:#fff;
+    padding:14px;
+
+}
+
+.users-table td{
+
+    padding:14px;
+    text-align:center;
+    border-bottom:1px solid rgba(255,255,255,.08);
+
+}
+
+.users-table tr:hover{
+
+    background:#1e2d44;
+
+}
+
+.balance{
+
+    color:#2ecc71;
+    font-weight:bold;
+
+}
+
+.status-active{
+
+    color:#2ecc71;
+    font-weight:bold;
+
+}
+
+.action-btn{
+
+    width:34px;
+    height:34px;
+
+    border:none;
+    border-radius:8px;
+
+    cursor:pointer;
+
+    margin:2px;
+
+    color:#fff;
+
+    font-size:15px;
+
+}
+
+.view-btn{
+
+    background:#3b82f6;
+
+}
+
+.history-btn{
+
+    background:#8b5cf6;
+
+}
+
+.plus-btn{
+
+    background:#22c55e;
+
+}
+
+.minus-btn{
+
+    background:#ef4444;
+
+}
+
+.action-btn:hover{
+
+    opacity:.85;
+
+}
+/* ===========================
+USER HISTORY MODAL
+=========================== */
+
+.modal{
+    display:none;
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.65);
+    z-index:9999;
+}
+
+.modal-content{
+
+    width:80%;
+    max-width:900px;
+
+    margin:50px auto;
+
+    background:#1b2435;
+
+    padding:25px;
+
+    border-radius:12px;
+
+}
+
+.close-modal{
+
+    float:right;
+
+    font-size:30px;
+
+    cursor:pointer;
+
+    color:#fff;
+
+}
+/* =========================
+UPLOAD PAGE
+========================= */
+
+.upload-page{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0b1220;
+}
+
+.upload-box{
+    width:600px;
+    background:#1b2435;
+    padding:30px;
+    border-radius:12px;
+}
+
+.upload-box h2{
+    color:#22c55e;
+    margin-bottom:25px;
+}
+
+.upload-box label{
+    display:block;
+    margin-top:15px;
+    margin-bottom:8px;
+    font-weight:bold;
+}
+
+.upload-box input,
+.upload-box textarea{
+    display:block;
+    width:100%;
+    box-sizing:border-box;
+}
+
+.upload-box textarea{
+    min-height:120px;
+    resize:vertical;
+}
+
+.upload-box .green-btn{
+    display:block;
+    width:100%;
+    margin-top:20px;
+    text-align:center;
+}
+/* =========================
+UPLOAD RESULT PAGE
+========================= */
+
+.upload-page{
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:#0b1220;
+
+}
+
+.upload-box{
+
+    width:650px;
+
+    background:#182437;
+
+    padding:35px;
+
+    border-radius:18px;
+
+    box-shadow:0 15px 30px rgba(0,0,0,.35);
+
+}
+
+.upload-box h2{
+
+    color:#22c55e;
+
+    margin-bottom:25px;
+
+}
+
+.upload-box label{
+
+    display:block;
+
+    margin-top:18px;
+
+    margin-bottom:8px;
+
+    color:#fff;
+
+    font-weight:600;
+
+}
+
+.upload-box input,
+.upload-box textarea{
+
+    width:100%;
+
+    padding:12px;
+
+    background:#111827;
+
+    color:#fff;
+
+    border:1px solid #334155;
+
+    border-radius:10px;
+
+    outline:none;
+
+}
+
+.upload-box textarea{
+
+    height:120px;
+
+    resize:none;
+
+}
+
+.upload-box .green-btn{
+
+    width:100%;
+
+    margin-top:20px;
+
+    display:block;
+
+    text-align:center;
+
+    padding:14px;
+
+    background:#22c55e;
+
+    color:#fff;
+
+    border:none;
+
+    border-radius:10px;
+
+    text-decoration:none;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+.plus-btn,
+.minus-btn{
+
+    width:35px;
+    height:35px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    color:#fff;
+    font-size:18px;
+    margin:0 3px;
+
+}
+
+.plus-btn{
+
+    background:#22c55e;
+
+}
+
+.minus-btn{
+
+    background:#ef4444;
+
+}
+.view-btn{
+
+    width:35px;
+    height:35px;
+    border:none;
+    border-radius:8px;
+    background:#3b82f6;
+    color:#fff;
+    cursor:pointer;
+    margin-left:4px;
+
+}
+
+.view-btn:hover{
+
+    background:#2563eb;
+
+}
+.view-btn{
+
+    width:35px;
+    height:35px;
+    border:none;
+    border-radius:8px;
+    background:#3b82f6;
+    color:#fff;
+    cursor:pointer;
+    margin-left:4px;
+
+}
+
+.view-btn:hover{
+
+    background:#2563eb;
+
+}
+/* =========================
+USER MODAL
+========================= */
+
+.user-modal{
+
+    display:none;
+
+    position:fixed;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100%;
+
+    background:rgba(0,0,0,.65);
+
+    z-index:9999;
+
+}
+
+.user-modal-content{
+
+    width:500px;
+
+    background:#1d293d;
+
+    margin:80px auto;
+
+    padding:30px;
+
+    border-radius:15px;
+
+    color:#fff;
+
+    position:relative;
+
+}
+
+.user-modal-content h2{
+
+    color:#22c55e;
+
+    margin-bottom:20px;
+
+}
+
+.close-modal{
+
+    position:absolute;
+
+    top:15px;
+    right:20px;
+
+    font-size:28px;
+
+    cursor:pointer;
+
+}
+
+.close-modal:hover{
+
+    color:#ef4444;
+
+}
+/* =========================
+REVENUE CHART
+========================= */
+
+.chart-section{
+    margin:30px 0;
+}
+
+.chart-card{
+    background:#1f2937;
+    border-radius:15px;
+    padding:20px;
+    border:2px solid #22c55e;
+}
+
+.chart-card h2{
+    color:#22c55e;
+    margin-bottom:20px;
+}
+
+#revenueChart{
+    width:100% !important;
+    height:350px !important;
+}
+#serviceImage{
+
+    width:100%;
+    margin:15px 0;
+    padding:12px;
+    border:1px solid #2f4056;
+    border-radius:10px;
+    background:#111827;
+    color:#fff;
+    cursor:pointer;
+
+}
+
+#serviceImage::file-selector-button{
+
+    background:#22c55e;
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-right:15px;
+
+}
