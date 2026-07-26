@@ -8,95 +8,158 @@ import {
     updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ==============================
-// GET SERVICE ID
-// ==============================
+// =====================================
+// VARIABLES
+// =====================================
 
-const params = new URLSearchParams(window.location.search);
-const serviceId = params.get("id");
+const urlParams = new URLSearchParams(window.location.search);
+const serviceId = urlParams.get("id");
 
 let currentService = null;
 
-// ==============================
+// =====================================
+// INIT
+// =====================================
+
+window.addEventListener("DOMContentLoaded", () => {
+
+    if (!serviceId) {
+
+        showPopup(
+            "error",
+            "Service Not Found",
+            "Invalid service link."
+        );
+
+        return;
+
+    }
+
+    loadService();
+
+});
+
+// =====================================
 // LOAD SERVICE
-// ==============================
+// =====================================
 
 async function loadService() {
 
-  if (!serviceId) {
-    showPopup("❌ Service not found.");
-    return;
-}
+    try {
 
-    const snap = await getDoc(doc(db, "services", serviceId));
+        const serviceRef = doc(db, "services", serviceId);
 
-    if (!snap.exists()) {
-        showPopup("❌ Service not found.");
-        return;
+        const snap = await getDoc(serviceRef);
+
+        if (!snap.exists()) {
+
+            showPopup(
+                "error",
+                "Service Not Found",
+                "This service does not exist."
+            );
+
+            return;
+
+        }
+
+        currentService = snap.data();
+
+        document.getElementById("serviceName").value =
+            currentService.name || "";
+
+        document.getElementById("price").value =
+            "৳ " + (currentService.price || 0);
+
+        const image = document.getElementById("serviceImage");
+
+        if (image) {
+
+            image.src =
+                currentService.image ||
+                "images/no-image.png";
+
+        }
+
+        loadRequiredFields(currentService.requiredInfo);
+
     }
 
-    currentService = snap.data();
-    
+    catch (err) {
 
-    const img = document.getElementById("serviceImage");
+        console.error(err);
 
-if (img) {
-    img.src = currentService.image || "images/no-image.png";
-}
-
-    // Auto Service Name
-    document.getElementById("serviceName").value = currentService.name;
-
-    // Auto Price
-    document.getElementById("price").value = "৳ " + currentService.price;
-
-    // Dynamic Fields
-    const dynamicFields = document.getElementById("dynamicFields");
-    dynamicFields.innerHTML = "";
-
-    if (currentService.requiredInfo) {
-
-        const fields = currentService.requiredInfo
-            .split("\n")
-            .filter(f => f.trim() !== "");
-
-        fields.forEach(field => {
-
-            dynamicFields.innerHTML += `
-                <div class="dynamicField">
-
-                    <label>${field}</label>
-
-                    <input
-                        type="text"
-                        class="dynamicInput"
-                        data-label="${field}"
-                        placeholder="${field}"
-                    >
-
-                </div>
-            `;
-
-        });
+        showPopup(
+            "error",
+            "Database Error",
+            err.message
+        );
 
     }
 
 }
+// =====================================
+// LOAD REQUIRED FIELDS
+// =====================================
 
-loadService();
+function loadRequiredFields(requiredInfo) {
 
-// ==============================
+    const container = document.getElementById("dynamicFields");
+
+    container.innerHTML = "";
+
+    if (!requiredInfo) return;
+
+    const fields = requiredInfo
+        .split("\n")
+        .filter(field => field.trim() !== "");
+
+    fields.forEach(field => {
+
+        container.innerHTML += `
+
+<div class="dynamicField">
+
+<label>${field}</label>
+
+<input
+type="text"
+class="dynamicInput"
+data-label="${field}"
+placeholder="${field}">
+
+</div>
+
+`;
+
+    });
+
+}
+
+// =====================================
 // PLACE ORDER
-// ==============================
+// =====================================
 
-document.getElementById("placeOrderBtn").addEventListener("click", async () => {
+document
+.getElementById("placeOrderBtn")
+.addEventListener("click", placeOrder);
 
-  if (!currentService) {
-    showPopup("❌ Service not loaded.");
-    return;
-}
+async function placeOrder() {
 
-    const inputs = document.querySelectorAll(".dynamicInput");
+    if (!currentService) {
+
+        showPopup(
+            "error",
+            "Error",
+            "Service not loaded."
+        );
+
+        return;
+
+    }
+
+    const inputs =
+        document.querySelectorAll(".dynamicInput");
 
     let userInfo = {};
 
@@ -105,78 +168,128 @@ document.getElementById("placeOrderBtn").addEventListener("click", async () => {
     inputs.forEach(input => {
 
         if (input.value.trim() === "") {
+
             empty = true;
+
         }
 
-        userInfo[input.dataset.label] = input.value.trim();
+        userInfo[input.dataset.label] =
+            input.value.trim();
 
     });
 
     if (empty) {
-        showPopup("⚠️ Please fill all required fields.");
+
+        showPopup(
+            "warning",
+            "Warning",
+            "Please fill all required fields."
+        );
+
         return;
+
     }
 
- const user = auth.currentUser;
+    const user = auth.currentUser;
 
- const userRef = doc(db, "users", user.uid);
+    if (!user) {
 
-const userSnap = await getDoc(userRef);
+        showPopup(
+            "error",
+            "Login Required",
+            "Please login first."
+        );
 
-const userData = userSnap.data();
+        return;
 
-if ((userData.balance || 0) < currentService.price) {
-    showPopup("❌ Insufficient Balance");
-    return;
-}
+    }
 
-await updateDoc(userRef, {
-    balance: userData.balance - currentService.price
-});
+        try {
 
-await addDoc(collection(db, "orders"), {
+        const userRef = doc(db, "users", user.uid);
 
-    userId: user.uid,
-    userEmail: user.email,
+        const userSnap = await getDoc(userRef);
 
-    serviceId: serviceId,
-    serviceName: currentService.name,
-    price: currentService.price,
-    userInfo: userInfo,
+        if (!userSnap.exists()) {
 
-    status: "Pending",
-    createdAt: Date.now()
+            showPopup(
+                "error",
+                "Error",
+                "User account not found."
+            );
 
-});
+            return;
 
-    showPopup("✅ Order Placed Successfully");
+        }
 
-    window.location.href = "dashboard.html";
-showPopup("✅ Order Placed Successfully");
+        const userData = userSnap.data();
 
-setTimeout(() => {
-    window.location.href = "dashboard.html";
-}, 1500);
-});
+        const balance = Number(userData.balance || 0);
+        const price = Number(currentService.price || 0);
 
-// ==============================
-// CUSTOM POPUP
-// ==============================
+        if (balance < price) {
 
-function showPopup(message){
+            showPopup(
+                "error",
+                "Insufficient Balance",
+                "Your balance is not enough."
+            );
 
-    const old = document.getElementById("customPopup");
+            return;
 
-    if(old) old.remove();
+        }
 
-    document.body.insertAdjacentHTML("beforeend", `
-        <div id="customPopup" class="success-popup">
-            <div class="success-box">
-                <div class="success-icon">✓</div>
-                <p>${message}</p>
-                <button onclick="document.getElementById('customPopup').remove()">OK</button>
-            </div>
-        </div>
-    `);
+        // Deduct Balance
+
+        await updateDoc(userRef, {
+
+            balance: balance - price
+
+        });
+
+        // Create Order
+
+        await addDoc(collection(db, "orders"), {
+
+            userId: user.uid,
+            userEmail: user.email,
+
+            serviceId: serviceId,
+            serviceName: currentService.name,
+            price: price,
+
+            userInfo: userInfo,
+
+            status: "Pending",
+
+            createdAt: Date.now()
+
+        });
+
+        showPopup(
+            "success",
+            "Order Placed",
+            "Your order has been submitted successfully."
+        );
+
+        setTimeout(() => {
+
+            window.location.href = "dashboard.html";
+
+        }, 1500);
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        showPopup(
+            "error",
+            "Order Failed",
+            err.message
+        );
+
+    }
 
 }

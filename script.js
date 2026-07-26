@@ -19,77 +19,101 @@ import {
 // Go To Order
 // =========================
 
-window.goToOrder = function(id){
+window.goToOrder = function (id) {
+
+    if (!id) {
+
+        showPopup(
+            "error",
+            "Error",
+            "Invalid Service."
+        );
+
+        return;
+
+    }
+
     window.location.href = `user.html?id=${id}`;
+
 };
 
 // =========================
 // Load Dashboard
 // =========================
 
-window.onload = async function(){
+window.addEventListener("DOMContentLoaded", async () => {
 
-    // Load Services
     const serviceList = document.getElementById("serviceList");
 
-    if(serviceList){
+    if (serviceList) {
 
         serviceList.innerHTML = "";
 
-        const snapshot = await getDocs(collection(db,"services"));
+        try {
 
-        snapshot.forEach((doc)=>{
+            const snapshot = await getDocs(collection(db, "services"));
 
-            const service = doc.data();
+            snapshot.forEach((docSnap) => {
 
-            if(service.active){
+                const service = {
+                    id: docSnap.id,
+                    ...docSnap.data()
+                };
 
-               serviceList.innerHTML += `
+                if (!service.active) return;
+
+                serviceList.innerHTML += `
 
 <div class="service-card">
 
-    <img
-        src="${service.image || 'images/no-image.png'}"
-        alt="${service.name}"
-        class="service-img">
+<img
+src="${service.image || "images/no-image.png"}"
+class="service-img"
+alt="${service.name}">
 
-    <h3>${service.name}</h3>
+<h3>${service.name}</h3>
 
-    <p>৳ ${service.price}</p>
+<p>৳ ${service.price}</p>
 
-    <button
-        class="green-btn"
-        onclick="goToOrder('${doc.id}')">
+<button
+class="green-btn"
+onclick="goToOrder('${service.id}')">
 
-        Order Now
+Order Now
 
-    </button>
+</button>
 
 </div>
 
 `;
 
-            }
+            });
 
-        });
+        } catch (err) {
+
+            console.error(err);
+
+            showPopup(
+                "error",
+                "Database Error",
+                err.message
+            );
+
+        }
 
     }
 
-    // Load Orders After Login
-    onAuthStateChanged(auth,(user)=>{
+    onAuthStateChanged(auth, (user) => {
 
-     if(user){
+        if (!user) return;
 
-    loadMyOrders(user.uid);
+        loadMyOrders(user.uid);
+        loadUserBalance(user.uid);
+        loadTransactionHistory(user.uid);
 
-    loadUserBalance(user.uid);
-
-    loadTransactionHistory(user.uid);
-
-}
     });
 
-};
+});
 
 // =========================
 // My Orders
@@ -241,20 +265,39 @@ async function loadPaymentNumber(){
 
 window.submitBalanceRequest = async function () {
 
-    const method = document.getElementById("paymentMethod").value;
-    const amount = document.getElementById("balanceAmount").value.trim();
-    const trxId = document.getElementById("trxId").value.trim();
+    const method =
+        document.getElementById("paymentMethod").value;
+
+    const amount =
+        document.getElementById("balanceAmount").value.trim();
+
+    const trxId =
+        document.getElementById("trxId").value.trim();
 
     if (!amount || !trxId) {
-        alert("Please fill all fields.");
+
+        showPopup(
+            "warning",
+            "Warning",
+            "Please fill all fields."
+        );
+
         return;
+
     }
 
     const user = auth.currentUser;
 
     if (!user) {
-        alert("Please login again.");
+
+        showPopup(
+            "error",
+            "Session Expired",
+            "Please login again."
+        );
+
         return;
+
     }
 
     try {
@@ -274,7 +317,11 @@ window.submitBalanceRequest = async function () {
 
         });
 
-        alert("✅ Balance Request Submitted");
+        showPopup(
+            "success",
+            "Request Submitted",
+            "Balance request submitted successfully."
+        );
 
         document.getElementById("balanceAmount").value = "";
         document.getElementById("trxId").value = "";
@@ -284,7 +331,12 @@ window.submitBalanceRequest = async function () {
     } catch (err) {
 
         console.error(err);
-        alert(err.message);
+
+        showPopup(
+            "error",
+            "Request Failed",
+            err.message
+        );
 
     }
 

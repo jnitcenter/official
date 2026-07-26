@@ -1,5 +1,6 @@
 import { auth, db } from "./firebase-config.js";
 
+
 import {
     doc,
     getDoc,
@@ -77,7 +78,11 @@ snap.forEach((d) => {
 
 if (usernameTaken) {
 
-    alert("❌ Username already exists.");
+    showPopup(
+    "error",
+    "Username Exists",
+    "This username is already taken."
+);
 
     return;
 
@@ -91,7 +96,11 @@ if (usernameTaken) {
 
     });
 
-    alert("✅ Profile Updated Successfully");
+    showPopup(
+    "success",
+    "Success",
+    "Profile Updated Successfully."
+);
 
 });
 // =========================
@@ -109,17 +118,29 @@ document.getElementById("changePasswordBtn").addEventListener("click", async () 
     const confirmPassword = document.getElementById("confirmPassword").value.trim();
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-        alert("Please fill all password fields.");
+        showPopup(
+    "warning",
+    "Warning",
+    "Please fill all password fields."
+);
         return;
     }
 
     if (newPassword !== confirmPassword) {
-        alert("New password and Confirm password do not match.");
+        showPopup(
+    "warning",
+    "Warning",
+    "New password and Confirm password do not match."
+);
         return;
     }
 
     if (newPassword.length < 6) {
-        alert("Password must be at least 6 characters.");
+        showPopup(
+    "warning",
+    "Warning",
+    "Password must be at least 6 characters."
+);
         return;
     }
 
@@ -134,7 +155,11 @@ document.getElementById("changePasswordBtn").addEventListener("click", async () 
 
         await updatePassword(user, newPassword);
 
-        alert("✅ Password changed successfully.");
+        showPopup(
+    "success",
+    "Success",
+    "Password changed successfully."
+);
 
         document.getElementById("currentPassword").value = "";
         document.getElementById("newPassword").value = "";
@@ -146,9 +171,17 @@ document.getElementById("changePasswordBtn").addEventListener("click", async () 
             error.code === "auth/wrong-password" ||
             error.code === "auth/invalid-credential"
         ) {
-            alert("❌ Current password is incorrect.");
+            showPopup(
+    "error",
+    "Wrong Password",
+    "Current password is incorrect."
+);
         } else {
-            alert(error.message);
+            showPopup(
+    "error",
+    "Error",
+    error.message
+);
         }
 
     }

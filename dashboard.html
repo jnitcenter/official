@@ -89,28 +89,26 @@ Add Balance
 
 </div>
 
-<div class="dashboard-content">
-
-<div class="left-side">
-    <!-- SERVICES -->
-
-    <div id="serviceList"></div>
-
-</section>
-
 <!-- MY ORDERS -->
 
-<section class="dashboard-card">
+<div class="dashboard-main">
 
-    <h2>📦 My Orders</h2>
+<section class="services-section">
+
+<h2>🛠 All Services</h2>
+
+<div id="serviceList"></div>
+
+</section>
 
     <!-- =========================
 TRANSACTION STATEMENT
 ========================= -->
 
-<section class="dashboard-card">
-
+<section class="services-section">
     <h2>💳 Transaction Statement</h2>
+
+    <div class="table-responsive">
 
     <table class="transaction-table">
 
@@ -138,11 +136,12 @@ TRANSACTION STATEMENT
 
     </table>
 
+    </div>
+
 </section>
 
-<section class="dashboard-card">
-
-    <h2>🛠 All Services</h2>
+<section class="services-section">
+    <h2>📦 My Orders</h2>
 
     <table class="order-table">
 
@@ -168,46 +167,34 @@ TRANSACTION STATEMENT
 </section>
 
 </div>
+<!-- dashboard-main -->
 
-<!-- RIGHT SIDE -->
-
-<div class="right-side">
+<div class="bottom-dashboard">
 
 <section class="dashboard-card">
 
-<h2>📢 Notice Board</h2>
+    <h2>📢 Notice Board</h2>
 
-<p>✅ Welcome to JN IT CENTER.</p>
-
-<p>📌 Latest updates will appear here.</p>
+    <p>✅ Welcome to JN IT CENTER.</p>
+    <p>📌 Latest updates will appear here.</p>
 
 </section>
 
 <section class="dashboard-card">
 
-<h2>📊 Recent Activity</h2>
+    <h2>📊 Recent Activity</h2>
 
-<ul class="activity-list">
+    <ul class="activity-list">
 
-<li>🟢 Login Successful</li>
+        <li>🟢 Login Successful</li>
+        <li>💰 Wallet Ready</li>
+        <li>📦 Order Submitted</li>
 
-<li>💰 Wallet Ready</li>
-
-<li>📦 Services Loaded</li>
-
-</ul>
+    </ul>
 
 </section>
 
 </div>
-</div>
-<!-- right-side -->
-
-</div>
-<!-- dashboard-content -->
-
-</div>
-<!-- dashboard-container -->
 
 <footer class="dashboard-footer">
 
@@ -313,5 +300,7 @@ PROFILE MODAL
 
 </div>
 <script type="module" src="script.js"></script>
+<link rel="stylesheet" href="popup.css">
+<script src="popup.js"></script>
 </body>
 </html>
