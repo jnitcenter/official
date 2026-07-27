@@ -20,7 +20,12 @@ const password = document.getElementById("password").value.trim();
 const username = document.getElementById("username").value.trim();
 
  if (name === "" || email === "" || password === "") {
-    alert("Please fill all fields");
+    showPopup(
+    "warning",
+    "Required",
+    "Please fill all fields"
+);
+return;
     return;
 }
 
