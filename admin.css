@@ -1403,9 +1403,16 @@ FINAL MOBILE FIX
 .view-btn,
 .plus-btn,
 .minus-btn{
+
+
     width:38px;
     height:38px;
     font-size:15px;
+
+    display:inline-flex;
+justify-content:center;
+align-items:center;
+
 }
 
 }
@@ -1419,6 +1426,14 @@ FINAL MOBILE FIX
 .users-table{
     min-width:850px;
 }
+
+.users-table th:last-child,
+.users-table td:last-child{
+    min-width:140px;
+    width:140px;
+    text-align:center;
+}
+
 
 /* SUCCESS POPUP */
 
@@ -1478,5 +1493,24 @@ opacity:0;
 transform:scale(1);
 opacity:1;
 }
+
+}
+
+.action-cell{
+
+display:flex;
+justify-content:center;
+align-items:center;
+gap:8px;
+
+}
+
+.action-cell .action-btn{
+
+width:38px;
+height:38px;
+display:flex;
+justify-content:center;
+align-items:center;
 
 }

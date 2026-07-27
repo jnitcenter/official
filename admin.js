@@ -133,17 +133,19 @@ async function loadServiceList(){
 
             <td>${service.active ? "Active" : "Inactive"}</td>
 
-            <td>
+            <td class="action-cell">
 
-                <button onclick="editService('${serviceDoc.id}')">
-                    ✏️
-                </button>
+    <button class="action-btn"
+        onclick="editService('${serviceDoc.id}')">
+        ✏️
+    </button>
 
-                <button onclick="deleteService('${serviceDoc.id}')">
-                    🗑️
-                </button>
+    <button class="action-btn"
+        onclick="deleteService('${serviceDoc.id}')">
+        🗑️
+    </button>
 
-            </td>
+</td>
 
         </tr>
         `;
