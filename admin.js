@@ -36,7 +36,13 @@ onAuthStateChanged(auth, async (user) => {
     const data = snap.data();
 
     if (data.role !== "admin") {
-        alert("Access Denied!");
+        showPopup(
+    "error",
+    "Access Denied",
+    "You don't have permission to access the Admin Panel."
+);
+
+return;
         window.location.href = "dashboard.html";
         return;
     }
@@ -69,7 +75,13 @@ onAuthStateChanged(auth, async (user) => {
 
     if (data.role !== "admin") {
 
-        alert("Access Denied!");
+        showPopup(
+    "error",
+    "Access Denied",
+    "You don't have permission to access the Admin Panel."
+);
+
+return;
 
         window.location.href = "dashboard.html";
 
@@ -156,7 +168,13 @@ const image = document.getElementById("serviceImage").value.trim();
 
     if(!name || !price){
 
-        alert("Fill all required fields.");
+        showPopup(
+    "warning",
+    "Warning",
+    "Please fill all required fields."
+);
+
+return;
         return;
 
     }
@@ -176,7 +194,11 @@ const data = {
 
         await updateDoc(doc(db,"services",editId),data);
 
-        alert("✅ Service Updated");
+        showPopup(
+    "success",
+    "Updated",
+    "Service updated successfully."
+);
 
         editId = null;
 
@@ -184,7 +206,11 @@ const data = {
 
         await addDoc(collection(db,"services"),data);
 
-        alert("✅ Service Added");
+        showPopup(
+    "success",
+    "Success",
+    "Service added successfully."
+);
 
     }
 
@@ -231,7 +257,11 @@ window.deleteService = async function(id){
 
     await deleteDoc(doc(db,"services",id));
 
-    alert("✅ Service Deleted");
+    showPopup(
+    "success",
+    "Deleted",
+    "Service deleted successfully."
+);
 
     loadServiceList();
 
@@ -379,7 +409,13 @@ window.approveBalance = async function(id){
     const requestSnap = await getDoc(requestRef);
 
     if(!requestSnap.exists()){
-        alert("Request not found");
+        showPopup(
+    "error",
+    "Error",
+    "Request not found."
+);
+
+return;
         return;
     }
 
@@ -390,7 +426,13 @@ window.approveBalance = async function(id){
     const userSnap = await getDoc(userRef);
 
     if(!userSnap.exists()){
-        alert("User not found");
+        showPopup(
+    "error",
+    "Error",
+    "User not found."
+);
+
+return;
         return;
     }
 
@@ -404,7 +446,11 @@ window.approveBalance = async function(id){
         status:"Approved"
     });
 
-    alert("✅ Balance Approved");
+    showPopup(
+    "success",
+    "Approved",
+    "Balance approved successfully."
+);
 
     loadBalanceRequests();
 
@@ -429,7 +475,11 @@ window.rejectBalance = async function(id){
         status:"Rejected"
     });
 
-    alert("❌ Balance Rejected");
+    showPopup(
+    "success",
+    "Rejected",
+    "Balance request rejected."
+);
 
     loadBalanceRequests();
 
@@ -458,7 +508,13 @@ window.updateStatus = async function(id, status){
 
         if(!orderSnap.exists()){
 
-            alert("Order not found");
+            showPopup(
+    "error",
+    "Error",
+    "Order not found."
+);
+
+return;
             return;
 
         }
@@ -480,7 +536,11 @@ window.updateStatus = async function(id, status){
             status: status
         });
 
-        alert("✅ Status Updated");
+        showPopup(
+    "success",
+    "Success",
+    "Order status updated."
+);
 
         loadOrders();
 
@@ -488,7 +548,11 @@ window.updateStatus = async function(id, status){
 
         console.error(err);
 
-        alert(err.message);
+        showPopup(
+    "error",
+    "Error",
+    err.message
+);
 
     }
 
@@ -593,7 +657,13 @@ window.addBalance = async function(userId){
 
     if(isNaN(amount) || Number(amount)<=0){
 
-        alert("Invalid Amount");
+        showPopup(
+    "warning",
+    "Warning",
+    "Please enter a valid amount."
+);
+
+return;
         return;
 
     }
@@ -612,7 +682,11 @@ window.addBalance = async function(userId){
 
     loadUsers();
 
-    alert("✅ Balance Added");
+    showPopup(
+    "success",
+    "Success",
+    "Balance added successfully."
+);
 
 };
 // =========================
@@ -644,7 +718,13 @@ window.minusBalance = async function(userId){
 
     if(Number(amount) > currentBalance){
 
-        alert("❌ User has insufficient balance.");
+        showPopup(
+    "error",
+    "Insufficient Balance",
+    "User has insufficient balance."
+);
+
+return;
 
         return;
 
@@ -658,7 +738,11 @@ window.minusBalance = async function(userId){
 
     loadUsers();
 
-    alert("✅ Balance Deducted");
+    showPopup(
+    "success",
+    "Success",
+    "Balance deducted successfully."
+);
 
 };
 // =========================
@@ -712,7 +796,13 @@ window.viewOrder = async function(orderId){
 
     if(!orderSnap.exists()){
 
-        alert("Order not found");
+        showPopup(
+    "error",
+    "Error",
+    "Order not found."
+);
+
+return;
 
         return;
 
@@ -1120,7 +1210,11 @@ window.savePaymentSettings = async function () {
 
     });
 
-    alert("✅ Payment Settings Saved");
+    showPopup(
+    "success",
+    "Success",
+    "Payment settings saved successfully."
+);
 
 }
 async function loadPaymentSettings(){
@@ -1157,4 +1251,55 @@ if (logoutBtn) {
 
 });
 
+}// =========================
+// ADMIN NOTICE
+// =========================
+
+window.postNotice = async function () {
+
+    const text = document.getElementById("noticeText").value.trim();
+
+    if (!text) {
+
+        showPopup(
+            "warning",
+            "Warning",
+            "Please write a notice."
+        );
+        return;
+    }
+
+    await setDoc(doc(db, "settings", "notice"), {
+        text: text,
+        updatedAt: Date.now()
+    });
+
+    document.getElementById("noticeText").value = "";
+
+    loadNotice();
+
+    showPopup(
+        "success",
+        "Success",
+        "Notice posted successfully."
+    );
+};
+
+async function loadNotice() {
+
+    const latest = document.getElementById("latestNotice");
+
+    if (!latest) return;
+
+    const snap = await getDoc(doc(db, "settings", "notice"));
+
+    if (!snap.exists()) {
+
+        latest.innerHTML = "No notice posted.";
+        return;
+    }
+
+    latest.innerHTML = snap.data().text;
 }
+
+loadNotice();

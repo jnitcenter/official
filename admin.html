@@ -292,13 +292,6 @@ USERS MANAGEMENT
 MAIN CONTENT
 ========================= -->
 
-<div class="admin-content">
-  <!-- =========================
-LEFT SIDE
-========================= -->
-
-<div class="left-panel">
-
 <section class="admin-users">
 
     <h2>👥 Users Management</h2>
@@ -450,13 +443,6 @@ placeholder="🔍 Search Service...">
 
 </section>
 
-</div>
-
-<!-- =========================
-RIGHT SIDE
-========================= -->
-
-<div class="right-panel">
 <!-- =========================
 ADMIN NOTICE
 ========================= -->
@@ -492,16 +478,6 @@ No notice posted.
 </div>
 
 </section>
-
-<!-- =========================
-UPLOAD
-========================= -->
-
-<section class="admin-section">
-
-</section>
-
-</div>
 
 </div>
 
@@ -547,7 +523,11 @@ const text=document.getElementById("noticeText").value.trim();
 
 if(text===""){
 
-alert("Please write a notice.");
+showPopup(
+    "warning",
+    "Warning",
+    "Please write a notice."
+);
 
 return;
 
@@ -565,7 +545,11 @@ document.getElementById("noticePreview").innerText=text;
 
 document.getElementById("noticeText").value="";
 
-alert("✅ Notice Saved!");
+showPopup(
+    "success",
+    "Success",
+    "Notice posted successfully."
+);
 
 });
 
@@ -619,6 +603,9 @@ ORDER DETAILS MODAL
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="module" src="admin.js"></script>
 <link rel="stylesheet" href="popup.css">
+
+<link rel="stylesheet" href="popup.css">
+<script src="popup.js"></script>
 
 <!-- =========================
 USER DETAILS MODAL
