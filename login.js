@@ -27,7 +27,7 @@ const password = document.getElementById("password").value.trim();
 let email = loginInput;
 
 if (loginInput === "" || password === "") {
-    alert("Please enter Email or Username and Password");
+    showPopup("Please enter Email or Username and Password", "error");
     return;
 }
 
