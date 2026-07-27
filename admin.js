@@ -255,17 +255,23 @@ window.editService = async function(id){
 
 window.deleteService = async function(id){
 
-    if(!confirm("Delete this service?")) return;
+  showConfirmPopup(
+    "Delete Service",
+    "Are you sure you want to delete this service?",
+    async () => {
 
-    await deleteDoc(doc(db,"services",id));
+        await deleteDoc(doc(db,"services",id));
 
-    showPopup(
-    "success",
-    "Deleted",
-    "Service deleted successfully."
+        showPopup(
+            "success",
+            "Deleted",
+            "Service deleted successfully."
+        );
+
+        loadServiceList();
+
+    }
 );
-
-    loadServiceList();
 
 };
 // ===============================
@@ -653,22 +659,47 @@ window.manageUser = async function(userId){
 
 window.addBalance = async function(userId){
 
-    const amount = prompt("Enter Balance Amount (+)");
+    showInputPopup(
+    "Add Balance",
+    "Enter Balance Amount",
+    async (amount) => {
 
-    if(amount === null) return;
+        if(!amount) return;
 
-    if(isNaN(amount) || Number(amount)<=0){
+        if(isNaN(amount) || Number(amount) <= 0){
+
+            showPopup(
+                "warning",
+                "Warning",
+                "Please enter a valid amount."
+            );
+            return;
+        }
+
+        const userRef = doc(db,"users",userId);
+
+        const userSnap = await getDoc(userRef);
+
+        if(!userSnap.exists()) return;
+
+        const user = userSnap.data();
+
+        await updateDoc(userRef,{
+            balance:(user.balance || 0)+Number(amount)
+        });
+
+        loadUsers();
 
         showPopup(
-    "warning",
-    "Warning",
-    "Please enter a valid amount."
+            "success",
+            "Success",
+            "Balance added successfully."
+        );
+
+    }
 );
 
 return;
-        return;
-
-    }
 
     const userRef = doc(db,"users",userId);
 
@@ -697,16 +728,59 @@ return;
 
 window.minusBalance = async function(userId){
 
-    const amount = prompt("Enter Balance Amount (-)");
+    showInputPopup(
+    "Deduct Balance",
+    "Enter Balance Amount",
+    async (amount) => {
 
-    if(amount === null) return;
+        if(!amount) return;
 
-    if(isNaN(amount) || Number(amount) <= 0){
+        if(isNaN(amount) || Number(amount) <= 0){
 
-        alert("Invalid Amount");
-        return;
+            showPopup(
+                "warning",
+                "Warning",
+                "Please enter a valid amount."
+            );
+            return;
+        }
+
+        const userRef = doc(db,"users",userId);
+
+        const userSnap = await getDoc(userRef);
+
+        if(!userSnap.exists()) return;
+
+        const user = userSnap.data();
+
+        const currentBalance = user.balance || 0;
+
+        if(Number(amount) > currentBalance){
+
+            showPopup(
+                "error",
+                "Insufficient Balance",
+                "User has insufficient balance."
+            );
+            return;
+        }
+
+        await updateDoc(userRef,{
+            balance: currentBalance - Number(amount)
+        });
+
+        loadUsers();
+
+        showPopup(
+            "success",
+            "Success",
+            "Balance deducted successfully."
+        );
 
     }
+);
+
+return;
 
     const userRef = doc(db,"users",userId);
 
