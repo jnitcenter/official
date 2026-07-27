@@ -27,7 +27,11 @@ const password = document.getElementById("password").value.trim();
 let email = loginInput;
 
 if (loginInput === "" || password === "") {
-    showPopup("Please enter Email or Username and Password", "error");
+    showPopup(
+    "warning",
+    "Required",
+    "Please enter Email or Username and Password"
+);
     return;
 }
 
@@ -41,7 +45,11 @@ if (!loginInput.includes("@")) {
     const snap = await getDocs(q);
 
     if (snap.empty) {
-        alert("Username not found");
+        showPopup(
+    "error",
+    "Login Failed",
+    "Username not found"
+);
         return;
     }
 
@@ -281,7 +289,11 @@ if(sendResetBtn){
 
         if(!email){
 
-            alert("Please enter your email.");
+            showPopup(
+    "warning",
+    "Required",
+    "Please enter your email."
+);
 
             return;
 
@@ -319,7 +331,11 @@ closeResetModal();
 
         catch(err){
 
-            alert(err.message);
+          showPopup(
+    "error",
+    "Reset Failed",
+    err.message
+);
 
         }
 
