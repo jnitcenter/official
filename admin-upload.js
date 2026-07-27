@@ -45,22 +45,36 @@ loadOrder();
     const resultLink = document.getElementById("resultLink").value.trim();
     const adminNote = document.getElementById("adminNote").value.trim();
 
-    if (!resultLink) {
-        alert("Please paste Google Drive link.");
-        return;
-    }
+  if (!resultLink) {
+
+    showPopup(
+        "⚠️",
+        "Google Drive Link Required",
+        "Please paste your Google Drive link first."
+    );
+
+    return;
+}
 
     try {
 
         await updateDoc(doc(db, "orders", orderId), {
-            resultLink: resultLink,
-            adminNote: adminNote,
-            status: "Completed"
-        });
+    resultLink: resultLink,
+    adminNote: adminNote,
+    status: "Completed"
+});
 
-        alert("✅ Result Saved Successfully");
+document.getElementById("successPopup").classList.add("show");
 
-        window.location.href = "admin.html";
+setTimeout(() => {
+
+    window.location.href = "admin.html";
+
+}, 2000);
+
+return;
+
+
 
     } catch (err) {
 
@@ -71,6 +85,18 @@ loadOrder();
 
 };
 
-window.test = function(){
-    alert("✅ Result Saved Successfully");
-};
+function showPopup(icon, title, text){
+
+    document.getElementById("popupIcon").innerHTML = icon;
+    document.getElementById("popupTitle").innerHTML = title;
+    document.getElementById("popupText").innerHTML = text;
+
+    const popup = document.getElementById("messagePopup");
+
+    popup.classList.add("show");
+
+    setTimeout(()=>{
+        popup.classList.remove("show");
+    },2000);
+
+}
