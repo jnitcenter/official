@@ -430,13 +430,10 @@ margin:20px 0;
 }
 
 .service-management table{
-
-width:100%;
-
-border-collapse:collapse;
-
-margin-top:20px;
-
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+    table-layout:fixed;
 }
 
 .service-management th{
@@ -458,6 +455,8 @@ padding:12px;
 border-bottom:1px solid #2b3648;
 
 color:#e5e7eb;
+
+word-break:break-word;
 
 }
 
@@ -1361,12 +1360,13 @@ MOBILE TABLE FIX
 }
 
 .service-management table{
-    min-width:700px;
+    min-width:100%;
 }
 
 .service-management th,
 .service-management td{
-    white-space:nowrap;
+    white-space:normal;
+    word-break:break-word;
 }
 
 }
@@ -1385,9 +1385,13 @@ FINAL MOBILE FIX
 }
 
 .users-table,
-.admin-orders table,
-.service-management table{
+.admin-orders table{
     min-width:750px;
+}
+
+.service-management table{
+    min-width:100%;
+
 }
 
 .users-table td,
