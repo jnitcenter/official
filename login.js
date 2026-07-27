@@ -41,8 +41,17 @@ if (!loginInput.includes("@")) {
     const snap = await getDocs(q);
 
     if (snap.empty) {
-        alert("Username not found");
-        return;
+        document.body.insertAdjacentHTML("beforeend", `
+<div id="errorPopup" class="success-popup">
+  <div class="success-box">
+    <div class="success-icon" style="background:#ff3b30;">✕</div>
+    <h2>Login Failed</h2>
+    <p>Username not found.</p>
+    <button onclick="document.getElementById('errorPopup').remove()">OK</button>
+  </div>
+</div>
+`);
+return;
     }
 
     email = snap.docs[0].data().email;
@@ -281,9 +290,18 @@ if(sendResetBtn){
 
         if(!email){
 
-            alert("Please enter your email.");
+            document.body.insertAdjacentHTML("beforeend", `
+<div id="errorPopup" class="success-popup">
+  <div class="success-box">
+    <div class="success-icon" style="background:#ff9800;">!</div>
+    <h2>Required</h2>
+    <p>Please enter your email.</p>
+    <button onclick="document.getElementById('errorPopup').remove()">OK</button>
+  </div>
+</div>
+`);
+return;
 
-            return;
 
         }
 
@@ -319,11 +337,16 @@ closeResetModal();
 
         catch(err){
 
-            alert(err.message);
-
-        }
-
-    });
+            document.body.insertAdjacentHTML("beforeend", `
+<div id="errorPopup" class="success-popup">
+  <div class="success-box">
+    <div class="success-icon" style="background:#ff3b30;">✕</div>
+    <h2>Error</h2>
+    <p>${err.message}</p>
+    <button onclick="document.getElementById('errorPopup').remove()">OK</button>
+  </div>
+</div>
+`);
 
 }
 
