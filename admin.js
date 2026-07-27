@@ -905,7 +905,7 @@ ordersSnap.forEach((doc)=>{
 
     const order = doc.data();
 
-    if(order.status === "Approved"){
+    if(order.status === "Completed"){
 
         revenue += Number(order.price || 0);
 
@@ -928,7 +928,7 @@ ordersSnap.forEach((doc)=>{
 
     const order = doc.data();
 
-    if(order.status !== "Approved") return;
+    if(order.status !== "Completed") return;
 
     if(!order.createdAt) return;
 
@@ -1063,7 +1063,7 @@ ordersSnap.forEach((doc)=>{
 
     const order = doc.data();
 
-    if(order.status !== "Approved") return;
+    if(order.status !== "Completed") return;
 
     if(!order.createdAt) return;
 
