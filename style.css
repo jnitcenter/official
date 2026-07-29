@@ -1664,3 +1664,36 @@ RESET PASSWORD MODAL
 .success-box button:hover{
     background:#00e676;
 }
+
+@media (max-width:768px){
+
+    .notification-panel{
+        width:95%;
+        height:75vh;
+        top:70px;
+        right:2.5%;
+        left:2.5%;
+        border-radius:20px;
+    }
+
+    .notification-header{
+        min-height:60px;
+        padding:10px 15px;
+    }
+
+    .notification-item{
+        padding:16px;
+        margin:12px;
+    }
+
+    .notification-actions button{
+        font-size:14px;
+        height:42px;
+    }
+
+    .close-btn{
+        width:34px;
+        height:34px;
+        font-size:24px;
+    }
+}
