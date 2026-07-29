@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase-config.js";
-
+import { sendNotification } from "./notification.js";
 import {
     doc,
     getDoc,
@@ -265,6 +265,12 @@ async function placeOrder() {
             createdAt: Date.now()
 
         });
+        await sendNotification(
+    user.uid,
+    "📦 Order Submitted",
+    `Your ${currentService.name} order has been received successfully. Our team will review it shortly.`,
+    "order"
+);
 
         showPopup(
             "success",

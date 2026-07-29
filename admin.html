@@ -38,6 +38,16 @@ HEADER
             <span id="liveDateTime"></span>
 
         </div>
+        
+        <button
+id="notificationBtn"
+onclick="openNotification()"
+class="notification-btn">
+
+🔔
+<span id="notificationCount">0</span>
+
+</button>
 
         <button id="logoutBtn" class="logout-btn">
             🚪 Logout
@@ -601,6 +611,35 @@ USER DETAILS MODAL
 ========================= -->
 
 
+<link rel="stylesheet" href="notification.css">
+
+<div id="notificationContainer"></div>
+
+<script type="module" src="notification.js"></script>
+
+<!-- Notification Panel -->
+
+<div id="notificationPanel" class="notification-panel">
+
+    <div class="notification-header">
+        <h3>🔔 Notifications</h3>
+        <button id="closeNotification">✖</button>
+    </div>
+
+    <div id="notificationList" class="notification-list">
+
+        <div class="empty-notification">
+            কোনো Notification নেই
+        </div>
+
+    </div>
+
+</div>
+
+<div id="toastNotification" class="toast-notification"></div>
+
+<link rel="stylesheet" href="notification.css">
+<script type="module" src="notification.js"></script>
 
 </body>
 

@@ -9,6 +9,9 @@
 
 <link rel="stylesheet" href="dashboard.css">
 
+<link rel="stylesheet" href="notification.css">
+
+
 </head>
 
 <body>
@@ -30,6 +33,8 @@
 </div>
 
 <div class="header-right">
+  
+  <button id="notificationBtn" class="green-btn">🔔</button>
 
 <div id="liveTime"></div>
 
@@ -199,6 +204,38 @@ TRANSACTION STATEMENT
     © 2026 JN IT CENTER | All Rights Reserved.
 
 </footer>
+<div id="notificationPanel" class="notification-panel">
+
+    <div class="notification-header">
+
+        <div class="header-left">
+
+            <div class="bell-circle">🔔</div>
+
+            <div>
+                <h2>Notifications</h2>
+                <small id="notificationCount">0 Notifications</small>
+            </div>
+
+        </div>
+
+        <div class="header-right">
+
+            <button id="closeNotification"
+                    class="close-btn"
+                    title="Close">
+                ✕
+            </button>
+
+        </div>
+
+    </div>
+
+    <div id="notificationList" class="notification-body"></div>
+
+</div>
+
+<div id="toastNotification"></div>
 
 
 <!-- =========================
@@ -297,7 +334,23 @@ PROFILE MODAL
 
 </div>
 <script type="module" src="script.js"></script>
+<script type="module" src="notification.js"></script>
 <link rel="stylesheet" href="popup.css">
 <script src="popup.js"></script>
+
+<div id="notificationPanel" class="notification-panel">
+    ...
+</div>
+
+<div id="toastNotification" class="toast-notification"></div>
+
+<script>
+fetch("notification.html")
+  .then(res => res.text())
+  .then(html => {
+    document.body.insertAdjacentHTML("beforeend", html);
+  });
+</script>
+
 </body>
 </html>

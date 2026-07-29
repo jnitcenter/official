@@ -1,5 +1,7 @@
 import { auth, db } from "./firebase-config.js";
 
+import { sendNotification } from "./notification.js";
+
 import {
     collection,
     addDoc,
@@ -194,7 +196,31 @@ const data = {
 
     if(editId){
 
+const oldSnap = await getDoc(doc(db,"services",editId));
+const oldService = oldSnap.data();
+
         await updateDoc(doc(db,"services",editId),data);
+
+if (Number(oldService.price) !== Number(price)) {
+
+    const users = await getDocs(collection(db, "users"));
+
+    for (const userDoc of users.docs) {
+
+        const u = userDoc.data();
+
+        if (u.role === "admin") continue;
+
+        await sendNotification(
+            userDoc.id,
+            "💲 Service Price Updated",
+            `${name} এর মূল্য ৳${oldService.price} থেকে ৳${price} করা হয়েছে।`,
+            "service"
+        );
+
+    }
+
+}
 
         showPopup(
     "success",
@@ -453,6 +479,13 @@ return;
     await updateDoc(requestRef,{
         status:"Approved"
     });
+    
+    await sendNotification(
+    request.uid,
+    "💰 Balance Added",
+    `আপনার Wallet-এ ৳${request.amount} সফলভাবে যোগ করা হয়েছে।`,
+    "balance"
+);
 
     showPopup(
     "success",
@@ -482,6 +515,13 @@ window.rejectBalance = async function(id){
     await updateDoc(requestRef,{
         status:"Rejected"
     });
+    
+    await sendNotification(
+    requestSnap.data().uid,
+    "❌ Balance Request Rejected",
+    `৳${requestSnap.data().amount} Balance Request বাতিল করা হয়েছে।`,
+    "balance"
+);
 
     showPopup(
     "success",
@@ -513,21 +553,46 @@ window.updateStatus = async function(id, status){
         const orderRef = doc(db,"orders",id);
 
         const orderSnap = await getDoc(orderRef);
+        
+    if (!orderSnap.exists()) {
+    showPopup(
+        "error",
+        "Error",
+        "Order not found."
+    );
+    return;
+}
 
-        if(!orderSnap.exists()){
+const order = orderSnap.data();
+        
+        let title = "";
+let message = "";
 
-            showPopup(
-    "error",
-    "Error",
-    "Order not found."
-);
+switch (status) {
 
-return;
-            return;
+    case "Approved":
+        title = "✅ Order Accepted";
+        message = `আপনার ${order.serviceName} Order গ্রহণ করা হয়েছে।`;
+        break;
 
-        }
+    case "Processing":
+        title = "⏳ Order Processing";
+        message = `আপনার ${order.serviceName} Order Processing-এ আছে।`;
+        break;
 
-        const order = orderSnap.data();
+    case "Rejected":
+        title = "❌ Order Rejected";
+        message = `আপনার ${order.serviceName} Order বাতিল করা হয়েছে।`;
+        break;
+
+    case "Completed":
+        title = "🎉 Order Completed";
+        message = `আপনার ${order.serviceName} Order সফলভাবে সম্পন্ন হয়েছে।`;
+        break;
+
+}
+
+        
 
         // Refund Only Once
         if(status === "Rejected" && order.status !== "Rejected"){
@@ -543,6 +608,15 @@ return;
         await updateDoc(orderRef,{
             status: status
         });
+        
+        if (title) {
+    await sendNotification(
+        order.userId,
+        title,
+        message,
+        "order"
+    );
+}
 
         showPopup(
     "success",
@@ -687,6 +761,14 @@ window.addBalance = async function(userId){
         await updateDoc(userRef,{
             balance:(user.balance || 0)+Number(amount)
         });
+        
+        await sendNotification(
+    userId,
+    "💰 Balance Added",
+    `Admin আপনার Wallet-এ ৳${amount} যোগ করেছেন।`,
+    "balance"
+);
+
 
         loadUsers();
 
@@ -768,6 +850,13 @@ window.minusBalance = async function(userId){
         await updateDoc(userRef,{
             balance: currentBalance - Number(amount)
         });
+        
+        await sendNotification(
+    userId,
+    "💸 Balance Deducted",
+    `Admin আপনার Wallet থেকে ৳${amount} কেটে নিয়েছেন।`,
+    "balance"
+);
 
         loadUsers();
 
@@ -884,7 +973,7 @@ return;
 
     }
 
-    const order = orderSnap.data();
+const order = orderSnap.data();
 
     let info = "";
 
@@ -1349,6 +1438,23 @@ window.postNotice = async function () {
         text: text,
         updatedAt: Date.now()
     });
+    
+    const users = await getDocs(collection(db, "users"));
+
+for (const userDoc of users.docs) {
+
+    const user = userDoc.data();
+
+    if (user.role === "admin") continue;
+
+    await sendNotification(
+        userDoc.id,
+        "📢 New Notice",
+        text,
+        "notice"
+    );
+
+}
 
     document.getElementById("noticeText").value = "";
 
