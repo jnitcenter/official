@@ -1,3 +1,7 @@
+// =======================================
+// Notification System - Part 1
+// =======================================
+
 import {
   collection,
   addDoc,
@@ -5,9 +9,9 @@ import {
   where,
   onSnapshot,
   updateDoc,
+  deleteDoc,
   getDocs,
-  doc,
-  deleteDoc
+  doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { db, auth } from "./firebase-config.js";
@@ -16,60 +20,69 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+// ==========================
+// Elements
+// ==========================
+
 const panel = document.getElementById("notificationPanel");
 const list = document.getElementById("notificationList");
 const badge = document.getElementById("notificationCount");
-const toast = document.getElementById("toastNotification");
 
-const btn = document.getElementById("notificationBtn");
+const openBtn = document.getElementById("notificationBtn");
 const closeBtn = document.getElementById("closeNotification");
 const markAllBtn = document.getElementById("markAllRead");
 
-btn?.addEventListener("click", () => {
-    panel.classList.add("active");
+// ==========================
+// Open / Close Panel
+// ==========================
+
+openBtn?.addEventListener("click", () => {
+    panel?.classList.add("active");
 });
 
 closeBtn?.addEventListener("click", () => {
-    panel.classList.remove("active");
+    panel?.classList.remove("active");
 });
 
-window.addEventListener("click",(e)=>{
+window.addEventListener("click", (e) => {
 
-    if(
+    if (
         panel &&
         !panel.contains(e.target) &&
-        btn &&
-        !btn.contains(e.target)
-    ){
-
+        openBtn &&
+        !openBtn.contains(e.target)
+    ) {
         panel.classList.remove("active");
-
     }
 
 });
+// ==========================
+// Send Notification
+// ==========================
 
 export async function sendNotification(
     userId,
     title,
     message,
-    type="info"
+    type = "info"
 ){
 
-    await addDoc(collection(db,"notifications"),{
-
-        userId,
-        title,
-        message,
-        type,
-        read:false,
-        time:Date.now()
-
-    });
+    return await addDoc(
+        collection(db,"notifications"),
+        {
+            userId,
+            title,
+            message,
+            type,
+            read: false,
+            time: Date.now()
+        }
+    );
 
 }
-// ===============================
-// Real Time Notification Listener
-// ===============================
+// =======================================
+// Real-time Notification Listener
+// =======================================
 
 onAuthStateChanged(auth, (user) => {
 
@@ -88,153 +101,139 @@ onAuthStateChanged(auth, (user) => {
 
         let unread = 0;
 
-        const data = snapshot.docs.sort(
-            (a, b) => (b.data().time || 0) - (a.data().time || 0)
-        );
-
-        if (data.length === 0) {
+        const notifications = snapshot.docs
+            .map(docSnap => ({
+                id: docSnap.id,
+                ...docSnap.data()
+            }))
+            .sort((a, b) => (b.time || 0) - (a.time || 0));
+                    if (notifications.length === 0) {
 
             list.innerHTML = `
-            <div class="empty-notification">
-                <div class="empty-icon">🔔</div>
-                <h4>No Notifications</h4>
-                <p>You're all caught up.</p>
-            </div>
+                <div class="empty-notification">
+                    <div class="empty-icon">🔔</div>
+                    <h4>No Notifications</h4>
+                    <p>You're all caught up.</p>
+                </div>
             `;
 
-            if (badge) badge.style.display = "none";
-
+            if (badge) badge.textContent = "0";
             return;
+
         }
-
-        data.forEach((item) => {
-
-            const n = item.data();
-
-            const id = item.id;
+                notifications.forEach((n) => {
 
             if (!n.read) unread++;
 
             list.innerHTML += `
+                <div class="notification-item ${n.read ? "read" : "unread"}" data-id="${n.id}">
 
-            <div class="notification-item ${n.read ? "" : "unread"}">
+                    <div class="notification-title">
+                        ${iconByType(n.type)} ${n.title}
+                    </div>
 
-                <div class="notification-title">
-                    <span>${iconByType(n.type)}</span> ${n.title}
+                    <div class="notification-message">
+                        ${n.message}
+                    </div>
+
+                    <div class="notification-time">
+                        🕒 ${timeAgo(n.time)}
+                    </div>
+
+                    <div class="notification-actions">
+
+                        ${
+                            !n.read
+                            ? `<button class="read-btn" data-id="${n.id}">✅ Read</button>`
+                            : ""
+                        }
+
+                        <button class="delete-btn" data-id="${n.id}">
+                            🗑 Delete
+                        </button>
+
+                    </div>
+
                 </div>
-
-                <div class="notification-message">
-                    ${n.message}
-                </div>
-
-                <div class="notification-time">
-                    🕒 ${timeAgo(n.time)}
-                </div>
-
-                <div class="notification-actions">
-
-<button class="read-btn"
-onclick="markNotificationRead('${id}')">
-
-✅ Read
-
-</button>
-
-<button class="delete-btn"
-onclick="deleteNotification('${id}')">
-
-🗑 Delete
-
-</button>
-
-</div>
-
-            </div>
-
             `;
 
         });
 
-        if (badge) {
-
-            badge.innerText = unread;
-
-            badge.style.display =
-                unread > 0 ? "flex" : "none";
-
-        }
-
+        if (badge) badge.textContent = unread;
     });
 
 });
 // =======================================
-// Mark Read
+// Button Events
 // =======================================
 
-window.markNotificationRead = async function(id){
+document.addEventListener("click", async (e) => {
 
-    try{
+    // Read Notification
+    if (e.target.classList.contains("read-btn")) {
 
-        await updateDoc(
-            doc(db,"notifications",id),
-            {
-                read:true
-            }
-        );
+        const id = e.target.dataset.id;
 
-    }catch(e){
+        try {
 
-        console.log(e);
+            await updateDoc(
+                doc(db, "notifications", id),
+                {
+                    read: true
+                }
+            );
 
+        } catch (err) {
+            console.error(err);
+        }
+
+        return;
+    }
+        // Delete Notification
+    if (e.target.classList.contains("delete-btn")) {
+
+        const id = e.target.dataset.id;
+
+        try {
+
+            await deleteDoc(
+                doc(db, "notifications", id)
+            );
+
+        } catch (err) {
+            console.error(err);
+        }
+
+        return;
     }
 
-};
-
-// =======================================
-// Delete Notification
-// =======================================
-
-window.deleteNotification = async function(id){
-
-    try{
-
-        await deleteDoc(
-            doc(db,"notifications",id)
-        );
-
-    }catch(e){
-
-        console.log(e);
-
-    }
-
-};
+});
 
 // =======================================
 // Mark All Read
 // =======================================
 
-markAllBtn?.addEventListener("click",async()=>{
+markAllBtn?.addEventListener("click", async () => {
 
-    const user=auth.currentUser;
+    const user = auth.currentUser;
 
-    if(!user) return;
+    if (!user) return;
 
-    const q=query(
-        collection(db,"notifications"),
-        where("userId","==",user.uid)
+    const q = query(
+        collection(db, "notifications"),
+        where("userId", "==", user.uid)
     );
 
-    const snap=await getDocs(q);
+    const snap = await getDocs(q);
 
-    for(const d of snap.docs){
+    for (const item of snap.docs) {
 
-        if(!d.data().read){
+        if (!item.data().read) {
 
             await updateDoc(
-                doc(db,"notifications",d.id),
+                doc(db, "notifications", item.id),
                 {
-                    read:true
+                    read: true
                 }
             );
 
@@ -242,43 +241,48 @@ markAllBtn?.addEventListener("click",async()=>{
 
     }
 
-    showToast(
-        "✅ Success",
-        "All notifications marked as read."
-    );
-
 });
-// =====================================
+
+// =======================================
 // Time Ago
-// =====================================
+// =======================================
 
 function timeAgo(time){
 
     if(!time) return "Just now";
 
-    const sec=Math.floor((Date.now()-time)/1000);
+    const seconds = Math.floor((Date.now() - time) / 1000);
 
-    if(sec<60) return "Just now";
+    if(seconds < 60) return "Just now";
 
-    const min=Math.floor(sec/60);
+    const minutes = Math.floor(seconds / 60);
 
-    if(min<60) return min+" min ago";
+    if(minutes < 60){
+        return `${minutes} min ago`;
+    }
 
-    const hr=Math.floor(min/60);
+    const hours = Math.floor(minutes / 60);
 
-    if(hr<24) return hr+" hour ago";
+    if(hours < 24){
+        return `${hours} hour ago`;
+    }
 
-    const day=Math.floor(hr/24);
+    const days = Math.floor(hours / 24);
 
-    if(day<7) return day+" day ago";
+    if(days === 1){
+        return "Yesterday";
+    }
+
+    if(days < 7){
+        return `${days} days ago`;
+    }
 
     return new Date(time).toLocaleDateString();
-
 }
 
-// =====================================
-// Icon by Type
-// =====================================
+// =======================================
+// Notification Icon
+// =======================================
 
 function iconByType(type){
 
@@ -299,98 +303,11 @@ function iconByType(type){
         case "order":
             return "📦";
 
+        case "service":
+            return "🛠️";
+
         default:
             return "🔔";
-
     }
-
-}
-
-// =====================================
-// Toast
-// =====================================
-
-function showToast(title,message){
-
-    if(!toast) return;
-
-    toast.innerHTML=`
-        <strong>${title}</strong><br>
-        ${message}
-    `;
-
-    toast.style.display="block";
-toast.style.opacity="1";
-
-    setTimeout(()=>{
-
-        toast.style.opacity="0";
-
-setTimeout(()=>{
-
-toast.style.display="none";
-
-},300);
-
-    },3500);
-
-}
-
-// =====================================
-// Helper Functions
-// =====================================
-
-export function notifySuccess(userId,msg){
-
-    return sendNotification(
-        userId,
-        "Success",
-        msg,
-        "success"
-    );
-
-}
-
-export function notifyError(userId,msg){
-
-    return sendNotification(
-        userId,
-        "Error",
-        msg,
-        "error"
-    );
-
-}
-
-export function notifyWarning(userId,msg){
-
-    return sendNotification(
-        userId,
-        "Warning",
-        msg,
-        "warning"
-    );
-
-}
-
-export function notifyBalance(userId,amount){
-
-    return sendNotification(
-        userId,
-        "Balance Added",
-        `৳${amount} Wallet-এ যোগ হয়েছে`,
-        "balance"
-    );
-
-}
-
-export function notifyOrder(userId,service){
-
-    return sendNotification(
-        userId,
-        "Order Update",
-        `${service} সফলভাবে সম্পন্ন হয়েছে`,
-        "order"
-    );
 
 }

@@ -786,22 +786,16 @@ FINAL HEADER
 
 @media(max-width:480px){
 
-.header-right{
-
+.dashboard-header .header-right{
     flex-direction:column;
-
     align-items:stretch;
-
 }
 
-.logout-btn,
-.green-btn{
-
+.dashboard-header .logout-btn,
+.dashboard-header .green-btn{
     width:100%;
-
 }
 
-}
 
 /* ===========================
 TABLE SECTION

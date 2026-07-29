@@ -241,6 +241,23 @@ if (Number(oldService.price) !== Number(price)) {
 );
 
     }
+    
+    const users = await getDocs(collection(db, "users"));
+
+for (const userDoc of users.docs) {
+
+    const u = userDoc.data();
+
+    if (u.role === "admin") continue;
+
+    await sendNotification(
+        userDoc.id,
+        "🆕 New Service Added",
+        `${name} নামে একটি নতুন সার্ভিস যোগ করা হয়েছে।`,
+        "service"
+    );
+
+}
 
     document.getElementById("serviceName").value="";
     document.getElementById("servicePrice").value="";
@@ -295,6 +312,23 @@ window.deleteService = async function(id){
         );
 
         loadServiceList();
+        
+        const users = await getDocs(collection(db, "users"));
+
+for (const userDoc of users.docs) {
+
+    const u = userDoc.data();
+
+    if (u.role === "admin") continue;
+
+    await sendNotification(
+        userDoc.id,
+        "🗑️ Service Removed",
+        "একটি সার্ভিস Admin দ্বারা সরিয়ে দেওয়া হয়েছে।",
+        "service"
+    );
+
+}
 
     }
 );
@@ -1093,16 +1127,18 @@ ordersSnap.forEach((doc)=>{
 
     if(order.status !== "Completed") return;
 
-    if(!order.createdAt) return;
-
-    const orderDate = new Date(Number(order.createdAt));
+    const orderDate = new Date(
+    order.createdAt ||
+    order.date ||
+    order.timestamp ||
+    order.orderDate ||
+    Date.now()
+);
+console.log(orderDate);
+console.log(today);
 
     // Today
-    if(
-        orderDate.getDate() === today.getDate() &&
-        orderDate.getMonth() === today.getMonth() &&
-        orderDate.getFullYear() === today.getFullYear()
-    ){
+    if (orderDate.toDateString() === today.toDateString()) {
         todayRevenue += Number(order.price || 0);
     }
 
@@ -1228,9 +1264,13 @@ ordersSnap.forEach((doc)=>{
 
     if(order.status !== "Completed") return;
 
-    if(!order.createdAt) return;
-
-    const orderDate = new Date(order.createdAt);
+    const orderDate = new Date(
+    order.createdAt ||
+    order.date ||
+    order.timestamp ||
+    order.orderDate ||
+    Date.now()
+);
 
     const month = orderDate.getMonth();
 

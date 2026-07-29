@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase-config.js";
-
+import { sendNotification } from "./notification.js";
 import {
     collection,
     getDocs,
@@ -316,6 +316,25 @@ window.submitBalanceRequest = async function () {
             createdAt: Date.now()
 
         });
+        
+        // Notify all admins
+const adminQuery = query(
+    collection(db, "users"),
+    where("role", "==", "admin")
+);
+
+const adminSnap = await getDocs(adminQuery);
+
+for (const adminDoc of adminSnap.docs) {
+
+    await sendNotification(
+        adminDoc.id,
+        "💰 New Balance Request",
+        `${user.email} requested ৳${amount} balance via ${method}.`,
+        "balance"
+    );
+
+}
 
         showPopup(
             "success",
@@ -358,15 +377,25 @@ function closeBalancePopup() {
 const logoutBtn = document.getElementById("logoutBtn");
 
 if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
 
-        await auth.signOut();
+    logoutBtn.onclick = () => {
 
-        localStorage.removeItem("user");
+        showConfirmPopup(
+            "Logout",
+            "Are you sure you want to logout?",
+            async () => {
 
-        window.location.href = "login.html";
+                await auth.signOut();
 
-    });
+                localStorage.removeItem("user");
+
+                window.location.href = "login.html";
+
+            }
+        );
+
+    };
+
 }
 function updateDateTime(){
 

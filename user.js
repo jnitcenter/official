@@ -5,7 +5,10 @@ import {
     getDoc,
     collection,
     addDoc,
-    updateDoc
+    updateDoc,
+    getDocs,
+query,
+where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // =====================================
@@ -271,6 +274,24 @@ async function placeOrder() {
     `Your ${currentService.name} order has been received successfully. Our team will review it shortly.`,
     "order"
 );
+// Notify all admins
+const adminQuery = query(
+    collection(db, "users"),
+    where("role", "==", "admin")
+);
+
+const adminSnap = await getDocs(adminQuery);
+
+for (const adminDoc of adminSnap.docs) {
+
+    await sendNotification(
+        adminDoc.id,
+        "📥 New Order Received",
+        `${userData.name || user.email} placed a new ${currentService.name} order.`,
+        "order"
+    );
+
+}
 
         showPopup(
             "success",

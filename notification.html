@@ -1,65 +1,44 @@
-<!-- Notification Panel -->
+<link rel="stylesheet" href="notification.css">
 
+<!-- Notification Panel -->
 <div id="notificationPanel" class="notification-panel">
 
     <!-- Header -->
-
     <div class="notification-header">
 
-        <div class="header-left">
+    <div class="header-left">
 
-            <div class="bell-circle">
+    <div class="bell-icon">🔔</div>
 
-                🔔
-
-            </div>
-
-            <div>
-
-                <h2>Notifications</h2>
-
-                <small id="notificationCount">
-                    0 Notifications
-                </small>
-
-            </div>
-
-        </div>
-
-       <div class="header-right">
-
-    <button id="closeNotification"
-            class="close-btn"
-            title="Close">
-
-        ✕
-
-    </button>
+    <h3>
+        Notifications
+        <span id="notificationCount">(0)</span>
+    </h3>
 
 </div>
 
+    <div class="header-buttons">
+
+        <button id="markAllRead" class="mark-btn" title="Mark All Read">
+            ✓
+        </button>
+
+        <button id="closeNotification" class="close-btn" title="Close">
+            ✖
+        </button>
+
     </div>
 
-    <!-- Body -->
+</div>
 
-    <div id="notificationList"
-         class="notification-body">
+    <!-- Notification Body -->
+    <div id="notificationList" class="notification-body">
 
         <div class="empty-state">
 
-            <div class="empty-icon">
+            <div class="empty-icon">🔔</div>
 
-                🔔
-
-            </div>
-
-            <h3>No Notifications</h3>
-
-            <p>
-
-                You're all caught up.
-
-            </p>
+            <p>Loading...</p>
 
         </div>
 
@@ -68,8 +47,6 @@
 </div>
 
 <!-- Toast -->
+<div id="toastNotification" class="toast-notification"></div>
 
-<div id="toastNotification"
-     class="toast-notification">
-
-</div>
+<script type="module" src="notification.js"></script>
