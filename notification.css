@@ -228,7 +228,7 @@ transition:.25s;
 }
 
 .notification-item:hover{
-54
+
 transform:translateY(-4px);
 
 box-shadow:0 20px 40px rgba(0,0,0,.14);
@@ -381,67 +381,3 @@ transform:scale(.95);
 
 }
 
-/* ===== Fix Notification Header ===== */
-
-
-.notification-header{
-    display:flex !important;
-    align-items:center;
-    justify-content:space-between;
-    background:linear-gradient(135deg,#0d6efd,#2b7cff) !important;
-    color:#fff;
-    min-height:80px;
-    padding:15px 18px;
-    flex-shrink:0;
-}
-
-.header-left{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.bell-circle{
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    background:rgba(255,255,255,.18);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:22px;
-}
-
-.header-left h2{
-    margin:0;
-    color:#fff;
-    font-size:18px;
-    font-weight:700;
-}
-
-.header-left small{
-    color:#eef;
-    font-size:13px;
-}
-
-.close-btn{
-    width:42px;
-    height:42px;
-    border:none;
-    border-radius:10px;
-    background:#22c55e;
-    color:#fff;
-    font-size:24px;
-    cursor:pointer;
-}
-#notificationCount{
-    display:none;
-}
-
-.bell-circle{
-    transition:.2s;
-}
-
-.bell-circle:hover{
-    transform:scale(1.08);
-}

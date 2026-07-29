@@ -338,19 +338,5 @@ PROFILE MODAL
 <link rel="stylesheet" href="popup.css">
 <script src="popup.js"></script>
 
-<div id="notificationPanel" class="notification-panel">
-    ...
-</div>
-
-<div id="toastNotification" class="toast-notification"></div>
-
-<script>
-fetch("notification.html")
-  .then(res => res.text())
-  .then(html => {
-    document.body.insertAdjacentHTML("beforeend", html);
-  });
-</script>
-
 </body>
 </html>
