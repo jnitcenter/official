@@ -111,6 +111,8 @@ onAuthStateChanged(auth, (user) => {
 
             const n = item.data();
 
+            const id = item.id;
+
             if (!n.read) unread++;
 
             list.innerHTML += `
@@ -132,14 +134,14 @@ onAuthStateChanged(auth, (user) => {
                 <div class="notification-actions">
 
 <button class="read-btn"
-onclick="markNotificationRead('${n.id}')">
+onclick="markNotificationRead('${id}')">
 
 ✅ Read
 
 </button>
 
 <button class="delete-btn"
-onclick="deleteNotification('${n.id}')">
+onclick="deleteNotification('${id}')">
 
 🗑 Delete
 
