@@ -229,6 +229,9 @@ if (Number(oldService.price) !== Number(price)) {
 );
 
         editId = null;
+        
+        document.getElementById("updateServiceBtn").style.display = "none";
+document.getElementById("saveServiceBtn").style.display = "inline-block";
 
     }else{
 
@@ -289,6 +292,9 @@ window.editService = async function(id){
     document.getElementById("serviceActive").checked = service.active;
 
     editId = id;
+    
+    document.getElementById("updateServiceBtn").style.display = "inline-block";
+document.getElementById("saveServiceBtn").style.display = "none";
 
 };
 
@@ -1441,7 +1447,6 @@ async function loadPaymentSettings(){
 loadPaymentSettings();
 
 // Logout
-
 const logoutBtn = document.getElementById("logoutBtn");
 
 if (logoutBtn) {
@@ -1465,7 +1470,6 @@ if (logoutBtn) {
     };
 
 }
-
 // =========================
 // ADMIN NOTICE
 // =========================
