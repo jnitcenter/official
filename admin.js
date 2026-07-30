@@ -1440,23 +1440,33 @@ async function loadPaymentSettings(){
 
 loadPaymentSettings();
 
-// =========================
-// LOGOUT
-// =========================
+// Logout
 
 const logoutBtn = document.getElementById("logoutBtn");
 
 if (logoutBtn) {
 
-    logoutBtn.addEventListener("click", async () => {
+    logoutBtn.onclick = () => {
 
-    await signOut(auth);
+        showConfirmPopup(
+            "Logout",
+            "Are you sure you want to logout?",
+            async () => {
 
-    window.location.href = "login.html";
+                await auth.signOut(); // অথবা await signOut(auth);
 
-});
+                localStorage.removeItem("admin");
 
-}// =========================
+                window.location.href = "login.html";
+
+            }
+        );
+
+    };
+
+}
+
+// =========================
 // ADMIN NOTICE
 // =========================
 
