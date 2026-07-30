@@ -76,7 +76,7 @@ function showConfirmPopup(title, message, yesCallback) {
 
                 <button class="popup-btn"
                 onclick="confirmPopupYes()">
-                    Logout
+                    Confirm
                 </button>
 
             </div>
