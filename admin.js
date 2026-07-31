@@ -236,16 +236,8 @@ document.getElementById("saveServiceBtn").style.display = "inline-block";
     }else{
 
         await addDoc(collection(db,"services"),data);
-
-        showPopup(
-    "success",
-    "Success",
-    "Service added successfully."
-);
-
-    }
-    
-    const users = await getDocs(collection(db, "users"));
+        
+        const users = await getDocs(collection(db, "users"));
 
 for (const userDoc of users.docs) {
 
@@ -261,6 +253,15 @@ for (const userDoc of users.docs) {
     );
 
 }
+
+        showPopup(
+    "success",
+    "Success",
+    "Service added successfully."
+);
+
+    }
+    
 
     document.getElementById("serviceName").value="";
     document.getElementById("servicePrice").value="";
