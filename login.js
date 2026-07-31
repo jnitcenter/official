@@ -357,7 +357,7 @@ document.getElementById("googleLogin").addEventListener("click", async () => {
     try {
         const result = await signInWithPopup(auth, googleProvider);
 
-        alert("Welcome " + result.user.displayName);
+    
 
         window.location.href = "dashboard.html";
     } catch (error) {
