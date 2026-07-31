@@ -73,6 +73,8 @@ async function loadService() {
 
         document.getElementById("price").value =
             "৳ " + (currentService.price || 0);
+            
+            updateTotalPrice();
  
         const image = document.getElementById("serviceImage");
 
@@ -85,6 +87,10 @@ async function loadService() {
         }
 
         loadRequiredFields(currentService.requiredInfo);
+        
+        document.getElementById("quantity").addEventListener("input", updateTotalPrice);
+
+updateTotalPrice();
         
         const quantityBox = document.getElementById("quantityBox");
 
@@ -332,5 +338,17 @@ for (const adminDoc of adminSnap.docs) {
         );
 
     }
+
+}
+
+function updateTotalPrice() {
+
+    if (!currentService) return;
+
+    const qty = Number(document.getElementById("quantity").value || 1);
+
+    const total = Number(currentService.price || 0) * qty;
+
+    document.getElementById("totalPrice").value = "৳" + total;
 
 }
