@@ -172,6 +172,17 @@ const image = document.getElementById("serviceImage").value.trim();
 
 const enableQuantity = document.getElementById("enableQuantity").checked;
 
+const minimumQuantity = Number(
+    document.getElementById("minimumQuantity").value || 1
+);
+
+const maximumQuantity = Number(
+    document.getElementById("maximumQuantity").value || 999999
+);
+
+const estimatedDelivery =
+    document.getElementById("estimatedDelivery").value.trim();
+    
     if(!name || !price){
 
         showPopup(
@@ -193,7 +204,10 @@ const data = {
     description,
     active,
     image: image,
-    enableQuantity
+enableQuantity,
+minimumQuantity,
+maximumQuantity,
+estimatedDelivery
 
 };
 
@@ -295,6 +309,15 @@ window.editService = async function(id){
     document.getElementById("serviceImage").value = service.image || "";
     document.getElementById("serviceActive").checked = service.active;
     document.getElementById("enableQuantity").checked = service.enableQuantity || false;
+    
+    document.getElementById("minimumQuantity").value =
+    service.minimumQuantity || "";
+
+document.getElementById("maximumQuantity").value =
+    service.maximumQuantity || "";
+
+document.getElementById("estimatedDelivery").value =
+    service.estimatedDelivery || "";
 
     editId = id;
     

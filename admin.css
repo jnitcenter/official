@@ -59,7 +59,8 @@ body{
     font-size:14px;
 }
 
-.admin-right{
+.admin-right,
+.admin-header-right{
     display:flex;
     align-items:center;
     gap:20px;

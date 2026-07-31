@@ -74,6 +74,32 @@ async function loadService() {
         document.getElementById("price").value =
             "৳ " + (currentService.price || 0);
             
+            const deliveryBox = document.getElementById("deliveryBox");
+const quantityLimit = document.getElementById("quantityLimit");
+const quantityInput = document.getElementById("quantity");
+
+if (currentService.enableQuantity) {
+
+    deliveryBox.style.display = "block";
+    quantityLimit.style.display = "block";
+
+    document.getElementById("estimatedDelivery").value =
+        currentService.estimatedDelivery || "Not Available";
+
+    quantityLimit.innerHTML =
+        `Minimum: ${currentService.minimumQuantity} | Maximum: ${currentService.maximumQuantity}`;
+
+    quantityInput.min = currentService.minimumQuantity || 1;
+    quantityInput.max = currentService.maximumQuantity || 999999;
+    quantityInput.value = currentService.minimumQuantity || 1;
+
+} else {
+
+    deliveryBox.style.display = "none";
+    quantityLimit.style.display = "none";
+
+}
+            
             updateTotalPrice();
  
         const image = document.getElementById("serviceImage");
@@ -248,6 +274,35 @@ async function placeOrder() {
     : 1;
 
 const price = Number(currentService.price || 0) * quantity;
+
+if (currentService.enableQuantity) {
+
+    if (quantity < Number(currentService.minimumQuantity || 1)) {
+
+        showPopup(
+            "warning",
+            "Minimum Quantity",
+            `Minimum quantity is ${currentService.minimumQuantity}.`
+        );
+
+        return;
+
+    }
+
+    if (quantity > Number(currentService.maximumQuantity || 999999)) {
+
+        showPopup(
+            "warning",
+            "Maximum Quantity",
+            `Maximum quantity is ${currentService.maximumQuantity}.`
+        );
+
+        return;
+
+    }
+
+}
+
 
         if (balance < price) {
 

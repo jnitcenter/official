@@ -41,7 +41,6 @@ HEADER
         
         <button
 id="notificationBtn"
-onclick="openNotification()"
 class="notification-btn">
 
 🔔
@@ -364,6 +363,33 @@ Active
         <input type="checkbox" id="enableQuantity">
         Enable Quantity
     </label>
+    <div id="quantitySettings">
+
+    <label>Minimum Quantity</label>
+    <input
+    type="number"
+    id="minimumQuantity"
+    min="1"
+    placeholder="e.g. 100">
+
+    <br><br>
+
+    <label>Maximum Quantity</label>
+    <input
+    type="number"
+    id="maximumQuantity"
+    min="1"
+    placeholder="e.g. 10000">
+
+    <br><br>
+
+    <label>Estimated Delivery</label>
+    <input
+    type="text"
+    id="estimatedDelivery"
+    placeholder="e.g. 1 - 6 Hours">
+
+</div>
 </div>
 
 
@@ -618,11 +644,32 @@ USER DETAILS MODAL
 <div id="notificationPanel" class="notification-panel">
 
     <div class="notification-header">
-        <h3>🔔 Notifications</h3>
-        <button id="closeNotification">✖</button>
+
+    <div class="header-left">
+
+        <div class="bell-icon">🔔</div>
+
+        <div>
+
+            <h3>Notifications</h3>
+
+            <small id="notificationCount">0 Notifications</small>
+
+        </div>
+
     </div>
 
-    <div id="notificationList" class="notification-list">
+    <div class="header-right">
+
+        <button id="closeNotification" class="close-btn">
+            ✕
+        </button>
+
+    </div>
+
+</div>
+
+    <div id="notificationList" class="notification-body">
 
         <div class="empty-notification">
             কোনো Notification নেই
