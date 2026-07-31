@@ -1,6 +1,8 @@
 
 import { db, storage } from "./firebase-config.js";
 
+import { sendNotification } from "./notification.js";
+
 import {
     doc,
     getDoc,
@@ -63,6 +65,15 @@ loadOrder();
     adminNote: adminNote,
     status: "Completed"
 });
+        const orderSnap = await getDoc(doc(db, "orders", orderId));
+const order = orderSnap.data();
+
+await sendNotification(
+    order.userId,
+    "🎉 Order Completed",
+    `আপনার ${order.serviceName} Order সফলভাবে সম্পন্ন হয়েছে।`,
+    "order"
+);
 
 document.getElementById("successPopup").classList.add("show");
 
