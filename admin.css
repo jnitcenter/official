@@ -1562,3 +1562,27 @@ align-items:center;
     }
 
 }
+
+/* Upload Page Mobile Fix */
+@media (max-width: 768px) {
+
+    .upload-page{
+        padding:15px;
+        align-items:flex-start;
+    }
+
+    .upload-box{
+        width:100%;
+        max-width:100%;
+        padding:20px;
+        margin-top:20px;
+    }
+
+    .upload-box input,
+    .upload-box textarea,
+    .upload-box .green-btn{
+        width:100%;
+        font-size:16px;
+    }
+
+}
