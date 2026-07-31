@@ -62,6 +62,25 @@ body{
     cursor:pointer;
 }
 
+#googleLogin{
+    width:100%;
+    padding:14px;
+    margin-top:15px;
+    border:1px solid #dadce0;
+    border-radius:10px;
+    background:#fff;
+    color:#3c4043;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+#googleLogin:hover{
+    background:#f8f9fa;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+
 .login-box button:hover{
     background:#27ae60;
 }
@@ -95,6 +114,13 @@ placeholder="Email or Username">
 
 <button id="loginBtn">
 Login
+</button>
+
+<button id="googleLogin">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+         width="20"
+         style="vertical-align:middle;margin-right:10px;">
+    Continue with Google
 </button>
 
 <p style="text-align:center; margin-top:10px;">

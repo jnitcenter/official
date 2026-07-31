@@ -12,10 +12,14 @@ import {
 import {
   getAuth,
   signInWithEmailAndPassword,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const loginBtn = document.getElementById("loginBtn");
+
+const googleProvider = new GoogleAuthProvider();
 
 if (loginBtn) {
 
@@ -348,3 +352,15 @@ window.closeSuccessPopup = function () {
     document.getElementById("successPopup").remove();
 
 }
+
+document.getElementById("googleLogin").addEventListener("click", async () => {
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+
+        alert("Welcome " + result.user.displayName);
+
+        window.location.href = "dashboard.html";
+    } catch (error) {
+        alert(error.message);
+    }
+});
