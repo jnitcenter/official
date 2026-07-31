@@ -192,7 +192,7 @@ const data = {
     requiredInfo,
     description,
     active,
-    image: image
+    image: image,
     enableQuantity
 
 };
@@ -1040,7 +1040,9 @@ const order = orderSnap.data();
 
     <p><b>💰 Price:</b> ৳ ${order.price}</p>
 
-    <p><b>📌 Status:</b> ${order.status}</p>
+${order.quantity ? `<p><b>🔢 Quantity:</b> ${order.quantity}</p>` : ""}
+
+<p><b>📌 Status:</b> ${order.status}</p>
 
     <hr>
 
