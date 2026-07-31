@@ -1730,3 +1730,44 @@ RESET PASSWORD MODAL
     }
 
 }
+
+.telegram-support{
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 65px;
+    height: 65px;
+    background: #229ED9;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,.35);
+    z-index: 99999;
+    transition: .3s ease;
+    text-decoration: none;
+}
+
+.telegram-support:hover{
+    transform: scale(1.1);
+    box-shadow: 0 10px 25px rgba(34,158,217,.5);
+}
+
+.telegram-support svg{
+    width: 34px;
+    height: 34px;
+}
+
+@media (max-width:768px){
+    .telegram-support{
+        width:60px;
+        height:60px;
+        right:15px;
+        bottom:15px;
+    }
+
+    .telegram-support svg{
+        width:32px;
+        height:32px;
+    }
+}
