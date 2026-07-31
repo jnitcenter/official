@@ -1196,6 +1196,29 @@ USER MODAL
     color:#ef4444;
 
 }
+
+.close-modal{
+    position:absolute;
+    top:10px;
+    right:15px;
+    width:35px;
+    height:35px;
+    background:#ff3b30;
+    color:#fff;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:22px;
+    font-weight:bold;
+    cursor:pointer;
+    z-index:9999;
+}
+
+.close-modal:hover{
+    background:#d90429;
+}
+
 /* =========================
 REVENUE CHART
 ========================= */
@@ -1516,5 +1539,26 @@ height:38px;
 display:flex;
 justify-content:center;
 align-items:center;
+
+}
+
+@media (max-width:768px){
+
+    .user-modal-content{
+        width:95%;
+        margin:20px auto;
+        padding:20px;
+        position:relative;
+        overflow:visible;
+    }
+
+    .close-modal{
+        top:8px;
+        right:8px;
+        width:32px;
+        height:32px;
+        font-size:20px;
+        z-index:999999;
+    }
 
 }
