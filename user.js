@@ -73,7 +73,7 @@ async function loadService() {
 
         document.getElementById("price").value =
             "৳ " + (currentService.price || 0);
-
+ 
         const image = document.getElementById("serviceImage");
 
         if (image) {
@@ -85,6 +85,15 @@ async function loadService() {
         }
 
         loadRequiredFields(currentService.requiredInfo);
+        
+        const quantityBox = document.getElementById("quantityBox");
+
+if (quantityBox) {
+
+    quantityBox.style.display =
+        currentService.enableQuantity ? "block" : "none";
+
+}
 
     }
 
@@ -228,7 +237,11 @@ async function placeOrder() {
         const userData = userSnap.data();
 
         const balance = Number(userData.balance || 0);
-        const price = Number(currentService.price || 0);
+        const quantity = currentService.enableQuantity
+    ? Number(document.getElementById("quantity").value || 1)
+    : 1;
+
+const price = Number(currentService.price || 0) * quantity;
 
         if (balance < price) {
 
@@ -260,6 +273,7 @@ async function placeOrder() {
             serviceId: serviceId,
             serviceName: currentService.name,
             price: price,
+            quantity: quantity,
 
             userInfo: userInfo,
 
@@ -271,7 +285,7 @@ async function placeOrder() {
         await sendNotification(
     user.uid,
     "📦 Order Submitted",
-    `Your ${currentService.name} order has been received successfully. Our team will review it shortly.`,
+    `Your ${currentService.name} (${quantity}) order has been received successfully. Our team will review it shortly.`,
     "order"
 );
 // Notify all admins
@@ -285,11 +299,11 @@ const adminSnap = await getDocs(adminQuery);
 for (const adminDoc of adminSnap.docs) {
 
     await sendNotification(
-        adminDoc.id,
-        "📥 New Order Received",
-        `${userData.name || user.email} placed a new ${currentService.name} order.`,
-        "order"
-    );
+    adminDoc.id,
+    "📥 New Order Received",
+    `${userData.name || user.email} placed a new ${currentService.name} (${quantity}) order.`,
+    "order"
+);
 
 }
 

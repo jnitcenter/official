@@ -170,6 +170,8 @@ window.saveService = async function(){
 
 const image = document.getElementById("serviceImage").value.trim();
 
+const enableQuantity = document.getElementById("enableQuantity").checked;
+
     if(!name || !price){
 
         showPopup(
@@ -191,6 +193,7 @@ const data = {
     description,
     active,
     image: image
+    enableQuantity
 
 };
 
@@ -291,6 +294,7 @@ window.editService = async function(id){
     document.getElementById("serviceDescription").value = service.description || "";
     document.getElementById("serviceImage").value = service.image || "";
     document.getElementById("serviceActive").checked = service.active;
+    document.getElementById("enableQuantity").checked = service.enableQuantity || false;
 
     editId = id;
     
