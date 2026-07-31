@@ -40,18 +40,22 @@ window.goToOrder = function (id) {
 // =========================
 // Load Dashboard
 // =========================
-
 window.addEventListener("DOMContentLoaded", async () => {
 
-    const serviceList = document.getElementById("serviceList");
+    async function loadServices() {
 
-    if (serviceList) {
+        const serviceList = document.getElementById("serviceList");
+
+        if (!serviceList) return;
 
         serviceList.innerHTML = "";
 
         try {
 
             const snapshot = await getDocs(collection(db, "services"));
+
+            const searchInput = document.getElementById("serviceSearch");
+            const searchText = (searchInput?.value || "").toLowerCase().trim();
 
             snapshot.forEach((docSnap) => {
 
@@ -62,31 +66,35 @@ window.addEventListener("DOMContentLoaded", async () => {
 
                 if (!service.active) return;
 
-                serviceList.innerHTML += `
+                if (
+                    searchText &&
+                    !service.name.toLowerCase().includes(searchText)
+                ) {
+                    return;
+                }
 
+                serviceList.innerHTML += `
 <div class="service-card">
 
-<img
-src="${service.image || "images/no-image.png"}"
-class="service-img"
-alt="${service.name}">
+    <img
+    src="${service.image || "images/no-image.png"}"
+    class="service-img"
+    alt="${service.name}">
 
-<h3>${service.name}</h3>
+    <h3>${service.name}</h3>
 
-<p>৳ ${service.price}</p>
+    <p>৳ ${service.price}</p>
 
-<button
-class="green-btn"
-onclick="goToOrder('${service.id}')">
+    <button
+    class="green-btn"
+    onclick="goToOrder('${service.id}')">
 
-Order Now
+    Order Now
 
-</button>
+    </button>
 
 </div>
-
 `;
-
             });
 
         } catch (err) {
@@ -103,6 +111,28 @@ Order Now
 
     }
 
+    // প্রথমবার সার্ভিস লোড
+    await loadServices();
+    
+    const serviceSearch = document.getElementById("serviceSearch");
+
+if (serviceSearch) {
+
+    serviceSearch.addEventListener("keydown", async (e) => {
+
+        if (e.key === "Enter") {
+
+            e.preventDefault();
+
+            await loadServices();
+
+        }
+
+    });
+
+}
+
+    // User Login Data Load
     onAuthStateChanged(auth, (user) => {
 
         if (!user) return;
