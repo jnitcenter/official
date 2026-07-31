@@ -24,10 +24,15 @@ body{
 
 .login-box{
     width:400px;
-    background:#111827;
+    background:rgba(17,24,39,.90);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
     padding:35px;
-    border-radius:20px;
-    box-shadow:0 15px 40px rgba(0,0,0,.45);
+    border-radius:22px;
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.45),
+        0 0 30px rgba(34,197,94,.12);
 }
 
 .login-box h2{
@@ -56,7 +61,7 @@ body{
     padding:14px;
     border:none;
     border-radius:10px;
-    background:#2ecc71;
+    background:linear-gradient(135deg,#22c55e,#16a34a);
     color:#fff;
     font-size:17px;
     cursor:pointer;
@@ -95,7 +100,119 @@ body{
     text-decoration:none;
 }
 
+.login-header{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.login-logo{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    border:3px solid #2ecc71;
+    box-shadow:0 0 20px rgba(46,204,113,.4);
+    margin-bottom:12px;
+}
+
+.login-header h2{
+    color:#fff;
+    margin:0;
+    font-size:28px;
+}
+
+.login-header p{
+    color:#aaa;
+    margin-top:8px;
+}
+
+.divider{
+    display:flex;
+    align-items:center;
+    margin:20px 0;
+}
+
+.divider::before,
+.divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:#334155;
+}
+
+.divider span{
+    margin:0 12px;
+    color:#94a3b8;
+    font-size:14px;
+}
+
+.password-box{
+    position:relative;
+    margin-bottom:18px;
+}
+
+.password-box input{
+    margin-bottom:0;
+}
+
+#togglePassword{
+    position:absolute;
+    right:15px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-size:20px;
+    color:#aaa;
+    user-select:none;
+}
+
+#togglePassword:hover{
+    color:#2ecc71;
+}
+
+.input-box,
+.password-box{
+    position:relative;
+    margin-bottom:18px;
+}
+
+.input-box input,
+.password-box input{
+    width:100%;
+    padding:14px 45px;
+    border:none;
+    border-radius:10px;
+    background:#1d2f45;
+    color:#fff;
+    box-sizing:border-box;
+}
+
+.input-box i,
+.password-box i{
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#9ca3af;
+    font-size:17px;
+}
+
+#togglePassword{
+    position:absolute;
+    right:15px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    color:#9ca3af;
+    font-size:18px;
+}
+
+#togglePassword:hover{
+    color:#22c55e;
+}
+
 </style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 </head>
 
@@ -103,18 +220,42 @@ body{
 
 <div class="login-box">
 
-<h2>Login</h2>
+<div class="login-header">
 
-<input
-type="text"
-id="loginInput"
-placeholder="Email or Username">
+    <img src="https://i.postimg.cc/jqfFRkWQ/preview.png" class="login-logo">
 
-<input type="password" id="password" placeholder="Password">
+    <h2>Welcome Back</h2>
+
+    <p>Login to continue to your account</p>
+
+</div>
+
+<div class="input-box">
+    <i class="fa-solid fa-user"></i>
+    <input
+        type="text"
+        id="loginInput"
+        placeholder="Email or Username">
+</div>
+
+<div class="password-box">
+    <i class="fa-solid fa-lock"></i>
+
+    <input
+        type="password"
+        id="password"
+        placeholder="Password">
+
+    <span id="togglePassword">👁️</span>
+</div>
 
 <button id="loginBtn">
 Login
 </button>
+
+<div class="divider">
+    <span>OR</span>
+</div>
 
 <button id="googleLogin">
     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -126,14 +267,9 @@ Login
 <p style="text-align:center; margin-top:10px;">
     <a href="#" id="forgotPasswordBtn">Forgot Password?</a> </p>
 
-</p> Don't have an account?
-
-<a href="register1.html">
-
-Register
-
-</a>
-
+<p>
+    Don't have an account?
+    <a href="register1.html">Register</a>
 </p>
 
 </div>
