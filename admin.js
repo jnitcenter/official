@@ -231,6 +231,15 @@ const maximumQuantity = Number(
 const estimatedDelivery =
     document.getElementById("estimatedDelivery").value.trim();
     
+    const apiEnabled =
+    document.getElementById("apiEnabled").checked;
+
+const apiUrl =
+    document.getElementById("apiUrl").value.trim();
+
+const apiServiceId =
+    document.getElementById("apiServiceId").value.trim();
+    
     if(!name || !price){
 
         showPopup(
@@ -256,7 +265,11 @@ const data = {
     enableQuantity,
     minimumQuantity,
     maximumQuantity,
-    estimatedDelivery
+    estimatedDelivery,
+    estimatedDelivery,
+apiEnabled,
+apiUrl,
+apiServiceId
 
 };
 
@@ -369,6 +382,18 @@ document.getElementById("maximumQuantity").value =
 
 document.getElementById("estimatedDelivery").value =
     service.estimatedDelivery || "";
+    
+    document.getElementById("apiEnabled").checked =
+    service.apiEnabled || false;
+
+document.getElementById("apiUrl").value =
+    service.apiUrl || "";
+
+document.getElementById("apiServiceId").value =
+    service.apiServiceId || "";
+
+document.getElementById("apiSettings").style.display =
+    service.apiEnabled ? "block" : "none";
 
     editId = id;
     
@@ -2280,3 +2305,15 @@ async function loadNotice() {
 }
 
 loadNotice();
+
+document.getElementById("apiEnabled")?.addEventListener("change", function () {
+
+    const box =
+        document.getElementById("apiSettings");
+
+    if (!box) return;
+
+    box.style.display =
+        this.checked ? "block" : "none";
+
+});
