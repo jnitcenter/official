@@ -1,3 +1,20 @@
+/* FORCE NOTIFICATION PANEL */
+#notificationPanel.notification-panel{
+    position:fixed !important;
+    top:70px !important;
+    right:-420px !important;
+    width:390px;
+    max-width:95%;
+    height:80vh;
+    z-index:999999 !important;
+    display:flex !important;
+    flex-direction:column;
+}
+
+#notificationPanel.notification-panel.active{
+    right:15px !important;
+}
+
 /* ==========================
    Notification Panel
 ========================== */

@@ -56,6 +56,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             const searchInput = document.getElementById("serviceSearch");
             const searchText = (searchInput?.value || "").toLowerCase().trim();
+            const activeCategory =
+    document.querySelector(".category-btn.active")?.dataset.category || "all";
 
             snapshot.forEach((docSnap) => {
 
@@ -72,6 +74,12 @@ window.addEventListener("DOMContentLoaded", async () => {
                 ) {
                     return;
                 }
+                if (
+    activeCategory !== "all" &&
+    (service.category || "Other") !== activeCategory
+) {
+    return;
+}
 
                 serviceList.innerHTML += `
 <div class="service-card">
@@ -111,8 +119,67 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     }
 
-    // প্রথমবার সার্ভিস লোড
-    await loadServices();
+// =========================
+// LOAD CATEGORIES
+// =========================
+
+async function loadCategories() {
+
+    const categoryFilter =
+        document.getElementById("categoryFilter");
+
+    if (!categoryFilter) return;
+
+    try {
+
+        const snapshot =
+            await getDocs(collection(db, "categories"));
+
+        categoryFilter.innerHTML = `
+            <button
+                type="button"
+                class="category-btn active"
+                data-category="all">
+                All
+            </button>
+        `;
+
+        snapshot.forEach((docSnap) => {
+
+            const category = docSnap.data();
+
+            categoryFilter.innerHTML += `
+
+                <button
+                    type="button"
+                    class="category-btn"
+                    data-category="${category.name}">
+
+                    ${category.icon || "📦"}
+                    ${category.name}
+
+                </button>
+
+            `;
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Category load error:",
+            error
+        );
+
+    }
+
+}
+
+// প্রথমবার Category লোড
+await loadCategories();
+
+// প্রথমবার সার্ভিস লোড
+await loadServices();
     
     const serviceSearch = document.getElementById("serviceSearch");
 
@@ -131,6 +198,23 @@ if (serviceSearch) {
     });
 
 }
+const categoryButtons = document.querySelectorAll(".category-btn");
+
+categoryButtons.forEach((button) => {
+
+    button.addEventListener("click", async () => {
+
+        categoryButtons.forEach((btn) => {
+            btn.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        await loadServices();
+
+    });
+
+});
 
     // User Login Data Load
     onAuthStateChanged(auth, (user) => {

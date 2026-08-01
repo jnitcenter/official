@@ -156,6 +156,53 @@ async function loadServiceList(){
 
 }
 
+// =========================
+// LOAD SERVICE CATEGORY DROPDOWN
+// =========================
+
+async function loadServiceCategories() {
+
+    const select =
+        document.getElementById("serviceCategory");
+
+    if (!select) return;
+
+    try {
+
+        const snapshot =
+            await getDocs(collection(db, "categories"));
+
+        select.innerHTML = `
+            <option value="">Select Category</option>
+        `;
+
+        snapshot.forEach((categoryDoc) => {
+
+            const category = categoryDoc.data();
+
+            const option =
+                document.createElement("option");
+
+            option.value = category.name;
+
+            option.textContent =
+                `${category.icon || "📦"} ${category.name}`;
+
+            select.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Service category load error:",
+            error
+        );
+
+    }
+
+}
+
 // ===============================
 // SAVE SERVICE
 // ===============================
@@ -167,6 +214,7 @@ window.saveService = async function(){
     const requiredInfo = document.getElementById("requiredInfo").value.trim();
     const description = document.getElementById("serviceDescription").value.trim();
     const active = document.getElementById("serviceActive").checked;
+const category = document.getElementById("serviceCategory").value;
 
 const image = document.getElementById("serviceImage").value.trim();
 
@@ -200,14 +248,15 @@ const data = {
 
     name,
     price: Number(price),
+    category,
     requiredInfo,
     description,
     active,
     image: image,
-enableQuantity,
-minimumQuantity,
-maximumQuantity,
-estimatedDelivery
+    enableQuantity,
+    minimumQuantity,
+    maximumQuantity,
+    estimatedDelivery
 
 };
 
@@ -282,6 +331,7 @@ for (const userDoc of users.docs) {
 
     document.getElementById("serviceName").value="";
     document.getElementById("servicePrice").value="";
+    document.getElementById("serviceCategory").value = "";
     document.getElementById("requiredInfo").value="";
     document.getElementById("serviceDescription").value="";
     document.getElementById("serviceActive").checked=true;
@@ -304,6 +354,7 @@ window.editService = async function(id){
 
     document.getElementById("serviceName").value = service.name;
     document.getElementById("servicePrice").value = service.price;
+    document.getElementById("serviceCategory").value = service.category || "";
     document.getElementById("requiredInfo").value = service.requiredInfo || "";
     document.getElementById("serviceDescription").value = service.description || "";
     document.getElementById("serviceImage").value = service.image || "";
@@ -707,6 +758,664 @@ switch (status) {
     }
 
 };
+
+// =========================
+// CATEGORY MANAGEMENT
+// =========================
+
+async function loadCategories() {
+
+    const list = document.getElementById("categoryList");
+
+    if (!list) return;
+
+    list.innerHTML = "<p>Loading categories...</p>";
+
+    try {
+
+        const snapshot = await getDocs(
+            collection(db, "categories")
+        );
+
+        // প্রথমবার হলে default categories তৈরি করবে
+        if (snapshot.empty) {
+
+            const defaultCategories = [
+                {
+                    name: "Social Media",
+                    icon: "📱"
+                },
+                {
+                    name: "Graphics Design",
+                    icon: "🎨"
+                },
+                {
+                    name: "Website",
+                    icon: "🌐"
+                },
+                {
+                    name: "AI Services",
+                    icon: "🤖"
+                },
+                {
+                    name: "Digital Services",
+                    icon: "💻"
+                },
+                {
+                    name: "Other",
+                    icon: "📦"
+                }
+            ];
+
+            for (const category of defaultCategories) {
+
+                await addDoc(
+                    collection(db, "categories"),
+                    {
+                        name: category.name,
+                        icon: category.icon,
+                        createdAt: Date.now()
+                    }
+                );
+
+            }
+
+            // আবার load করবে
+            return loadCategories();
+
+        }
+
+        list.innerHTML = "";
+
+        snapshot.forEach((categoryDoc) => {
+
+            const category = categoryDoc.data();
+
+            list.innerHTML += `
+
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    gap:10px;
+                    padding:12px;
+                    margin-bottom:10px;
+                    background:#1f2937;
+                    border-radius:10px;
+                ">
+
+                    <div style="font-size:16px;font-weight:bold;">
+
+                        ${category.icon || "📦"}
+                        ${category.name}
+
+                    </div>
+
+                    <div style="display:flex;gap:8px;">
+
+                        <button
+                            class="action-btn"
+                            onclick="editCategory('${categoryDoc.id}')">
+
+                            ✏️
+
+                        </button>
+
+                        <button
+                            class="action-btn"
+                            onclick="deleteCategory('${categoryDoc.id}')">
+
+                            🗑️
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        list.innerHTML =
+            "<p>Failed to load categories.</p>";
+
+    }
+
+}
+
+
+// =========================
+// ADD CATEGORY
+// =========================
+
+window.saveCategory = async function () {
+
+    const name =
+        document.getElementById("categoryName")
+        .value
+        .trim();
+
+    const icon =
+        document.getElementById("categoryIcon")
+        .value
+        .trim();
+
+    if (!name) {
+
+        showPopup(
+            "warning",
+            "Warning",
+            "Please enter category name."
+        );
+
+        return;
+
+    }
+
+    await addDoc(
+        collection(db, "categories"),
+        {
+            name: name,
+            icon: icon || "📦",
+            createdAt: Date.now()
+        }
+    );
+
+    document.getElementById("categoryName").value = "";
+    document.getElementById("categoryIcon").value = "";
+
+    await loadCategories();
+
+    showPopup(
+        "success",
+        "Success",
+        "Category added successfully."
+    );
+
+};
+
+// =========================
+// BEAUTIFUL EDIT CATEGORY
+// =========================
+
+window.editCategory = async function (id) {
+
+    const snap = await getDoc(
+        doc(db, "categories", id)
+    );
+
+    if (!snap.exists()) return;
+
+    const category = snap.data();
+
+    const oldName = category.name;
+    const oldIcon = category.icon || "📦";
+
+    // Remove old modal if already exists
+    document.getElementById("editCategoryModal")?.remove();
+
+    // Create modal
+    const modal = document.createElement("div");
+
+    modal.id = "editCategoryModal";
+
+    modal.innerHTML = `
+        <div class="edit-category-overlay">
+
+            <div class="edit-category-box">
+
+                <button
+                    type="button"
+                    class="edit-category-close"
+                    id="editCategoryClose">
+                    ✕
+                </button>
+
+                <div class="edit-category-icon">
+                    ✏️
+                </div>
+
+                <h2>Edit Category</h2>
+
+                <p class="edit-category-subtitle">
+                    Update your category information
+                </p>
+
+                <label>Category Name</label>
+
+                <input
+                    type="text"
+                    id="editCategoryName"
+                    value="${oldName.replace(/"/g, "&quot;")}"
+                    placeholder="Category name"
+                >
+
+                <label>Category Icon / Emoji</label>
+
+                <input
+                    type="text"
+                    id="editCategoryIcon"
+                    value="${oldIcon.replace(/"/g, "&quot;")}"
+                    placeholder="📱"
+                    maxlength="5"
+                >
+
+                <div class="edit-category-preview">
+                    <span>Preview</span>
+
+                    <div id="editCategoryPreview">
+                        ${oldIcon} ${oldName}
+                    </div>
+                </div>
+
+                <div class="edit-category-buttons">
+
+                    <button
+                        type="button"
+                        class="edit-category-cancel"
+                        id="editCategoryCancel">
+                        Cancel
+                    </button>
+
+                    <button
+                        type="button"
+                        class="edit-category-save"
+                        id="editCategorySave">
+                        ✓ Update Category
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // =========================
+    // ADD CSS
+    // =========================
+
+    if (!document.getElementById("editCategoryStyle")) {
+
+        const style = document.createElement("style");
+
+        style.id = "editCategoryStyle";
+
+        style.textContent = `
+
+            .edit-category-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.72);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                z-index: 999999;
+            }
+
+            .edit-category-box {
+                width: 100%;
+                max-width: 430px;
+                background: #111827;
+                border: 1px solid #26364d;
+                border-radius: 22px;
+                padding: 25px;
+                box-sizing: border-box;
+                position: relative;
+                box-shadow: 0 25px 70px rgba(0,0,0,.55);
+                animation: editCategoryPop .22s ease;
+            }
+
+            @keyframes editCategoryPop {
+                from {
+                    opacity: 0;
+                    transform: scale(.92) translateY(15px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: scale(1) translateY(0);
+                }
+            }
+
+            .edit-category-close {
+                position: absolute;
+                top: 14px;
+                right: 14px;
+                width: 38px;
+                height: 38px;
+                border: none;
+                border-radius: 50%;
+                background: #1f2937;
+                color: #fff;
+                font-size: 18px;
+                cursor: pointer;
+            }
+
+            .edit-category-icon {
+                width: 58px;
+                height: 58px;
+                border-radius: 17px;
+                background: #22c55e;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                margin-bottom: 14px;
+            }
+
+            .edit-category-box h2 {
+                color: #fff;
+                margin: 0;
+                font-size: 24px;
+            }
+
+            .edit-category-subtitle {
+                color: #94a3b8;
+                margin: 7px 0 22px;
+                font-size: 14px;
+            }
+
+            .edit-category-box label {
+                display: block;
+                color: #e5e7eb;
+                font-weight: 600;
+                margin: 15px 0 8px;
+            }
+
+            .edit-category-box input {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 14px;
+                border-radius: 12px;
+                border: 1px solid #334155;
+                outline: none;
+                background: #1e293b;
+                color: #fff;
+                font-size: 16px;
+            }
+
+            .edit-category-box input:focus {
+                border-color: #22c55e;
+                box-shadow: 0 0 0 3px rgba(34,197,94,.12);
+            }
+
+            .edit-category-preview {
+                margin-top: 18px;
+                padding: 13px;
+                border-radius: 13px;
+                background: #0b1220;
+                border: 1px solid #26364d;
+            }
+
+            .edit-category-preview span {
+                display: block;
+                color: #64748b;
+                font-size: 12px;
+                margin-bottom: 6px;
+            }
+
+            #editCategoryPreview {
+                color: #fff;
+                font-size: 18px;
+                font-weight: 700;
+            }
+
+            .edit-category-buttons {
+                display: flex;
+                gap: 10px;
+                margin-top: 22px;
+            }
+
+            .edit-category-buttons button {
+                flex: 1;
+                border: none;
+                padding: 14px 10px;
+                border-radius: 12px;
+                font-size: 15px;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .edit-category-cancel {
+                background: #1f2937;
+                color: #cbd5e1;
+            }
+
+            .edit-category-save {
+                background: #22c55e;
+                color: #fff;
+            }
+
+            .edit-category-save:active,
+            .edit-category-cancel:active {
+                transform: scale(.97);
+            }
+
+        `;
+
+        document.head.appendChild(style);
+    }
+
+    const nameInput =
+        document.getElementById("editCategoryName");
+
+    const iconInput =
+        document.getElementById("editCategoryIcon");
+
+    const preview =
+        document.getElementById("editCategoryPreview");
+
+    const closeModal = () => {
+        modal.remove();
+    };
+
+    // =========================
+    // LIVE PREVIEW
+    // =========================
+
+    function updatePreview() {
+
+        const name =
+            nameInput.value.trim() || "Category Name";
+
+        const icon =
+            iconInput.value.trim() || "📦";
+
+        preview.textContent =
+            `${icon} ${name}`;
+    }
+
+    nameInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+    iconInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+    // =========================
+    // CLOSE
+    // =========================
+
+    document
+        .getElementById("editCategoryClose")
+        .addEventListener("click", closeModal);
+
+    document
+        .getElementById("editCategoryCancel")
+        .addEventListener("click", closeModal);
+
+    // Click outside modal
+    modal
+        .querySelector(".edit-category-overlay")
+        .addEventListener("click", (e) => {
+
+            if (
+                e.target.classList.contains(
+                    "edit-category-overlay"
+                )
+            ) {
+                closeModal();
+            }
+
+        });
+
+    // =========================
+    // UPDATE CATEGORY
+    // =========================
+
+    document
+        .getElementById("editCategorySave")
+        .addEventListener("click", async () => {
+
+            const finalName =
+                nameInput.value.trim();
+
+            const finalIcon =
+                iconInput.value.trim() || "📦";
+
+            if (!finalName) {
+
+                showPopup(
+                    "warning",
+                    "Warning",
+                    "Please enter category name."
+                );
+
+                return;
+            }
+
+            const saveButton =
+                document.getElementById(
+                    "editCategorySave"
+                );
+
+            saveButton.disabled = true;
+            saveButton.textContent =
+                "Updating...";
+
+            try {
+
+                // =========================
+                // UPDATE CATEGORY
+                // =========================
+
+                await updateDoc(
+                    doc(db, "categories", id),
+                    {
+                        name: finalName,
+                        icon: finalIcon
+                    }
+                );
+
+                // =========================
+                // UPDATE OLD SERVICES
+                // =========================
+
+                const servicesSnap =
+                    await getDocs(
+                        collection(db, "services")
+                    );
+
+                for (
+                    const serviceDoc
+                    of servicesSnap.docs
+                ) {
+
+                    const service =
+                        serviceDoc.data();
+
+                    if (
+                        service.category === oldName
+                    ) {
+
+                        await updateDoc(
+                            doc(
+                                db,
+                                "services",
+                                serviceDoc.id
+                            ),
+                            {
+                                category: finalName
+                            }
+                        );
+
+                    }
+
+                }
+
+                closeModal();
+
+                await loadCategories();
+
+                showPopup(
+                    "success",
+                    "Updated",
+                    "Category and related services updated successfully."
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+                saveButton.disabled = false;
+
+                saveButton.textContent =
+                    "✓ Update Category";
+
+                showPopup(
+                    "error",
+                    "Error",
+                    error.message
+                );
+
+            }
+
+        });
+
+};
+
+// =========================
+// DELETE CATEGORY
+// =========================
+
+window.deleteCategory = async function (id) {
+
+    showConfirmPopup(
+        "Delete Category",
+        "Are you sure you want to delete this category?",
+        async () => {
+
+            await deleteDoc(
+                doc(db, "categories", id)
+            );
+
+            await loadCategories();
+
+            showPopup(
+                "success",
+                "Deleted",
+                "Category deleted successfully."
+            );
+
+        }
+    );
+
+};
+
 // ===============================
 // PAGE LOAD
 // ===============================
@@ -718,6 +1427,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadBalanceRequests();
     await loadUsers();
     await loadDashboardStats();
+    await loadCategories();
+    await loadServiceCategories();
 
 });
 // =========================
