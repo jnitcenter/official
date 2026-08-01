@@ -1587,3 +1587,58 @@ align-items:center;
     }
 
 }
+
+/* =========================
+   SERVICE ACTION BUTTON FIX
+========================= */
+
+.service-management table th:last-child{
+    width:150px;
+    text-align:center;
+}
+
+.service-management table td:last-child{
+    width:150px;
+    text-align:center;
+    vertical-align:middle;
+}
+
+.service-management table td:last-child button{
+    width:42px;
+    height:42px;
+    min-width:42px;
+    padding:0;
+    margin:0 4px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    vertical-align:middle;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:17px;
+    transition:.25s;
+}
+
+.service-management table td:last-child button:hover{
+    transform:translateY(-2px) scale(1.05);
+}
+
+/* Mobile */
+@media(max-width:768px){
+
+    .service-management table th:last-child,
+    .service-management table td:last-child{
+        width:150px;
+        min-width:150px;
+        text-align:center;
+    }
+
+    .service-management table td:last-child button{
+        width:40px;
+        height:40px;
+        min-width:40px;
+        margin:0 3px;
+    }
+
+}
