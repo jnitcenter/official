@@ -245,15 +245,14 @@ const apiUrl =
 const apiServiceId =
     document.getElementById("apiServiceId").value.trim();
     
-    if(!name || !price){
+    if(!name || (!price && ratePer1000 <= 0)){
 
         showPopup(
     "warning",
     "Warning",
-    "Please fill all required fields."
+    "Please fill Service Name and at least one pricing field (Price or Rate per 1000)."
 );
 
-return;
         return;
 
     }
@@ -261,7 +260,7 @@ return;
 const data = {
 
     name,
-    price: Number(price),
+    price: Number(price || 0),
     ratePer1000,
     category,
     requiredInfo,
@@ -354,6 +353,8 @@ for (const userDoc of users.docs) {
     document.getElementById("requiredInfo").value="";
     document.getElementById("serviceDescription").value="";
     document.getElementById("serviceActive").checked=true;
+    document.getElementById("enableQuantity").checked=false;
+    document.getElementById("quantitySettings").style.display="none";
 
     loadServiceList();
 
@@ -380,6 +381,7 @@ window.editService = async function(id){
     document.getElementById("serviceImage").value = service.image || "";
     document.getElementById("serviceActive").checked = service.active;
     document.getElementById("enableQuantity").checked = service.enableQuantity || false;
+    document.getElementById("quantitySettings").style.display = service.enableQuantity ? "block" : "none";
     
     document.getElementById("minimumQuantity").value =
     service.minimumQuantity || "";
@@ -2517,6 +2519,22 @@ async function loadNotice() {
 }
 
 loadNotice();
+
+document.getElementById("enableQuantity")?.addEventListener("change", function () {
+
+    const box = document.getElementById("quantitySettings");
+    if (!box) return;
+
+    box.style.display = this.checked ? "block" : "none";
+
+});
+
+// Keep quantity settings hidden until the admin enables quantity.
+const quantityToggle = document.getElementById("enableQuantity");
+const quantitySettings = document.getElementById("quantitySettings");
+if (quantityToggle && quantitySettings) {
+    quantitySettings.style.display = quantityToggle.checked ? "block" : "none";
+}
 
 document.getElementById("apiEnabled")?.addEventListener("change", function () {
 

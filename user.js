@@ -80,10 +80,12 @@ async function loadService() {
 
         setText("serviceTitle", currentService.name || "Service");
         setText("serviceNameText", currentService.name || "Service");
-        setText(
-            "serviceDescription",
-            currentService.description || "Fast & reliable social media service."
-        );
+        const descriptionNode = el("serviceDescription");
+        const serviceDescription = String(currentService.description || "").trim();
+        if (descriptionNode) {
+            descriptionNode.textContent = serviceDescription;
+            descriptionNode.style.display = serviceDescription ? "block" : "none";
+        }
 
         const image = el("serviceImage");
         if (image) {
@@ -316,9 +318,20 @@ async function placeOrder() {
         const ratePer1000 = Number(currentService.ratePer1000 || 0);
         const basePrice = Number(currentService.price || 0);
 
-        const price = quantityEnabled && ratePer1000 > 0
-            ? (ratePer1000 * quantity) / 1000
-            : basePrice * (quantityEnabled ? quantity : 1);
+        let price;
+
+        if (quantityEnabled) {
+            if (ratePer1000 > 0) {
+                price = (ratePer1000 * quantity) / 1000;
+            } else if (basePrice > 0) {
+                price = basePrice * quantity;
+            } else {
+                price = 0;
+            }
+        } else {
+            // Either pricing field may be used for a non-quantity service.
+            price = basePrice > 0 ? basePrice : ratePer1000;
+        }
 
         if (!Number.isFinite(price) || price < 0) {
             showPopup("error", "Invalid Price", "This service has an invalid price.");
@@ -524,9 +537,18 @@ function updateTotalPrice() {
     const ratePer1000 = Number(currentService.ratePer1000 || 0);
     const basePrice = Number(currentService.price || 0);
 
-    const total = quantityEnabled && ratePer1000 > 0
-        ? (ratePer1000 * qty) / 1000
-        : basePrice * (quantityEnabled ? qty : 1);
+    let total;
+    if (quantityEnabled) {
+        if (ratePer1000 > 0) {
+            total = (ratePer1000 * qty) / 1000;
+        } else if (basePrice > 0) {
+            total = basePrice * qty;
+        } else {
+            total = 0;
+        }
+    } else {
+        total = basePrice > 0 ? basePrice : ratePer1000;
+    }
 
     const totalInput = el("totalPrice");
     if (totalInput) {

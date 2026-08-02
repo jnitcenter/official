@@ -1,0 +1,11 @@
+JN IT CENTER - FINAL UPDATE
+
+Changes applied:
+- worker.js is kept directly inside the main JN IT CENTER folder.
+- No api-worker subfolder is included.
+- Customer service cards no longer show the default "Fast & reliable social media service." text.
+- If a service Description is empty, the description area is hidden.
+- Admin can fill either Price (legacy per unit) OR Rate per 1000 (SMM); both are not required.
+- Quantity controls/min-max are shown only when Enable Quantity is checked.
+- Customer order page shows Required Information fields from the service record and requires them before ordering.
+- Pricing calculation supports either pricing field.

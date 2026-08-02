@@ -1,0 +1,17 @@
+JN IT CENTER - Quantity & Delivery Update
+
+1. Services with enableQuantity=true show Min / Max on the service card.
+2. Services with enableQuantity=false do not show Min / Max.
+3. The order page shows Quantity only when enableQuantity=true.
+4. Delivery is displayed as Automatic.
+5. Existing SMM social service design, categories, search, API/live-support, dark mode and translation features are preserved.
+
+
+FINAL FIX NOTES
+- Quantity section appears only when Enable Quantity is ON.
+- Minimum / Maximum appears only when Enable Quantity is ON.
+- When Quantity is OFF, the customer does not see Quantity or Min/Max.
+- Delivery is displayed as Automatic.
+- Required Information is rendered from the Admin service's Required Information field.
+- The order page no longer accesses missing DOM elements such as deliveryBox/estimatedDelivery, preventing the null.style database error.
+- worker.js is kept directly in the main JN IT CENTER folder.

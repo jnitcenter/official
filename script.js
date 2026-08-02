@@ -154,7 +154,7 @@ window.addEventListener("DOMContentLoaded", async () => {
                 const min = Number(service.minimumQuantity || 1);
                 const max = Number(service.maximumQuantity || 999999);
                 const delivery = "Automatic";
-                const description = service.description || "Fast & reliable social media service.";
+                const description = String(service.description || "").trim();
                 const category = String(service.category || "Other");
 
                 return `
@@ -164,7 +164,7 @@ window.addEventListener("DOMContentLoaded", async () => {
                         <div>
                             <div class="smm-category-label">${escapeHtml(category)}</div>
                             <h3>${escapeHtml(service.name || "Unnamed Service")}</h3>
-                            <p>${escapeHtml(description)}</p>
+                            ${description ? `<p>${escapeHtml(description)}</p>` : ""}
                         </div>
                     </div>
                     <div class="smm-meta">Rate<strong class="smm-rate">${rateText}</strong></div>
