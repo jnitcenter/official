@@ -18,6 +18,8 @@
 
 <header class="dashboard-header">
 
+<button id="menuBtn" class="green-btn menu-btn" type="button" aria-label="Open menu">☰</button>
+
 <div class="logo-area">
 
 <img src="https://i.postimg.cc/jqfFRkWQ/preview.png" alt="Logo">
@@ -26,7 +28,7 @@
 
 <h2>JN IT CENTER</h2>
 
-<span>User Dashboard</span>
+<span data-i18n="userDashboard">User Dashboard</span>
 
 </div>
 
@@ -40,17 +42,51 @@
 
     <div id="dateTime"></div>
 
-    <button id="profileBtn" class="green-btn">
-👤 My Profile
-</button>
+<button id="profileBtn" class="green-btn" data-i18n="profile">👤 My Profile</button>
 
-    <button id="logoutBtn" class="logout-btn">
-        Logout
-    </button>
+    <button id="logoutBtn" class="logout-btn" data-i18n="logout">🚪 Logout</button>
 
 </div>
 
 </header>
+
+<!-- =========================
+SPECIAL MENU
+========================= -->
+
+<div id="specialMenuOverlay" class="special-menu-overlay"></div>
+
+<aside id="specialMenu" class="special-menu" aria-label="Dashboard menu">
+
+    <div class="special-menu-header">
+        <div class="menu-brand">
+            <img src="https://i.postimg.cc/jqfFRkWQ/preview.png" alt="JN IT CENTER">
+            <div>
+                <strong>JN IT CENTER</strong>
+                <span data-i18n="userPanel">User Panel</span>
+            </div>
+        </div>
+        <button id="closeSpecialMenu" type="button" aria-label="Close menu">✕</button>
+    </div>
+
+    <div class="special-menu-nav">
+        <button class="special-menu-item" id="menuDashboardBtn" type="button">🏠 Dashboard</button>
+        <button class="special-menu-item" id="menuProfileBtn" type="button">👤 My Profile</button>
+        <button class="special-menu-item" id="menuPlaceOrderBtn" type="button">🛒 Place Order</button>
+
+        <!-- Special services added from Admin Panel appear here directly. -->
+        <div id="specialServiceMenuList" class="special-service-menu-list"></div>
+
+        <button class="special-menu-item" id="menuOrdersBtn" type="button">📜 Order History</button>
+        <button class="special-menu-item" id="menuBalanceBtn" type="button">💰 Add Balance</button>
+        <button class="special-menu-item" id="menuSupportBtn" type="button" data-i18n="support">🎧 Support</button>
+        <button class="special-menu-item" id="menuAnnouncementsBtn" type="button" data-i18n="announcements">📢 Announcements</button>
+        <button class="special-menu-item" id="menuThemeBtn" type="button">🌙 <span id="themeBtnText">Dark Mode</span></button>
+        <button class="special-menu-item" id="menuLanguageBtn" type="button">🌐 <span id="languageBtnText">বাংলা</span></button>
+        <button class="special-menu-item logout-menu-item" id="menuLogoutBtn" type="button">🚪 Logout</button>
+    </div>
+
+</aside>
 
 <div class="dashboard-container">
 
@@ -58,21 +94,21 @@
 
 <div class="dashboard-card">
 
-<h2>👋 Welcome</h2>
+<h2 data-i18n="welcome">👋 Welcome</h2>
 
-<p>Welcome to JN IT CENTER Dashboard</p>
+<p data-i18n="welcomeText">Welcome to JN IT CENTER Dashboard</p>
 
 </div>
 
 <div class="dashboard-card">
 
-<h2>💰 Wallet Balance</h2>
+<h2 data-i18n="walletBalance">💰 Wallet Balance</h2>
 
 <h1 id="userBalance">৳ 0</h1>
 
 <button class="green-btn" onclick="openBalancePopup()">
 
-Add Balance
+<span data-i18n="addBalance">Add Balance</span>
 
 </button>
 
@@ -80,13 +116,13 @@ Add Balance
 
 <div class="dashboard-card">
 
-<h2>👤 My Account</h2>
+<h2 data-i18n="myAccount">👤 My Account</h2>
 
-<p>Status : Active</p>
+<p data-i18n="statusActive">Status : Active</p>
 
-<p>Role : <span id="userName">Loading...</span></p>
+<p><span data-i18n="role">Role</span> : <span id="userName">Loading...</span></p>
 
-<p>Panel : JN IT CENTER</p>
+<p><span data-i18n="panel">Panel</span> : JN IT CENTER</p>
 
 </div>
 
@@ -98,12 +134,12 @@ Add Balance
 
 <section class="services-section">
 
-<h2>🛠 All Services</h2>
+<h2 data-i18n="allServices">🛠 All Services</h2>
 
 <input
 type="text"
 id="serviceSearch"
-placeholder="🔍 Search Service..."
+placeholder="🔍 Search Service..." data-i18n-placeholder="searchService"
 style="
 width:100%;
 padding:12px;
@@ -123,7 +159,7 @@ margin-bottom:20px;
 ">
 
 <button type="button" class="category-btn active" data-category="all">
-    All
+    <span data-i18n="all">All</span>
 </button>
 
 </div>
@@ -137,7 +173,7 @@ TRANSACTION STATEMENT
 ========================= -->
 
 <section class="services-section">
-    <h2>💳 Transaction Statement</h2>
+    <h2 data-i18n="transactionStatement">💳 Transaction Statement</h2>
 
     <div class="table-responsive">
 
@@ -147,13 +183,13 @@ TRANSACTION STATEMENT
 
             <tr>
 
-                <th>Date & Time</th>
-                <th>Type</th>
-                <th>Method</th>
-                <th>TRX ID</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Action</th>
+                <th data-i18n="dateTime">Date & Time</th>
+                <th data-i18n="type">Type</th>
+                <th data-i18n="method">Method</th>
+                <th data-i18n="trxId">TRX ID</th>
+                <th data-i18n="amount">Amount</th>
+                <th data-i18n="status">Status</th>
+                <th data-i18n="action">Action</th>
 
             </tr>
 
@@ -171,8 +207,8 @@ TRANSACTION STATEMENT
 
 </section>
 
-<section class="services-section">
-    <h2>📦 My Orders</h2>
+<section id="myOrdersSection" class="services-section">
+    <h2 data-i18n="myOrders">📦 My Orders</h2>
 
     <table class="order-table">
 
@@ -180,10 +216,10 @@ TRANSACTION STATEMENT
 
             <tr>
 
-                <th>Service</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Result</th>
+                <th data-i18n="service">Service</th>
+                <th data-i18n="price">Price</th>
+                <th data-i18n="status">Status</th>
+                <th data-i18n="result">Result</th>
 
             </tr>
 
@@ -202,24 +238,24 @@ TRANSACTION STATEMENT
 
 <div class="bottom-dashboard">
 
-<section class="dashboard-card">
+<section id="noticeBoardSection" class="dashboard-card">
 
-    <h2>📢 Notice Board</h2>
+    <h2 data-i18n="noticeBoard">📢 Notice Board</h2>
 
-    <p>✅ Welcome to JN IT CENTER.</p>
-    <p>📌 Latest updates will appear here.</p>
+    <p data-i18n="noticeWelcome">✅ Welcome to JN IT CENTER.</p>
+    <p data-i18n="noticeLatest">📌 Latest updates will appear here.</p>
 
 </section>
 
 <section class="dashboard-card">
 
-    <h2>📊 Recent Activity</h2>
+    <h2 data-i18n="recentActivity">📊 Recent Activity</h2>
 
     <ul class="activity-list">
 
-        <li>🟢 Login Successful</li>
-        <li>💰 Wallet Ready</li>
-        <li>📦 Order Submitted</li>
+        <li data-i18n="loginSuccessful">🟢 Login Successful</li>
+        <li data-i18n="walletReady">💰 Wallet Ready</li>
+        <li data-i18n="orderSubmitted">📦 Order Submitted</li>
 
     </ul>
 
@@ -241,8 +277,8 @@ TRANSACTION STATEMENT
             <div class="bell-circle">🔔</div>
 
             <div>
-                <h2>Notifications</h2>
-                <small id="notificationCount">0 Notifications</small>
+                <h2 data-i18n="notifications">Notifications</h2>
+                <small id="notificationCount" data-i18n="notificationCount">0 Notifications</small>
             </div>
 
         </div>
@@ -276,11 +312,9 @@ ADD BALANCE POPUP
 
         <span class="close" onclick="closeBalancePopup()">&times;</span>
 
-        <h2>Add Balance</h2>
+        <h2 data-i18n="addBalanceTitle">Add Balance</h2>
 
-        <label>Payment Method</label>
-
-        <label>Payment Method</label>
+        <label data-i18n="paymentMethod">Payment Method</label>
 
 <select id="paymentMethod" onchange="loadPaymentNumber()">
 
@@ -303,19 +337,19 @@ text-align:center;
 Loading...
 </div>
 
-<label>Amount</label>
+<label data-i18n="amount">Amount</label>
 
 <input
 type="number"
 id="balanceAmount"
-placeholder="Enter Amount">
+placeholder="Enter Amount" data-i18n-placeholder="enterAmount">
 
-<label>TRX ID</label>
+<label data-i18n="trxId">TRX ID</label>
 
 <input
 type="text"
 id="trxId"
-placeholder="Enter TRX ID">
+placeholder="Enter TRX ID" data-i18n-placeholder="enterTrxId">
 
         <button
         class="green-btn"
@@ -338,19 +372,19 @@ placeholder="Enter TRX ID">
         <span class="close"
         onclick="closeTransactionPopup()">&times;</span>
 
-        <h2>Transaction Details</h2>
+        <h2 data-i18n="transactionDetails">Transaction Details</h2>
 
-        <p><strong>Date :</strong> <span id="tDate"></span></p>
+        <p><strong data-i18n="date">Date :</strong> <span id="tDate"></span></p>
 
-        <p><strong>Type :</strong> <span id="tType"></span></p>
+        <p><strong data-i18n="type">Type :</strong> <span id="tType"></span></p>
 
-        <p><strong>Method :</strong> <span id="tMethod"></span></p>
+        <p><strong data-i18n="method">Method :</strong> <span id="tMethod"></span></p>
 
-        <p><strong>TRX ID :</strong> <span id="tTrx"></span></p>
+        <p><strong data-i18n="trxId">TRX ID :</strong> <span id="tTrx"></span></p>
 
-        <p><strong>Amount :</strong> <span id="tAmount"></span></p>
+        <p><strong data-i18n="amount">Amount :</strong> <span id="tAmount"></span></p>
 
-        <p><strong>Status :</strong> <span id="tStatus"></span></p>
+        <p><strong data-i18n="status">Status :</strong> <span id="tStatus"></span></p>
 
     </div>
 
@@ -361,6 +395,29 @@ PROFILE MODAL
 ========================= -->
 
 </div>
+
+<!-- =========================
+LIVE SUPPORT CHAT
+========================= -->
+<div id="supportChatModal" class="support-chat-modal" aria-hidden="true">
+  <div class="support-chat-box">
+    <div class="support-chat-header">
+      <div>
+        <h2 id="supportTitle">🎧 Live Support</h2>
+        <small id="supportSubtitle">Message Admin — replies appear instantly</small>
+      </div>
+      <button type="button" onclick="closeSupportChat()">✕</button>
+    </div>
+    <div id="supportMessages" class="support-messages">
+      <div class="support-empty" id="supportEmpty">Start a conversation with Admin.</div>
+    </div>
+    <div class="support-chat-input-row">
+      <textarea id="supportMessageInput" rows="4" placeholder="Write your message..." aria-label="Support message"></textarea>
+      <button class="green-btn" id="supportSendBtn" type="button" onclick="sendSupportMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="script.js"></script>
 <script type="module" src="notification.js"></script>
 <link rel="stylesheet" href="popup.css">

@@ -13,7 +13,9 @@ import {
     setDoc,
     query,
     where,
-    increment
+    increment,
+    arrayUnion,
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -111,6 +113,8 @@ async function loadServiceList(){
     snapshot.forEach((serviceDoc)=>{
 
         const service = serviceDoc.data();
+
+        if (service.isSpecial === true) return;
 
         table.innerHTML += `
         <tr>
@@ -211,6 +215,7 @@ window.saveService = async function(){
 
     const name = document.getElementById("serviceName").value.trim();
     const price = document.getElementById("servicePrice").value.trim();
+    const ratePer1000 = Number(document.getElementById("serviceRatePer1000")?.value || 0);
     const requiredInfo = document.getElementById("requiredInfo").value.trim();
     const description = document.getElementById("serviceDescription").value.trim();
     const active = document.getElementById("serviceActive").checked;
@@ -257,6 +262,7 @@ const data = {
 
     name,
     price: Number(price),
+    ratePer1000,
     category,
     requiredInfo,
     description,
@@ -344,6 +350,7 @@ for (const userDoc of users.docs) {
 
     document.getElementById("serviceName").value="";
     document.getElementById("servicePrice").value="";
+    if (document.getElementById("serviceRatePer1000")) document.getElementById("serviceRatePer1000").value="";
     document.getElementById("serviceCategory").value = "";
     document.getElementById("requiredInfo").value="";
     document.getElementById("serviceDescription").value="";
@@ -367,6 +374,7 @@ window.editService = async function(id){
 
     document.getElementById("serviceName").value = service.name;
     document.getElementById("servicePrice").value = service.price;
+    if (document.getElementById("serviceRatePer1000")) document.getElementById("serviceRatePer1000").value = service.ratePer1000 || "";
     document.getElementById("serviceCategory").value = service.category || "";
     document.getElementById("requiredInfo").value = service.requiredInfo || "";
     document.getElementById("serviceDescription").value = service.description || "";
@@ -401,6 +409,211 @@ document.getElementById("apiSettings").style.display =
 document.getElementById("saveServiceBtn").style.display = "none";
 
 };
+
+
+// ===============================
+// SPECIAL SERVICES MANAGEMENT
+// ===============================
+
+let specialEditId = null;
+
+async function loadSpecialServiceList(){
+
+    const table = document.getElementById("specialServiceList");
+    if(!table) return;
+
+    table.innerHTML = "";
+
+    const search = (document.getElementById("specialSearchBox")?.value || "")
+        .toLowerCase()
+        .trim();
+
+    const snapshot = await getDocs(collection(db,"services"));
+
+    snapshot.forEach((serviceDoc)=>{
+
+        const service = serviceDoc.data();
+
+        if(service.isSpecial !== true) return;
+
+        if(search && !(service.name || "").toLowerCase().includes(search)) return;
+
+        table.innerHTML += `
+        <tr>
+            <td>
+                <img
+                    src="${service.image || 'images/no-image.png'}"
+                    style="width:60px;height:60px;object-fit:cover;border-radius:8px;display:block;margin:0 auto 5px;">
+                ${service.name || ""}
+            </td>
+            <td>৳ ${service.price || 0}</td>
+            <td>${service.active ? "Active" : "Inactive"}</td>
+            <td class="action-cell">
+                <button class="action-btn" onclick="editSpecialService('${serviceDoc.id}')">✏️</button>
+                <button class="action-btn" onclick="deleteSpecialService('${serviceDoc.id}')">🗑️</button>
+            </td>
+        </tr>`;
+    });
+}
+
+window.saveSpecialService = async function(){
+
+    const name = document.getElementById("specialServiceName").value.trim();
+    const price = Number(document.getElementById("specialServicePrice").value || 0);
+    const requiredInfo = document.getElementById("specialRequiredInfo").value.trim();
+    const description = document.getElementById("specialServiceDescription").value.trim();
+    const image = document.getElementById("specialServiceImage").value.trim();
+    const active = document.getElementById("specialServiceActive").checked;
+    const enableQuantity = document.getElementById("specialEnableQuantity").checked;
+    const minimumQuantity = Number(document.getElementById("specialMinimumQuantity").value || 1);
+    const maximumQuantity = Number(document.getElementById("specialMaximumQuantity").value || 999999);
+    const estimatedDelivery = document.getElementById("specialEstimatedDelivery").value.trim();
+
+    if(!name){
+        showPopup("warning","Missing Information","Please enter a special service name.");
+        return;
+    }
+
+    const data = {
+        name,
+        price,
+        requiredInfo,
+        description,
+        image,
+        active,
+        enableQuantity,
+        minimumQuantity,
+        maximumQuantity,
+        estimatedDelivery,
+        isSpecial: true,
+        createdAt: new Date()
+    };
+
+    try{
+
+        if(specialEditId){
+
+            await updateDoc(doc(db,"services",specialEditId),data);
+
+            showPopup("success","Updated","Special service updated successfully.");
+
+            specialEditId = null;
+            document.getElementById("updateSpecialServiceBtn").style.display = "none";
+            document.getElementById("saveSpecialServiceBtn").style.display = "inline-block";
+
+        }else{
+
+            await addDoc(collection(db,"services"),data);
+
+            showPopup("success","Added","Special service added successfully.");
+        }
+
+        clearSpecialServiceForm();
+        await loadSpecialServiceList();
+        await loadServiceList();
+
+    }catch(err){
+
+        console.error(err);
+        showPopup("error","Error",err.message);
+
+    }
+};
+
+window.editSpecialService = async function(id){
+
+    try{
+
+        const snap = await getDoc(doc(db,"services",id));
+
+        if(!snap.exists()) return;
+
+        const service = snap.data();
+
+        specialEditId = id;
+
+        document.getElementById("specialServiceName").value = service.name || "";
+        document.getElementById("specialServicePrice").value = service.price || "";
+        document.getElementById("specialRequiredInfo").value = service.requiredInfo || "";
+        document.getElementById("specialServiceDescription").value = service.description || "";
+        document.getElementById("specialServiceImage").value = service.image || "";
+        document.getElementById("specialServiceActive").checked = service.active !== false;
+        document.getElementById("specialEnableQuantity").checked = service.enableQuantity || false;
+        document.getElementById("specialMinimumQuantity").value = service.minimumQuantity || "";
+        document.getElementById("specialMaximumQuantity").value = service.maximumQuantity || "";
+        document.getElementById("specialEstimatedDelivery").value = service.estimatedDelivery || "";
+
+        document.getElementById("specialQuantitySettings").style.display =
+            service.enableQuantity ? "block" : "none";
+
+        document.getElementById("saveSpecialServiceBtn").style.display = "none";
+        document.getElementById("updateSpecialServiceBtn").style.display = "inline-block";
+
+        document.querySelector(".special-service-management")?.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+        });
+
+    }catch(err){
+
+        console.error(err);
+        showPopup("error","Error",err.message);
+
+    }
+};
+
+window.deleteSpecialService = async function(id){
+
+    const ok = confirm("Delete this special service?");
+
+    if(!ok) return;
+
+    try{
+
+        await deleteDoc(doc(db,"services",id));
+
+        showPopup("success","Deleted","Special service deleted successfully.");
+
+        await loadSpecialServiceList();
+
+    }catch(err){
+
+        console.error(err);
+        showPopup("error","Error",err.message);
+
+    }
+};
+
+function clearSpecialServiceForm(){
+
+    document.getElementById("specialServiceName").value = "";
+    document.getElementById("specialServicePrice").value = "";
+    document.getElementById("specialRequiredInfo").value = "";
+    document.getElementById("specialServiceDescription").value = "";
+    document.getElementById("specialServiceImage").value = "";
+    document.getElementById("specialServiceActive").checked = true;
+    document.getElementById("specialEnableQuantity").checked = false;
+    document.getElementById("specialMinimumQuantity").value = "";
+    document.getElementById("specialMaximumQuantity").value = "";
+    document.getElementById("specialEstimatedDelivery").value = "";
+    document.getElementById("specialQuantitySettings").style.display = "none";
+}
+
+document.getElementById("specialEnableQuantity")?.addEventListener("change", function(){
+
+    const box = document.getElementById("specialQuantitySettings");
+
+    if(box){
+        box.style.display = this.checked ? "block" : "none";
+    }
+
+});
+
+document.getElementById("specialSearchBox")?.addEventListener("input", loadSpecialServiceList);
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadSpecialServiceList();
+});
 
 // ===============================
 // DELETE SERVICE
@@ -2316,4 +2529,98 @@ document.getElementById("apiEnabled")?.addEventListener("change", function () {
     box.style.display =
         this.checked ? "block" : "none";
 
+});
+
+// ===============================
+// LIVE SUPPORT CENTER
+// ===============================
+let adminSupportChatsUnsub = null;
+let adminSupportActiveUnsub = null;
+let adminSupportActiveId = null;
+
+function supportEsc(value){
+    return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+}
+
+function renderAdminSupportMessages(messages){
+    const box=document.getElementById("supportAdminMessages");
+    if(!box) return;
+    if(!messages.length){
+        box.innerHTML='<div class="support-admin-empty">No messages yet.</div>';
+        return;
+    }
+    box.innerHTML=messages.map(m=>`
+        <div class="support-admin-msg ${m.senderRole === "admin" ? "admin" : "user"}">
+            <div class="support-admin-bubble">${supportEsc(m.text)}</div>
+            <small>${m.senderRole === "admin" ? "You (Admin)" : "Customer"}</small>
+        </div>
+    `).join("");
+    box.scrollTop=box.scrollHeight;
+}
+
+function openAdminSupportChat(id, chat){
+    adminSupportActiveId=id;
+    document.querySelectorAll('.support-chat-item').forEach(el=>el.classList.toggle('active',el.dataset.chatId===id));
+    const header=document.getElementById('supportAdminHeader');
+    if(header) header.innerHTML=`🎧 ${supportEsc(chat.userName || chat.userEmail || 'Customer')} <small style="color:#94a3b8">${supportEsc(chat.userEmail || '')}</small>`;
+    if(adminSupportActiveUnsub) adminSupportActiveUnsub();
+    adminSupportActiveUnsub=onSnapshot(doc(db,'supportChats',id),snap=>{
+        renderAdminSupportMessages((snap.data()?.messages)||[]);
+    });
+}
+
+function loadAdminSupportChats(){
+    const list=document.getElementById('supportChatList');
+    if(!list) return;
+    if(adminSupportChatsUnsub) adminSupportChatsUnsub();
+    adminSupportChatsUnsub=onSnapshot(collection(db,'supportChats'),snap=>{
+        const chats=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+        if(!chats.length){list.innerHTML='<div class="support-admin-empty">No support conversations yet.</div>';return;}
+        list.innerHTML=chats.map(c=>{
+            const last=(c.messages||[]).slice(-1)[0];
+            return `<button class="support-chat-item ${adminSupportActiveId===c.id?'active':''}" data-chat-id="${c.id}" type="button">
+                <strong>${supportEsc(c.userName || c.userEmail || 'Customer')}</strong>
+                <small>${supportEsc(last?.text || 'New conversation')}</small>
+            </button>`;
+        }).join('');
+        list.querySelectorAll('.support-chat-item').forEach(btn=>btn.addEventListener('click',()=>{
+            const c=chats.find(x=>x.id===btn.dataset.chatId);
+            if(c) openAdminSupportChat(c.id,c);
+        }));
+        if(!adminSupportActiveId && chats[0]) openAdminSupportChat(chats[0].id,chats[0]);
+    });
+}
+
+window.sendAdminSupportMessage=async function(){
+    const input=document.getElementById('supportAdminInput');
+    const text=(input?.value||'').trim();
+    const user=auth.currentUser;
+    if(!text || !user || !adminSupportActiveId) return;
+    const chatRef=doc(db,'supportChats',adminSupportActiveId);
+    await updateDoc(chatRef,{
+        messages:arrayUnion({
+            id:crypto.randomUUID(),
+            senderId:user.uid,
+            senderRole:'admin',
+            text,
+            createdAt:Date.now()
+        }),
+        updatedAt:Date.now(),
+        lastSender:'admin'
+    });
+
+    try {
+        await sendNotification(adminSupportActiveId,"🎧 Admin Replied", "Admin replied to your support message.", "support");
+    } catch (notifyError) {
+        console.warn("Support reply notification failed:", notifyError);
+    }
+
+    input.value='';
+};
+
+window.addEventListener('DOMContentLoaded',()=>{
+    loadAdminSupportChats();
+    document.getElementById('supportAdminInput')?.addEventListener('keydown',e=>{
+        if(e.key==='Enter' && !e.shiftKey){e.preventDefault();window.sendAdminSupportMessage();}
+    });
 });

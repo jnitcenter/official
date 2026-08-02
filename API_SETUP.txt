@@ -1,0 +1,21 @@
+JN IT CENTER - Automatic SAFOLLOW Order Setup
+
+The ZIP includes api-worker/worker.js. This keeps the SAFOLLOW API key OFF the customer website.
+
+One-time free setup:
+1. Create a Cloudflare Worker (free plan is enough for light use).
+2. Paste api-worker/worker.js into the Worker and deploy it.
+3. Add a Worker Secret named SAFOLLOW_API_KEY and paste your SAFOLLOW API key there.
+4. Copy the deployed Worker URL, ending in /order.
+5. In Admin Panel > Service Management, enable API for a service.
+6. Put the Worker /order URL into API Proxy URL.
+7. Put the SAFOLLOW Service ID into SAFOLLOW Service ID.
+8. For automatic services, make sure the service's required fields include a target Link/URL (the code automatically finds an http/https value).
+
+When a customer orders an API-enabled service:
+- the site calls the Worker;
+- the Worker calls https://www.safollow.com/api/v2 with action=add;
+- only after a successful provider order is returned is the customer's balance deducted;
+- the Firestore order stores apiOrderId and Processing status.
+
+Important: the SAFOLLOW API key is NOT stored in the website ZIP.

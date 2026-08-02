@@ -1,0 +1,18 @@
+JN IT CENTER - Firestore rules for Live Support
+
+Add these rules to your existing Firestore rules (do not replace unrelated existing rules):
+
+function signedIn() {
+  return request.auth != null;
+}
+
+function isAdmin() {
+  return signedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+}
+
+match /supportChats/{userId} {
+  allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
+  allow create, update: if isAdmin() || (signedIn() && request.auth.uid == userId);
+}
+
+The chat uses one document per user and stores its messages in the messages array.

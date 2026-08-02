@@ -1,176 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Place Order</title>
-
 <style>
-
-body{
-background:#0f172a;
-font-family:Arial;
-color:#fff;
-margin:0;
-padding:30px;
-}
-
-.box{
-
-max-width:650px;
-margin:auto;
-background:#1e293b;
-padding:25px;
-border-radius:12px;
-
-}
-
-h2{
-
-text-align:center;
-color:#22c55e;
-
-}
-
-label{
-
-display:block;
-margin-top:18px;
-margin-bottom:6px;
-font-weight:bold;
-
-}
-
-input{
-
-width:100%;
-padding:12px;
-border:none;
-border-radius:8px;
-background:#334155;
-color:white;
-box-sizing:border-box;
-
-}
-
-.dynamicField{
-
-margin-top:18px;
-
-}
-
-button{
-
-margin-top:25px;
-width:100%;
-padding:14px;
-font-size:18px;
-border:none;
-border-radius:8px;
-background:#22c55e;
-cursor:pointer;
-
-}
-
-button:hover{
-
-background:#16a34a;
-
-}
-
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#071525;color:#fff;font-family:Arial,sans-serif;padding:18px}
+.order-wrap{max-width:760px;margin:auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.back{background:#172235;color:#fff;border:1px solid #29384f;padding:9px 13px;border-radius:10px;cursor:pointer}
+.panel{background:#0f1b2d;border:1px solid #26344a;border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.panel-head{padding:20px;border-bottom:1px solid #26344a}
+.panel-head h2{margin:0;color:#22c55e}
+.panel-head p{margin:7px 0 0;opacity:.72}
+.service-summary{display:grid;grid-template-columns:100px 1fr;gap:15px;padding:18px;border-bottom:1px solid #26344a}
+.service-summary img{width:100px;height:100px;object-fit:cover;border-radius:12px;background:#172235}
+.service-summary h3{margin:0 0 7px;color:#22c55e}
+.service-summary p{margin:4px 0;opacity:.8;font-size:14px}
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 18px}
+.meta{background:#172235;border-radius:10px;padding:10px;font-size:12px;opacity:.8}
+.meta strong{display:block;color:#fff;font-size:14px;margin-top:4px}
+.form{padding:18px}
+label{display:block;margin:14px 0 7px;font-weight:700}
+input,textarea{width:100%;padding:13px;border:1px solid #334155;border-radius:10px;background:#172235;color:#fff;outline:none}
+input:focus,textarea:focus{border-color:#22c55e}
+textarea{min-height:100px;resize:vertical}
+.total{font-size:22px;font-weight:800;color:#22c55e}
+.order-btn{width:100%;padding:14px;border:0;border-radius:10px;background:#22c55e;color:#06130b;font-weight:900;font-size:17px;margin-top:18px;cursor:pointer}
+.hint{font-size:12px;opacity:.65;margin-top:6px}
+@media(max-width:560px){.service-summary{grid-template-columns:1fr}.service-summary img{width:80px;height:80px}.meta-grid{grid-template-columns:1fr 1fr}.meta:last-child{grid-column:1/-1}}
 </style>
-
 </head>
-
 <body>
-
-<div class="box">
-
-<h2>🛒 Place Order</h2>
-
-<div class="service-image-box">
-
-   <img
-    id="serviceImage"
-    style="
-        width:220px;
-        height:220px;
-        object-fit:cover;
-        border-radius:12px;
-        display:block;
-        margin:20px auto;
-    "
->
-
+<div class="order-wrap">
+<div class="topbar">
+<button class="back" onclick="history.back()">← Back</button>
+<strong>JN IT CENTER</strong>
 </div>
 
-<label>Service</label>
-
-<input
-type="text"
-id="serviceName"
-readonly>
-
-<label>Price</label>
-
-<input
-type="text"
-id="price"
-readonly>
-
-<div id="deliveryBox" style="display:none;">
-
-    <label>Estimated Delivery</label>
-
-    <input
-    type="text"
-    id="estimatedDelivery"
-    readonly>
-
+<div class="panel">
+<div class="panel-head">
+<h2>🛒 Place Social Service Order</h2>
+<p>Select quantity and submit your target details.</p>
 </div>
 
-<div id="quantityBox" style="display:none;">
+<div class="service-summary">
+<img id="serviceImage" alt="Service">
+<div>
+<h3 id="serviceTitle">Loading service...</h3>
+<p><strong>Service:</strong> <span id="serviceNameText">Loading...</span></p>
+<p id="serviceDescription">Loading service details...</p>
+</div>
+</div>
 
+<div class="meta-grid">
+<div class="meta">Rate<strong id="rateDisplay">৳0 / 1000</strong></div>
+<div class="meta">Minimum / Maximum<strong id="quantityLimitText">1 / 999999</strong></div>
+<div class="meta">Delivery<strong id="deliveryDisplay">—</strong></div>
+</div>
+
+<div class="form">
 <label>Quantity</label>
-
-<input
-type="number"
-id="quantity"
-min="1"
-value="1">
-
-</div>
-
-<div id="quantityLimit" style="display:none;font-size:13px;color:#22c55e;margin:8px 0;">
-
-</div>
+<input type="number" id="quantity" min="1" value="1">
+<div id="quantityLimit" class="hint"></div>
 
 <label>Total Price</label>
-
-<input
-type="text"
-id="totalPrice"
-readonly>
+<input class="total" type="text" id="totalPrice" readonly>
 
 <div id="dynamicFields"></div>
 
-<div id="dynamicFields"></div>
-
-<button id="placeOrderBtn">
-
-Place Order
-
-</button>
-
+<button class="order-btn" id="placeOrderBtn">🛒 Order Now</button>
+</div>
+</div>
 </div>
 
 <link rel="stylesheet" href="popup.css">
-
 <script src="popup.js"></script>
 <script type="module" src="user.js"></script>
-
 </body>
 </html>

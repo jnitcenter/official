@@ -337,8 +337,11 @@ SERVICE MANAGEMENT
 <label>Service Name</label>
 <input type="text" id="serviceName">
 
-<label>Price</label>
+<label>Price (legacy per unit)</label>
 <input type="number" id="servicePrice">
+
+<label>Rate per 1000 (SMM)</label>
+<input type="number" id="serviceRatePer1000" min="0" step="0.01" placeholder="e.g. 50">
 
 <label>Category</label>
 
@@ -409,13 +412,13 @@ Active
 
 <div id="apiSettings" style="display:none;">
 
-    <label>API URL</label>
+    <label>API Proxy URL</label>
     <input
         type="text"
         id="apiUrl"
-        placeholder="https://example.com/api">
+        placeholder="https://your-worker.example.workers.dev/order">
 
-    <label>API Service ID</label>
+    <label>SAFOLLOW Service ID</label>
     <input
         type="text"
         id="apiServiceId"
@@ -472,6 +475,86 @@ placeholder="🔍 Search Service...">
 
 </tbody>
 
+</table>
+
+</section>
+
+<!-- =========================
+SPECIAL SERVICES MANAGEMENT
+========================= -->
+
+<section class="service-management special-service-management">
+
+<h2>⭐ Special Services</h2>
+
+<div class="service-form">
+
+<label>Special Service Name</label>
+<input type="text" id="specialServiceName" placeholder="e.g. Premium Custom Service">
+
+<label>Price</label>
+<input type="number" id="specialServicePrice" placeholder="0">
+
+<label>Required Information</label>
+<textarea id="specialRequiredInfo" placeholder="One field per line"></textarea>
+
+<label>Description</label>
+<textarea id="specialServiceDescription" placeholder="Describe this special service"></textarea>
+
+<label>Service Image URL</label>
+<input type="text" id="specialServiceImage" placeholder="https://example.com/image.png">
+
+<label>
+    <input type="checkbox" id="specialServiceActive" checked>
+    Active
+</label>
+
+<label>
+    <input type="checkbox" id="specialEnableQuantity">
+    Enable Quantity
+</label>
+
+<div id="specialQuantitySettings" style="display:none;">
+
+<label>Minimum Quantity</label>
+<input type="number" id="specialMinimumQuantity" min="1" placeholder="e.g. 1">
+
+<label>Maximum Quantity</label>
+<input type="number" id="specialMaximumQuantity" min="1" placeholder="e.g. 10000">
+
+<label>Estimated Delivery</label>
+<input type="text" id="specialEstimatedDelivery" placeholder="e.g. 1 - 6 Hours">
+
+</div>
+
+<br>
+
+<button id="saveSpecialServiceBtn" onclick="saveSpecialService()">
+    ⭐ Add Special Service
+</button>
+
+<button id="updateSpecialServiceBtn" onclick="saveSpecialService()" style="display:none">
+    ✏️ Update Special Service
+</button>
+
+</div>
+
+<hr>
+
+<input type="text" id="specialSearchBox" placeholder="🔍 Search Special Service...">
+
+<h3>⭐ Your Special Services</h3>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Price</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="specialServiceList"></tbody>
 </table>
 
 </section>
@@ -684,6 +767,29 @@ updateDateTime();
 <!-- =========================
 MAIN ADMIN JS
 ========================= -->
+
+
+<!-- =========================
+LIVE SUPPORT CENTER
+========================= -->
+<section class="admin-orders support-admin-section">
+  <h2>🎧 Live Support</h2>
+  <div class="support-admin-layout">
+    <div id="supportChatList" class="support-chat-list">
+      <div class="support-admin-empty">No support conversations yet.</div>
+    </div>
+    <div class="support-admin-conversation">
+      <div id="supportAdminHeader" class="support-admin-header">Select a customer</div>
+      <div id="supportAdminMessages" class="support-admin-messages">
+        <div class="support-admin-empty">Select a conversation to reply.</div>
+      </div>
+      <div class="support-admin-input-row">
+        <textarea id="supportAdminInput" rows="2" placeholder="Reply to customer..."></textarea>
+        <button class="green-btn" type="button" onclick="sendAdminSupportMessage()">Reply</button>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- =========================
 ORDER DETAILS MODAL

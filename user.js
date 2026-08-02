@@ -68,11 +68,35 @@ async function loadService() {
 
         currentService = snap.data();
 
-        document.getElementById("serviceName").value =
-            currentService.name || "";
+        const serviceTitle = document.getElementById("serviceTitle");
+        const serviceNameText = document.getElementById("serviceNameText");
+        const serviceDescription = document.getElementById("serviceDescription");
+        const rateDisplay = document.getElementById("rateDisplay");
+        const deliveryDisplay = document.getElementById("deliveryDisplay");
+        const quantityLimitText = document.getElementById("quantityLimitText");
 
-        document.getElementById("price").value =
-            "৳ " + (currentService.price || 0);
+        if (serviceTitle) serviceTitle.textContent = currentService.name || "Service";
+        if (serviceNameText) serviceNameText.textContent = currentService.name || "Service";
+        if (serviceDescription) serviceDescription.textContent =
+            currentService.description || "Fast & reliable social media service.";
+
+        const ratePer1000 = Number(currentService.ratePer1000 || 0);
+        const legacyPrice = Number(currentService.price || 0);
+
+        if (rateDisplay) {
+            rateDisplay.textContent = ratePer1000 > 0
+                ? "৳ " + ratePer1000.toLocaleString() + " / 1000"
+                : "৳ " + legacyPrice.toLocaleString();
+        }
+
+        if (deliveryDisplay) {
+            deliveryDisplay.textContent = "Automatic";
+        }
+
+        const serviceImage = document.getElementById("serviceImage");
+        if (serviceImage) {
+            serviceImage.src = currentService.image || "images/no-image.png";
+        }
             
             const deliveryBox = document.getElementById("deliveryBox");
 const quantityLimit = document.getElementById("quantityLimit");
@@ -84,7 +108,7 @@ if (currentService.enableQuantity) {
     quantityLimit.style.display = "block";
 
     document.getElementById("estimatedDelivery").value =
-        currentService.estimatedDelivery || "Not Available";
+        "Automatic";
 
     quantityLimit.innerHTML =
         `Minimum: ${currentService.minimumQuantity} | Maximum: ${currentService.maximumQuantity}`;
@@ -273,7 +297,10 @@ async function placeOrder() {
     ? Number(document.getElementById("quantity").value || 1)
     : 1;
 
-const price = Number(currentService.price || 0) * quantity;
+const ratePer1000 = Number(currentService.ratePer1000 || 0);
+const price = ratePer1000 > 0
+    ? (ratePer1000 * quantity) / 1000
+    : Number(currentService.price || 0) * quantity;
 
 if (currentService.enableQuantity) {
 
@@ -316,32 +343,94 @@ if (currentService.enableQuantity) {
 
         }
 
-        // Deduct Balance
+        // ===============================
+        // AUTOMATIC API SUBMISSION
+        // ===============================
+        let apiOrderId = null;
+        let finalStatus = "Pending";
 
+        if (currentService.apiEnabled === true) {
+
+            const apiUrl = (currentService.apiUrl || "").trim();
+            const apiServiceId = String(currentService.apiServiceId || "").trim();
+
+            if (!apiUrl || !apiServiceId) {
+                showPopup(
+                    "error",
+                    "API Configuration Missing",
+                    "This service is enabled for automatic delivery, but its API settings are incomplete."
+                );
+                return;
+            }
+
+            const link = findApiLink(userInfo);
+            const comments = findApiComments(userInfo);
+
+            if (!link) {
+                showPopup(
+                    "error",
+                    "Target Link Missing",
+                    "For automatic delivery, add a required field such as Link or URL and enter the target link."
+                );
+                return;
+            }
+
+            try {
+                const apiEndpoint = /\/order$/i.test(apiUrl) ? apiUrl : apiUrl.replace(/\/$/, "") + "/order";
+
+                const apiResponse = await fetch(apiEndpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        provider: "safollow",
+                        service: apiServiceId,
+                        link: link,
+                        quantity: quantity,
+                        comments: comments || ""
+                    })
+                });
+
+                const apiData = await apiResponse.json().catch(() => ({}));
+
+                if (!apiResponse.ok || apiData.error || !apiData.order) {
+                    throw new Error(apiData.error || "Automatic API order could not be created.");
+                }
+
+                apiOrderId = String(apiData.order);
+                finalStatus = "Processing";
+
+            } catch (apiError) {
+                console.error("Automatic API error:", apiError);
+                showPopup(
+                    "error",
+                    "Automatic Order Failed",
+                    apiError.message || "The provider API did not accept this order."
+                );
+                return;
+            }
+        }
+
+        // Deduct Balance only after API submission succeeds (or for manual services).
         await updateDoc(userRef, {
-
             balance: balance - price
-
         });
 
         // Create Order
-
         await addDoc(collection(db, "orders"), {
-
             userId: user.uid,
             userEmail: user.email,
-
             serviceId: serviceId,
             serviceName: currentService.name,
             price: price,
             quantity: quantity,
-
             userInfo: userInfo,
-
-            status: "Pending",
-
+            status: finalStatus,
+            apiEnabled: currentService.apiEnabled === true,
+            apiOrderId: apiOrderId,
+            apiProxyUrl: currentService.apiUrl || "",
             createdAt: Date.now()
-
         });
         await sendNotification(
     user.uid,
@@ -396,14 +485,40 @@ for (const adminDoc of adminSnap.docs) {
 
 }
 
+
+function findApiLink(userInfo) {
+    const entries = Object.entries(userInfo || {});
+    for (const [label, value] of entries) {
+        if (/link|url|profile|target|username|user name/i.test(label) && /^https?:\/\//i.test(String(value).trim())) {
+            return String(value).trim();
+        }
+    }
+    for (const [, value] of entries) {
+        const text = String(value || "").trim();
+        if (/^https?:\/\//i.test(text)) return text;
+    }
+    return "";
+}
+
+function findApiComments(userInfo) {
+    const entries = Object.entries(userInfo || {});
+    for (const [label, value] of entries) {
+        if (/comment|comments|keyword/i.test(label)) return String(value || "").trim();
+    }
+    return "";
+}
+
 function updateTotalPrice() {
 
     if (!currentService) return;
 
     const qty = Number(document.getElementById("quantity").value || 1);
 
-    const total = Number(currentService.price || 0) * qty;
+    const ratePer1000 = Number(currentService.ratePer1000 || 0);
+    const total = ratePer1000 > 0
+        ? (ratePer1000 * qty) / 1000
+        : Number(currentService.price || 0) * qty;
 
-    document.getElementById("totalPrice").value = "৳" + total;
+    document.getElementById("totalPrice").value = "৳" + total.toFixed(2);
 
 }

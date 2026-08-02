@@ -1,0 +1,25 @@
+JN IT CENTER - SMM SOCIAL SERVICES UPDATE
+
+This update keeps the existing dashboard, wallet, orders, support, announcements,
+dark mode, Bangla/English translation, Firebase and API features.
+
+Social Services now use an SMM-style service list:
+- category filters
+- service search
+- rate per 1000 (optional)
+- minimum / maximum quantity
+- estimated delivery
+- direct Order Now button
+- SMM-style order page
+
+IMPORTANT:
+1. Existing services remain compatible. If Rate per 1000 is blank/0, the old
+   price calculation is preserved.
+2. For an SMM service, enter "Rate per 1000" in Admin > Service Management.
+3. Keep Enable Quantity ON and set Minimum/Maximum.
+4. For automatic API delivery, keep API enabled and enter the API proxy URL
+   and provider service ID as before.
+5. Custom Special Services remain separate from Social Services.
+
+
+FIXED: Service/category loading now preserves existing categories, shows legacy services, and avoids an empty All Services area when older records lack the newer active flag.

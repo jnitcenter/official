@@ -112,8 +112,8 @@ onAuthStateChanged(auth, (user) => {
             list.innerHTML = `
                 <div class="empty-notification">
                     <div class="empty-icon">🔔</div>
-                    <h4>No Notifications</h4>
-                    <p>You're all caught up.</p>
+                    <h4 data-notification-i18n="empty">No Notifications</h4>
+                    <p data-notification-i18n="caughtUp">You're all caught up.</p>
                 </div>
             `;
 
@@ -311,3 +311,20 @@ function iconByType(type){
     }
 
 }
+
+// Keep notification UI in sync with the dashboard language.
+function syncNotificationLanguage(){
+  const lang=localStorage.getItem('jn_language')||'en';
+  const count=document.getElementById('notificationCount');
+  if(count && !count.dataset.dynamic){
+    count.textContent=lang==='bn'?'০টি নোটিফিকেশন':'0 Notifications';
+  }
+  document.querySelectorAll('[data-notification-i18n="empty"]').forEach(el=>{
+    el.textContent=lang==='bn'?'কোনো নোটিফিকেশন নেই':'No Notifications';
+  });
+  document.querySelectorAll('[data-notification-i18n="caughtUp"]').forEach(el=>{
+    el.textContent=lang==='bn'?'সব নোটিফিকেশন দেখা হয়েছে।':'You\'re all caught up.';
+  });
+}
+window.addEventListener('storage',syncNotificationLanguage);
+setInterval(syncNotificationLanguage,500);

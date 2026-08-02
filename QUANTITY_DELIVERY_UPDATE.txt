@@ -1,0 +1,7 @@
+JN IT CENTER - Quantity & Delivery Update
+
+1. Services with enableQuantity=true show Min / Max on the service card.
+2. Services with enableQuantity=false do not show Min / Max.
+3. The order page shows Quantity only when enableQuantity=true.
+4. Delivery is displayed as Automatic.
+5. Existing SMM social service design, categories, search, API/live-support, dark mode and translation features are preserved.

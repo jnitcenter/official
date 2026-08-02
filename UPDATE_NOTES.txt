@@ -1,0 +1,12 @@
+JN IT CENTER - Language Translation Fix
+
+Fixed:
+1. বাংলা / English toggle now changes the dashboard UI, not only the menu.
+2. Header text, profile/logout, welcome, wallet, account, services, search, tables, notices, activity, notifications, balance popup, transaction details and live support are translated.
+3. Service "Order Now" button also follows the selected language.
+4. The language button behaves like the theme button: English mode shows "বাংলা"; after switching to Bangla it shows "English".
+5. Dark/Light Mode label stays synchronized with the selected language.
+6. Existing Firebase/API/live-support/special-service behavior is kept intact.
+
+Note:
+Custom service names and admin-entered notification messages are stored in Firebase and are not automatically machine-translated. They remain exactly as entered by the admin.
