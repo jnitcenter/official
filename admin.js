@@ -189,8 +189,7 @@ async function loadServiceCategories() {
 
             option.value = category.name;
 
-            option.textContent =
-                `${category.icon || "📦"} ${category.name}`;
+            option.textContent = category.name;
 
             select.appendChild(option);
 
@@ -1016,34 +1015,15 @@ async function loadCategories() {
             collection(db, "categories")
         );
 
-        // প্রথমবার হলে default categories তৈরি করবে
         if (snapshot.empty) {
 
             const defaultCategories = [
-                {
-                    name: "Social Media",
-                    icon: "📱"
-                },
-                {
-                    name: "Graphics Design",
-                    icon: "🎨"
-                },
-                {
-                    name: "Website",
-                    icon: "🌐"
-                },
-                {
-                    name: "AI Services",
-                    icon: "🤖"
-                },
-                {
-                    name: "Digital Services",
-                    icon: "💻"
-                },
-                {
-                    name: "Other",
-                    icon: "📦"
-                }
+                { name: "Social Media" },
+                { name: "Graphics Design" },
+                { name: "Website" },
+                { name: "AI Services" },
+                { name: "Digital Services" },
+                { name: "Other" }
             ];
 
             for (const category of defaultCategories) {
@@ -1052,16 +1032,13 @@ async function loadCategories() {
                     collection(db, "categories"),
                     {
                         name: category.name,
-                        icon: category.icon,
                         createdAt: Date.now()
                     }
                 );
 
             }
 
-            // আবার load করবে
             return loadCategories();
-
         }
 
         list.innerHTML = "";
@@ -1069,14 +1046,29 @@ async function loadCategories() {
         snapshot.forEach((categoryDoc) => {
 
             const category = categoryDoc.data();
+
             let categoryImage = String(
-                category.image || category.imageUrl || category.picture || category.categoryImage ||
-                category.iconUrl || category.iconImage || ""
+                category.image ||
+                category.imageUrl ||
+                category.picture ||
+                category.categoryImage ||
+                category.iconUrl ||
+                category.iconImage ||
+                ""
             ).trim();
-            const categoryRawIcon = String(category.icon || category.categoryIcon || "📦").trim();
-            if (!categoryImage && /^https?:\/\//i.test(categoryRawIcon)) categoryImage = categoryRawIcon;
-            const safeImage = categoryImage.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-            const safeName = String(category.name || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+            const safeImage = categoryImage
+                .replace(/&/g,"&amp;")
+                .replace(/"/g,"&quot;")
+                .replace(/</g,"&lt;")
+                .replace(/>/g,"&gt;");
+
+            const safeName = String(
+                category.name || ""
+            )
+                .replace(/&/g,"&amp;")
+                .replace(/</g,"&lt;")
+                .replace(/>/g,"&gt;");
 
             list.innerHTML += `
 
@@ -1091,31 +1083,52 @@ async function loadCategories() {
                     border-radius:10px;
                 ">
 
-                    <div style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:bold;min-width:0;">
+                    <div style="
+                        display:flex;
+                        align-items:center;
+                        gap:10px;
+                        font-size:16px;
+                        font-weight:bold;
+                        min-width:0;
+                    ">
+
                         ${
                             categoryImage
-                            ? `<img src="${safeImage}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:12px;border:1px solid #334155;background:#0f172a;" onerror="this.style.display='none'">`
-                            : `<span style="width:42px;height:42px;border-radius:12px;background:#19314a;display:grid;place-items:center;font-size:22px;">${category.icon || "📦"}</span>`
+                            ? `<img
+                                src="${safeImage}"
+                                alt=""
+                                style="
+                                    width:42px;
+                                    height:42px;
+                                    object-fit:cover;
+                                    border-radius:12px;
+                                    border:1px solid #334155;
+                                    background:#0f172a;
+                                "
+                                onerror="this.style.display='none'"
+                            >`
+                            : ""
                         }
+
                         <span>${safeName}</span>
+
                     </div>
 
-                    <div style="display:flex;gap:8px;">
+                    <div style="
+                        display:flex;
+                        gap:8px;
+                    ">
 
                         <button
                             class="action-btn"
                             onclick="editCategory('${categoryDoc.id}')">
-
                             ✏️
-
                         </button>
 
                         <button
                             class="action-btn"
                             onclick="deleteCategory('${categoryDoc.id}')">
-
                             🗑️
-
                         </button>
 
                     </div>
@@ -1137,7 +1150,6 @@ async function loadCategories() {
 
 }
 
-
 // =========================
 // ADD CATEGORY
 // =========================
@@ -1149,18 +1161,13 @@ window.saveCategory = async function () {
         .value
         .trim();
 
-    const icon =
-        document.getElementById("categoryIcon")
-        .value
-        .trim();
+    const imageInput =
+        document.getElementById("categoryImage");
 
-    let image =
-        document.getElementById("categoryImage")
-        ?.value
-        .trim() || "";
+    const image =
+        imageInput?.value.trim() || "";
 
-    if (!image && /^https?:\/\//i.test(icon)) image = icon;
-
+    // Category name required
     if (!name) {
 
         showPopup(
@@ -1170,14 +1177,13 @@ window.saveCategory = async function () {
         );
 
         return;
-
     }
 
+    // Add category to Firestore
     await addDoc(
         collection(db, "categories"),
         {
             name: name,
-            icon: (/^https?:\/\//i.test(icon) ? "📦" : (icon || "📦")),
             image: image,
             imageUrl: image,
             iconUrl: image,
@@ -1185,11 +1191,14 @@ window.saveCategory = async function () {
         }
     );
 
+    // Clear inputs
     document.getElementById("categoryName").value = "";
-    document.getElementById("categoryIcon").value = "";
-    const categoryImageInput = document.getElementById("categoryImage");
-    if (categoryImageInput) categoryImageInput.value = "";
 
+    if (imageInput) {
+        imageInput.value = "";
+    }
+
+    // Reload category list
     await loadCategories();
 
     showPopup(
@@ -1197,11 +1206,10 @@ window.saveCategory = async function () {
         "Success",
         "Category added successfully."
     );
-
 };
 
 // =========================
-// BEAUTIFUL EDIT CATEGORY
+// EDIT CATEGORY
 // =========================
 
 window.editCategory = async function (id) {
@@ -1214,18 +1222,21 @@ window.editCategory = async function (id) {
 
     const category = snap.data();
 
-    const oldName = category.name;
-    let oldIcon = String(category.icon || category.categoryIcon || "📦").trim();
-    let oldImage = String(
-        category.image || category.imageUrl || category.picture || category.categoryImage ||
-        category.iconUrl || category.iconImage || ""
+    const oldName = String(
+        category.name || ""
     ).trim();
-    if (!oldImage && /^https?:\/\//i.test(oldIcon)) {
-        oldImage = oldIcon;
-        oldIcon = "📦";
-    }
 
-    // Remove old modal if already exists
+    const oldImage = String(
+        category.image ||
+        category.imageUrl ||
+        category.picture ||
+        category.categoryImage ||
+        category.iconUrl ||
+        category.iconImage ||
+        ""
+    ).trim();
+
+    // Remove old modal
     document.getElementById("editCategoryModal")?.remove();
 
     // Create modal
@@ -1273,22 +1284,45 @@ window.editCategory = async function (id) {
                     placeholder="https://example.com/category-image.jpg"
                 >
 
-                <label>Category Icon / Emoji <small>(optional fallback)</small></label>
-
-                <input
-                    type="text"
-                    id="editCategoryIcon"
-                    value="${oldIcon.replace(/"/g, "&quot;")}"
-                    placeholder="📱"
-                    maxlength="5"
-                >
-
                 <div class="edit-category-preview">
+
                     <span>Preview</span>
 
                     <div id="editCategoryPreview">
-                        ${oldIcon} ${oldName}
+
+                        ${
+                            oldImage
+                            ? `
+                                <div style="
+                                    display:flex;
+                                    align-items:center;
+                                    gap:10px;
+                                ">
+
+                                    <img
+                                        src="${oldImage.replace(/"/g, "&quot;")}"
+                                        alt=""
+                                        style="
+                                            width:42px;
+                                            height:42px;
+                                            object-fit:cover;
+                                            border-radius:12px;
+                                            background:#19314a;
+                                        "
+                                        onerror="this.style.display='none'"
+                                    >
+
+                                    <span>${oldName}</span>
+
+                                </div>
+                            `
+                            : `
+                                <span>${oldName}</span>
+                            `
+                        }
+
                     </div>
+
                 </div>
 
                 <div class="edit-category-buttons">
@@ -1316,6 +1350,7 @@ window.editCategory = async function (id) {
 
     document.body.appendChild(modal);
 
+
     // =========================
     // ADD CSS
     // =========================
@@ -1342,142 +1377,187 @@ window.editCategory = async function (id) {
             }
 
             .edit-category-box {
-                width: 100%;
-                max-width: 430px;
-                background: #111827;
-                border: 1px solid #26364d;
-                border-radius: 22px;
-                padding: 25px;
-                box-sizing: border-box;
-                position: relative;
-                box-shadow: 0 25px 70px rgba(0,0,0,.55);
-                animation: editCategoryPop .22s ease;
-            }
-
-            @keyframes editCategoryPop {
-                from {
-                    opacity: 0;
-                    transform: scale(.92) translateY(15px);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: scale(1) translateY(0);
-                }
-            }
+    width: min(480px, 92%);
+    max-height: 82vh;
+    overflow-y: auto;
+    background: #111827;
+    border: 1px solid #334155;
+    border-radius: 24px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 25px 70px rgba(0,0,0,.5);
+}
 
             .edit-category-close {
                 position: absolute;
-                top: 14px;
-                right: 14px;
-                width: 38px;
-                height: 38px;
+                top: 26px;
+                right: 26px;
+                width: 74px;
+                height: 74px;
                 border: none;
                 border-radius: 50%;
-                background: #1f2937;
-                color: #fff;
-                font-size: 18px;
+                background: #1e293b;
+                color: white;
+                font-size: 36px;
                 cursor: pointer;
             }
 
             .edit-category-icon {
-                width: 58px;
-                height: 58px;
-                border-radius: 17px;
-                background: #22c55e;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 28px;
-                margin-bottom: 14px;
-            }
+    width: 80px;
+    height: 80px;
+    border-radius: 22px;
+    background: #22c55e;
+    display: grid;
+    place-items: center;
+    font-size: 38px;
+    margin-bottom: 20px;
+}
 
             .edit-category-box h2 {
-                color: #fff;
                 margin: 0;
-                font-size: 24px;
+                color: white;
+                font-size: 32px;
             }
 
             .edit-category-subtitle {
-                color: #94a3b8;
-                margin: 7px 0 22px;
-                font-size: 14px;
-            }
+    color: #94a3b8;
+    font-size: 17px;
+    margin: 8px 0 25px;
+}
 
             .edit-category-box label {
-                display: block;
-                color: #e5e7eb;
-                font-weight: 600;
-                margin: 15px 0 8px;
-            }
+    display: block;
+    color: #e5e7eb;
+    font-size: 17px;
+    font-weight: bold;
+    margin: 14px 0 8px;
+}
 
             .edit-category-box input {
                 width: 100%;
                 box-sizing: border-box;
-                padding: 14px;
-                border-radius: 12px;
+                padding: 15px;
+                border-radius: 16px;
                 border: 1px solid #334155;
-                outline: none;
                 background: #1e293b;
-                color: #fff;
-                font-size: 16px;
+                color: white;
+                font-size: 17px;
+                outline: none;
             }
 
             .edit-category-box input:focus {
                 border-color: #22c55e;
-                box-shadow: 0 0 0 3px rgba(34,197,94,.12);
             }
 
             .edit-category-preview {
-                margin-top: 18px;
-                padding: 13px;
-                border-radius: 13px;
+                margin-top: 15px;
+                padding: 15px;
+                border: 1px solid #334155;
+                border-radius: 20px;
                 background: #0b1220;
-                border: 1px solid #26364d;
             }
 
-            .edit-category-preview span {
+            .edit-category-preview > span {
                 display: block;
                 color: #64748b;
-                font-size: 12px;
-                margin-bottom: 6px;
+                margin-bottom: 12px;
             }
 
             #editCategoryPreview {
-                color: #fff;
-                font-size: 18px;
-                font-weight: 700;
+                color: white;
+                font-size: 22px;
+                font-weight: bold;
             }
 
             .edit-category-buttons {
                 display: flex;
-                gap: 10px;
-                margin-top: 22px;
+                gap: 18px;
+                margin-top: 30px;
             }
 
             .edit-category-buttons button {
-                flex: 1;
-                border: none;
-                padding: 14px 10px;
-                border-radius: 12px;
-                font-size: 15px;
-                font-weight: 700;
-                cursor: pointer;
-            }
+    flex: 1;
+    min-height: 58px;
+    border: none;
+    border-radius: 16px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
             .edit-category-cancel {
-                background: #1f2937;
-                color: #cbd5e1;
+                background: #1e293b;
+                color: white;
             }
 
             .edit-category-save {
                 background: #22c55e;
-                color: #fff;
+                color: white;
             }
 
-            .edit-category-save:active,
-            .edit-category-cancel:active {
-                transform: scale(.97);
+            @media (max-width: 600px) {
+
+    .edit-category-box {
+        width: 90%;
+        max-height: 82vh;
+        padding: 20px 18px;
+        border-radius: 22px;
+    }
+
+    .edit-category-close {
+        width: 52px;
+        height: 52px;
+        top: 16px;
+        right: 16px;
+        font-size: 26px;
+    }
+
+    .edit-category-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 18px;
+        font-size: 32px;
+        margin-bottom: 16px;
+    }
+
+    .edit-category-box h2 {
+        font-size: 30px;
+        line-height: 1.15;
+        margin: 0;
+    }
+
+    .edit-category-subtitle {
+        font-size: 16px;
+        margin: 7px 0 20px;
+    }
+
+    .edit-category-box label {
+        font-size: 16px;
+        margin: 12px 0 7px;
+    }
+
+    .edit-category-box input {
+        padding: 14px;
+        border-radius: 15px;
+        font-size: 16px;
+    }
+
+    .edit-category-preview {
+        margin-top: 13px;
+        padding: 13px;
+        border-radius: 16px;
+    }
+
+    .edit-category-buttons {
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .edit-category-buttons button {
+        min-height: 54px;
+        border-radius: 15px;
+        font-size: 16px;
+    }
             }
 
         `;
@@ -1485,11 +1565,13 @@ window.editCategory = async function (id) {
         document.head.appendChild(style);
     }
 
+
+    // =========================
+    // INPUTS
+    // =========================
+
     const nameInput =
         document.getElementById("editCategoryName");
-
-    const iconInput =
-        document.getElementById("editCategoryIcon");
 
     const imageInput =
         document.getElementById("editCategoryImage");
@@ -1497,9 +1579,15 @@ window.editCategory = async function (id) {
     const preview =
         document.getElementById("editCategoryPreview");
 
+
+    // =========================
+    // CLOSE MODAL
+    // =========================
+
     const closeModal = () => {
         modal.remove();
     };
+
 
     // =========================
     // LIVE PREVIEW
@@ -1508,25 +1596,42 @@ window.editCategory = async function (id) {
     function updatePreview() {
 
         const name =
-            nameInput.value.trim() || "Category Name";
-
-        const icon =
-            iconInput.value.trim() || "📦";
+            nameInput.value.trim() ||
+            "Category Name";
 
         const image =
             imageInput?.value.trim() || "";
 
         preview.innerHTML = image
-            ? `<div style="display:flex;align-items:center;gap:10px;"><img src="${image.replace(/"/g,"&quot;")}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:12px;background:#19314a;" onerror="this.style.display='none'"><span>${name}</span></div>`
-            : `${icon} ${name}`;
+            ? `
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                ">
+
+                    <img
+                        src="${image.replace(/"/g, "&quot;")}"
+                        alt=""
+                        style="
+                            width:42px;
+                            height:42px;
+                            object-fit:cover;
+                            border-radius:12px;
+                            background:#19314a;
+                        "
+                        onerror="this.style.display='none'"
+                    >
+
+                    <span>${name}</span>
+
+                </div>
+            `
+            : `<span>${name}</span>`;
     }
 
-    nameInput.addEventListener(
-        "input",
-        updatePreview
-    );
 
-    iconInput.addEventListener(
+    nameInput.addEventListener(
         "input",
         updatePreview
     );
@@ -1536,17 +1641,25 @@ window.editCategory = async function (id) {
         updatePreview
     );
 
+
     // =========================
-    // CLOSE
+    // CLOSE BUTTONS
     // =========================
 
     document
         .getElementById("editCategoryClose")
-        .addEventListener("click", closeModal);
+        .addEventListener(
+            "click",
+            closeModal
+        );
 
     document
         .getElementById("editCategoryCancel")
-        .addEventListener("click", closeModal);
+        .addEventListener(
+            "click",
+            closeModal
+        );
+
 
     // Click outside modal
     modal
@@ -1563,127 +1676,138 @@ window.editCategory = async function (id) {
 
         });
 
+
     // =========================
     // UPDATE CATEGORY
     // =========================
 
     document
         .getElementById("editCategorySave")
-        .addEventListener("click", async () => {
+        .addEventListener(
+            "click",
+            async () => {
 
-            const finalName =
-                nameInput.value.trim();
+                const finalName =
+                    nameInput.value.trim();
 
-            const enteredIcon = iconInput.value.trim();
-            let finalImage = imageInput?.value.trim() || "";
-            if (!finalImage && /^https?:\/\//i.test(enteredIcon)) finalImage = enteredIcon;
-            const finalIcon = /^https?:\/\//i.test(enteredIcon)
-                ? "📦"
-                : (enteredIcon || "📦");
+                const finalImage =
+                    imageInput?.value.trim() || "";
 
-            if (!finalName) {
 
-                showPopup(
-                    "warning",
-                    "Warning",
-                    "Please enter category name."
-                );
+                if (!finalName) {
 
-                return;
-            }
-
-            const saveButton =
-                document.getElementById(
-                    "editCategorySave"
-                );
-
-            saveButton.disabled = true;
-            saveButton.textContent =
-                "Updating...";
-
-            try {
-
-                // =========================
-                // UPDATE CATEGORY
-                // =========================
-
-                await updateDoc(
-                    doc(db, "categories", id),
-                    {
-                        name: finalName,
-                        icon: finalIcon,
-                        image: finalImage,
-                        imageUrl: finalImage,
-                        iconUrl: finalImage
-                    }
-                );
-
-                // =========================
-                // UPDATE OLD SERVICES
-                // =========================
-
-                const servicesSnap =
-                    await getDocs(
-                        collection(db, "services")
+                    showPopup(
+                        "warning",
+                        "Warning",
+                        "Please enter category name."
                     );
 
-                for (
-                    const serviceDoc
-                    of servicesSnap.docs
-                ) {
+                    return;
+                }
 
-                    const service =
-                        serviceDoc.data();
 
-                    if (
-                        service.category === oldName
-                    ) {
+                const saveButton =
+                    document.getElementById(
+                        "editCategorySave"
+                    );
 
-                        await updateDoc(
-                            doc(
+                saveButton.disabled = true;
+
+                saveButton.textContent =
+                    "Updating...";
+
+
+                try {
+
+                    // Update category
+                    await updateDoc(
+                        doc(
+                            db,
+                            "categories",
+                            id
+                        ),
+                        {
+                            name: finalName,
+                            image: finalImage,
+                            imageUrl: finalImage,
+                            iconUrl: finalImage
+                        }
+                    );
+
+
+                    // Update old services
+                    const servicesSnap =
+                        await getDocs(
+                            collection(
                                 db,
-                                "services",
-                                serviceDoc.id
-                            ),
-                            {
-                                category: finalName
-                            }
+                                "services"
+                            )
                         );
 
+
+                    for (
+                        const serviceDoc
+                        of servicesSnap.docs
+                    ) {
+
+                        const service =
+                            serviceDoc.data();
+
+                        if (
+                            service.category === oldName
+                        ) {
+
+                            await updateDoc(
+                                doc(
+                                    db,
+                                    "services",
+                                    serviceDoc.id
+                                ),
+                                {
+                                    category: finalName
+                                }
+                            );
+
+                        }
+
                     }
+
+
+                    closeModal();
+
+                    await loadCategories();
+
+
+                    showPopup(
+                        "success",
+                        "Updated",
+                        "Category and related services updated successfully."
+                    );
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    saveButton.disabled = false;
+
+                    saveButton.textContent =
+                        "✓ Update Category";
+
+
+                    showPopup(
+                        "error",
+                        "Error",
+                        error.message
+                    );
 
                 }
 
-                closeModal();
-
-                await loadCategories();
-
-                showPopup(
-                    "success",
-                    "Updated",
-                    "Category and related services updated successfully."
-                );
-
-            } catch (error) {
-
-                console.error(error);
-
-                saveButton.disabled = false;
-
-                saveButton.textContent =
-                    "✓ Update Category";
-
-                showPopup(
-                    "error",
-                    "Error",
-                    error.message
-                );
-
             }
-
-        });
+        );
 
 };
+
 
 // =========================
 // DELETE CATEGORY

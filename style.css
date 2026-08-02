@@ -525,21 +525,21 @@ body{
 
 /* ================= LOGO ================= */
 .logo-box{
-    width:190px;
-    height:190px;
+    width:auto;
+    height:auto;
     margin:0 auto 25px;
     border-radius:50%;
-    background:#0d1117;
-    border:2px solid rgba(46,204,113,.25);
+    background:transparent;
+    border:none;
     display:flex;
     justify-content:center;
     align-items:center;
-    box-shadow:0 0 25px rgba(0,0,0,.5);
+    box-shadow:none;
 }
 
 .logo-box img{
-    width:160px;
-    height:160px;
+    width:190px;
+    height:190px;
     object-fit:contain;
     border-radius:50%;
 }

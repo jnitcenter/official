@@ -86,14 +86,28 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             // Build categories independently from the currently filtered
             // service list, so all existing categories remain visible.
+            
             const categories = new Map();
 
-            sourceServices.forEach(service => {
-                const category = String(service.category || "Other").trim() || "Other";
-                const image = String(service.categoryImage || service.categoryImageUrl || "").trim();
-                const icon = String(service.categoryIcon || "📦");
-                if (!categories.has(category)) categories.set(category, { image, icon });
-            });
+sourceServices.forEach(service => {
+
+    const category =
+        String(service.category || "Other").trim() || "Other";
+
+    const image =
+        String(
+            service.categoryImage ||
+            service.categoryImageUrl ||
+            ""
+        ).trim();
+
+    if (!categories.has(category)) {
+        categories.set(category, {
+            image: image
+        });
+    }
+
+});
 
             // Also read the optional categories collection if it exists.
             // Failure is ignored so the existing services still work.
@@ -111,13 +125,13 @@ window.addEventListener("DOMContentLoaded", async () => {
                         c.image || c.imageUrl || c.picture || c.categoryImage ||
                         c.iconUrl || c.iconImage || ""
                     ).trim();
-                    const rawIcon = String(c.icon || c.categoryIcon || "📦").trim();
+                    // Customer category cards use only the image saved by
+                    // Category Management. No default emoji/icon fallback.
+                    const rawIcon = String(c.icon || c.categoryIcon || "").trim();
                     // If admin pasted an image URL into the icon field, treat it
                     // as the category picture automatically.
                     if (!image && /^https?:\/\//i.test(rawIcon)) image = rawIcon;
-                    const icon = image && /^https?:\/\//i.test(rawIcon) ? "📦" : rawIcon;
-
-                    categories.set(name, { image, icon });
+                    categories.set(name, { image });
                 });
             } catch (categoryError) {
                 console.warn("Categories collection unavailable:", categoryError);
@@ -127,21 +141,17 @@ window.addEventListener("DOMContentLoaded", async () => {
                 // Customer-facing category picker: show a compact 5-card preview
                 // first, then let the user expand to see every category. The
                 // picture always comes from Admin Category Management when set.
-                const categoryEntries = Array.from(categories.entries()).map(([category, data]) => {
-                    const count = sourceServices.filter(s => (String(s.category || "Other").trim() || "Other") === category).length;
-                    return [category, data, count];
-                });
+                const categoryEntries = Array.from(categories.entries());
 
                 const expanded = filter.dataset.expanded === "true";
-                const visibleEntries = expanded ? categoryEntries : categoryEntries.slice(0, 5);
+                const visibleEntries = expanded ? categoryEntries : categoryEntries.slice(0, 7);
 
-                const categoryCards = visibleEntries.map(([category, data, count]) => {
+                const categoryCards = visibleEntries.map(([category, data]) => {
                     const image = String(data?.image || "").trim();
-                    const icon = String(data?.icon || "📦");
                     const visual = image
-                        ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(category)}" class="category-pick-image" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('category-image-fallback-hidden');"><span class="category-pick-icon category-image-fallback-hidden">${escapeHtml(icon)}</span>`
-                        : `<span class="category-pick-icon">${escapeHtml(icon)}</span>`;
-                    return `<button type="button" class="category-btn ${activeCategory === category ? "active" : ""}" data-category="${escapeHtml(category)}" title="${escapeHtml(category)}" aria-label="${escapeHtml(category)}">${visual}<span class="category-pick-name">${escapeHtml(category)}</span><span class="category-pick-count">${count} Services</span></button>`;
+                        ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(category)}" class="category-pick-image" loading="lazy">`
+                        : "";
+                    return `<button type="button" class="category-btn ${activeCategory === category ? "active" : ""}" data-category="${escapeHtml(category)}" title="${escapeHtml(category)}" aria-label="${escapeHtml(category)}">${visual}<span class="category-pick-name">${escapeHtml(category)}</span></button>`;
                 }).join("");
 
                 // Exact customer-facing layout: five category cards first,
