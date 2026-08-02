@@ -35,17 +35,11 @@
 </div>
 
 <div class="header-right">
-  
-  <button id="notificationBtn" class="green-btn">🔔</button>
-
-<div id="liveTime"></div>
-
-    <div id="dateTime"></div>
-
-<button id="profileBtn" class="green-btn" data-i18n="profile">👤 My Profile</button>
-
-    <button id="logoutBtn" class="logout-btn" data-i18n="logout">🚪 Logout</button>
-
+    <button id="notificationBtn" class="header-icon-btn" type="button" aria-label="Notifications">
+        <span class="header-bell">🔔</span>
+        <span id="notificationBadge" class="notification-badge">0</span>
+    </button>
+    <button id="logoutBtn" class="logout-btn" type="button" data-i18n="logout">🚪 Logout</button>
 </div>
 
 </header>
@@ -90,40 +84,42 @@ SPECIAL MENU
 
 <div class="dashboard-container">
 
-<div class="dashboard-top">
+<div class="dashboard-top compact-dashboard-top">
 
-<div class="dashboard-card">
-
-<h2 data-i18n="welcome">👋 Welcome</h2>
-
-<p data-i18n="welcomeText">Welcome to JN IT CENTER Dashboard</p>
-
+<div class="dashboard-stat-card balance-stat-card">
+  <div class="stat-icon stat-icon-balance">৳</div>
+  <div class="stat-content">
+    <div class="stat-title">My Balance</div>
+    <div class="stat-value" id="userBalance">৳ 0</div>
+    <div class="stat-subtitle">Available balance</div>
+  </div>
 </div>
 
-<div class="dashboard-card">
-
-<h2 data-i18n="walletBalance">💰 Wallet Balance</h2>
-
-<h1 id="userBalance">৳ 0</h1>
-
-<button class="green-btn" onclick="openBalancePopup()">
-
-<span data-i18n="addBalance">Add Balance</span>
-
-</button>
-
+<div class="dashboard-stat-card orders-stat-card">
+  <div class="stat-icon stat-icon-orders">↗</div>
+  <div class="stat-content">
+    <div class="stat-title">Total Orders</div>
+    <div class="stat-value" id="totalUserOrders">0</div>
+    <div class="stat-subtitle">Orders placed</div>
+  </div>
 </div>
 
-<div class="dashboard-card">
+<div class="dashboard-stat-card spent-stat-card">
+  <div class="stat-icon stat-icon-spent">৳</div>
+  <div class="stat-content">
+    <div class="stat-title">My Spent</div>
+    <div class="stat-value" id="totalUserSpent">৳ 0</div>
+    <div class="stat-subtitle">Total spending</div>
+  </div>
+</div>
 
-<h2 data-i18n="myAccount">👤 My Account</h2>
-
-<p data-i18n="statusActive">Status : Active</p>
-
-<p><span data-i18n="role">Role</span> : <span id="userName">Loading...</span></p>
-
-<p><span data-i18n="panel">Panel</span> : JN IT CENTER</p>
-
+<div class="dashboard-stat-card add-balance-stat-card" id="dashboardAddBalanceCard" role="button" tabindex="0">
+  <div class="stat-icon stat-icon-add-balance">+</div>
+  <div class="stat-content">
+    <div class="stat-title">Add Balance</div>
+    <div class="support-link-text add-balance-link-text">Add Balance →</div>
+    <div class="stat-subtitle">Recharge your account</div>
+  </div>
 </div>
 
 </div>
@@ -146,7 +142,7 @@ padding:12px;
 margin:15px 0 20px;
 border:none;
 border-radius:10px;
-background:#1f2937;
+background:#0a1d31;
 color:#fff;
 font-size:16px;
 box-sizing:border-box;
@@ -328,7 +324,7 @@ ADD BALANCE POPUP
 style="
 margin:10px 0;
 padding:10px;
-background:#111827;
+background:#081829;
 border-radius:8px;
 color:#00ff66;
 font-weight:bold;

@@ -90,8 +90,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             sourceServices.forEach(service => {
                 const category = String(service.category || "Other").trim() || "Other";
+                const image = String(service.categoryImage || service.categoryImageUrl || "").trim();
                 const icon = String(service.categoryIcon || "📦");
-                if (!categories.has(category)) categories.set(category, icon);
+                if (!categories.has(category)) categories.set(category, { image, icon });
             });
 
             // Also read the optional categories collection if it exists.
@@ -101,20 +102,54 @@ window.addEventListener("DOMContentLoaded", async () => {
                 categorySnap.forEach(categoryDoc => {
                     const c = categoryDoc.data() || {};
                     const name = String(c.name || c.title || c.category || "").trim();
-                    if (name && !categories.has(name)) {
-                        categories.set(name, String(c.icon || c.categoryIcon || "📦"));
-                    }
+                    if (!name) return;
+
+                    // Category Management is the source of truth for the
+                    // customer-facing category icon/image. This intentionally
+                    // overwrites service-level fallback data when available.
+                    let image = String(
+                        c.image || c.imageUrl || c.picture || c.categoryImage ||
+                        c.iconUrl || c.iconImage || ""
+                    ).trim();
+                    const rawIcon = String(c.icon || c.categoryIcon || "📦").trim();
+                    // If admin pasted an image URL into the icon field, treat it
+                    // as the category picture automatically.
+                    if (!image && /^https?:\/\//i.test(rawIcon)) image = rawIcon;
+                    const icon = image && /^https?:\/\//i.test(rawIcon) ? "📦" : rawIcon;
+
+                    categories.set(name, { image, icon });
                 });
             } catch (categoryError) {
                 console.warn("Categories collection unavailable:", categoryError);
             }
 
             if (filter) {
-                filter.innerHTML =
-                    `<button type="button" class="category-btn ${activeCategory === "all" ? "active" : ""}" data-category="all"><span data-i18n="all">All</span></button>` +
-                    Array.from(categories.entries()).map(([category, icon]) =>
-                        `<button type="button" class="category-btn ${activeCategory === category ? "active" : ""}" data-category="${escapeHtml(category)}">${escapeHtml(icon)} ${escapeHtml(category)}</button>`
-                    ).join("");
+                // Customer-facing category picker: show a compact 5-card preview
+                // first, then let the user expand to see every category. The
+                // picture always comes from Admin Category Management when set.
+                const categoryEntries = Array.from(categories.entries()).map(([category, data]) => {
+                    const count = sourceServices.filter(s => (String(s.category || "Other").trim() || "Other") === category).length;
+                    return [category, data, count];
+                });
+
+                const expanded = filter.dataset.expanded === "true";
+                const visibleEntries = expanded ? categoryEntries : categoryEntries.slice(0, 5);
+
+                const categoryCards = visibleEntries.map(([category, data, count]) => {
+                    const image = String(data?.image || "").trim();
+                    const icon = String(data?.icon || "📦");
+                    const visual = image
+                        ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(category)}" class="category-pick-image" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling?.classList.remove('category-image-fallback-hidden');"><span class="category-pick-icon category-image-fallback-hidden">${escapeHtml(icon)}</span>`
+                        : `<span class="category-pick-icon">${escapeHtml(icon)}</span>`;
+                    return `<button type="button" class="category-btn ${activeCategory === category ? "active" : ""}" data-category="${escapeHtml(category)}" title="${escapeHtml(category)}" aria-label="${escapeHtml(category)}">${visual}<span class="category-pick-name">${escapeHtml(category)}</span><span class="category-pick-count">${count} Services</span></button>`;
+                }).join("");
+
+                // Exact customer-facing layout: five category cards first,
+                // followed by one full-width "View All Services" button.
+                // There is intentionally NO separate "All Services" card here.
+                const viewAllButton = `<button type="button" class="category-view-all-btn" id="categoryViewAllBtn" title="View All Services" aria-label="View All Services"><span class="category-all-icon">✦</span><span>View All Services</span></button>`;
+
+                filter.innerHTML = categoryCards + viewAllButton;
 
                 filter.querySelectorAll(".category-btn").forEach(btn => {
                     btn.addEventListener("click", async () => {
@@ -123,6 +158,18 @@ window.addEventListener("DOMContentLoaded", async () => {
                         await loadServices();
                     });
                 });
+
+                const viewAllBtn = document.getElementById("categoryViewAllBtn");
+                if (viewAllBtn) {
+                    viewAllBtn.addEventListener("click", async () => {
+                        // "View All Services" means show all services and expand
+                        // the category strip when more than five categories exist.
+                        filter.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
+                        filter.dataset.expanded = "true";
+                        await loadServices();
+                        document.getElementById("serviceList")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    });
+                }
             }
 
             const services = sourceServices.filter(service => {
@@ -219,6 +266,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         syncApiOrderStatuses(user.uid);
         setInterval(() => syncApiOrderStatuses(user.uid), 30000);
         loadUserBalance(user.uid);
+        loadDashboardStats(user.uid);
         loadTransactionHistory(user.uid);
 
     });
@@ -347,25 +395,69 @@ async function syncApiOrderStatuses(uid){
 }
 
 // =========================
+// DASHBOARD QUICK STATS
+// =========================
+async function loadDashboardStats(uid){
+    try {
+        const snap = await getDocs(query(collection(db, "orders"), where("userId", "==", uid)));
+        let spent = 0;
+        snap.forEach(d => {
+            const o = d.data() || {};
+            spent += Number(o.price || o.totalPrice || 0) || 0;
+        });
+        const ordersEl = document.getElementById("totalUserOrders");
+        const spentEl = document.getElementById("totalUserSpent");
+        if (ordersEl) ordersEl.innerText = snap.size.toLocaleString();
+        if (spentEl) spentEl.innerText = "৳ " + spent.toLocaleString(undefined, {maximumFractionDigits: 2});
+    } catch (e) {
+        console.warn("Dashboard stats load failed:", e);
+    }
+}
+
+// =========================
 // LOAD USER BALANCE
 // =========================
 
 async function loadUserBalance(uid){
 
     const balanceText = document.getElementById("userBalance");
-
     if(!balanceText) return;
 
-    const snap = await getDoc(doc(db,"users",uid));
+    try {
+        // Primary storage: users/{Firebase Auth UID}.
+        let userSnap = await getDoc(doc(db,"users",uid));
 
-    if(!snap.exists()) return;
+        // Backward compatibility: some older user records were saved with an
+        // auto-generated document ID and kept the UID inside a `uid` field.
+        if(!userSnap.exists()){
+            const q = query(collection(db,"users"), where("uid","==",uid));
+            const fallback = await getDocs(q);
+            if(!fallback.empty) userSnap = fallback.docs[0];
+        }
 
-    const user = snap.data();
+        // Final fallback for older records that only stored the email.
+        if(!userSnap.exists() && auth.currentUser?.email){
+            const q = query(collection(db,"users"), where("email","==",auth.currentUser.email));
+            const fallback = await getDocs(q);
+            if(!fallback.empty) userSnap = fallback.docs[0];
+        }
 
-    document.getElementById("userName").innerText =
-    user.name || "User";
+        if(!userSnap.exists()){
+            balanceText.innerText = "৳ 0";
+            return;
+        }
 
-    balanceText.innerText = "৳ " + (user.balance || 0);
+        const user = userSnap.data() || {};
+        const rawBalance = user.balance ?? user.walletBalance ?? user.currentBalance ?? user.balanceAmount ?? 0;
+        const balance = Number(rawBalance);
+        balanceText.innerText = "৳ " + (Number.isFinite(balance) ? balance.toLocaleString(undefined,{maximumFractionDigits:2}) : "0");
+
+        const userName = document.getElementById("userName");
+        if(userName) userName.innerText = user.name || "User";
+
+    } catch(error){
+        console.warn("User balance load failed:", error);
+    }
 
 }
 
@@ -985,5 +1077,18 @@ window.addEventListener("DOMContentLoaded",()=>{
     initThemeLanguage();
     document.getElementById("supportMessageInput")?.addEventListener("keydown",e=>{
         if(e.key==="Enter" && !e.shiftKey){e.preventDefault();window.sendSupportMessage();}
+    });
+});
+
+// Dashboard Add Balance quick card
+document.addEventListener("DOMContentLoaded", () => {
+    const card = document.getElementById("dashboardAddBalanceCard");
+    if (!card) return;
+    const open = () => {
+        if (typeof window.openBalancePopup === "function") window.openBalancePopup();
+    };
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
     });
 });

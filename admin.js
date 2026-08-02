@@ -1069,6 +1069,14 @@ async function loadCategories() {
         snapshot.forEach((categoryDoc) => {
 
             const category = categoryDoc.data();
+            let categoryImage = String(
+                category.image || category.imageUrl || category.picture || category.categoryImage ||
+                category.iconUrl || category.iconImage || ""
+            ).trim();
+            const categoryRawIcon = String(category.icon || category.categoryIcon || "📦").trim();
+            if (!categoryImage && /^https?:\/\//i.test(categoryRawIcon)) categoryImage = categoryRawIcon;
+            const safeImage = categoryImage.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+            const safeName = String(category.name || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
             list.innerHTML += `
 
@@ -1083,11 +1091,13 @@ async function loadCategories() {
                     border-radius:10px;
                 ">
 
-                    <div style="font-size:16px;font-weight:bold;">
-
-                        ${category.icon || "📦"}
-                        ${category.name}
-
+                    <div style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:bold;min-width:0;">
+                        ${
+                            categoryImage
+                            ? `<img src="${safeImage}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:12px;border:1px solid #334155;background:#0f172a;" onerror="this.style.display='none'">`
+                            : `<span style="width:42px;height:42px;border-radius:12px;background:#19314a;display:grid;place-items:center;font-size:22px;">${category.icon || "📦"}</span>`
+                        }
+                        <span>${safeName}</span>
                     </div>
 
                     <div style="display:flex;gap:8px;">
@@ -1144,6 +1154,13 @@ window.saveCategory = async function () {
         .value
         .trim();
 
+    let image =
+        document.getElementById("categoryImage")
+        ?.value
+        .trim() || "";
+
+    if (!image && /^https?:\/\//i.test(icon)) image = icon;
+
     if (!name) {
 
         showPopup(
@@ -1160,13 +1177,18 @@ window.saveCategory = async function () {
         collection(db, "categories"),
         {
             name: name,
-            icon: icon || "📦",
+            icon: (/^https?:\/\//i.test(icon) ? "📦" : (icon || "📦")),
+            image: image,
+            imageUrl: image,
+            iconUrl: image,
             createdAt: Date.now()
         }
     );
 
     document.getElementById("categoryName").value = "";
     document.getElementById("categoryIcon").value = "";
+    const categoryImageInput = document.getElementById("categoryImage");
+    if (categoryImageInput) categoryImageInput.value = "";
 
     await loadCategories();
 
@@ -1193,7 +1215,15 @@ window.editCategory = async function (id) {
     const category = snap.data();
 
     const oldName = category.name;
-    const oldIcon = category.icon || "📦";
+    let oldIcon = String(category.icon || category.categoryIcon || "📦").trim();
+    let oldImage = String(
+        category.image || category.imageUrl || category.picture || category.categoryImage ||
+        category.iconUrl || category.iconImage || ""
+    ).trim();
+    if (!oldImage && /^https?:\/\//i.test(oldIcon)) {
+        oldImage = oldIcon;
+        oldIcon = "📦";
+    }
 
     // Remove old modal if already exists
     document.getElementById("editCategoryModal")?.remove();
@@ -1234,7 +1264,16 @@ window.editCategory = async function (id) {
                     placeholder="Category name"
                 >
 
-                <label>Category Icon / Emoji</label>
+                <label>Category Picture URL</label>
+
+                <input
+                    type="url"
+                    id="editCategoryImage"
+                    value="${oldImage.replace(/"/g, "&quot;")}"
+                    placeholder="https://example.com/category-image.jpg"
+                >
+
+                <label>Category Icon / Emoji <small>(optional fallback)</small></label>
 
                 <input
                     type="text"
@@ -1452,6 +1491,9 @@ window.editCategory = async function (id) {
     const iconInput =
         document.getElementById("editCategoryIcon");
 
+    const imageInput =
+        document.getElementById("editCategoryImage");
+
     const preview =
         document.getElementById("editCategoryPreview");
 
@@ -1471,8 +1513,12 @@ window.editCategory = async function (id) {
         const icon =
             iconInput.value.trim() || "📦";
 
-        preview.textContent =
-            `${icon} ${name}`;
+        const image =
+            imageInput?.value.trim() || "";
+
+        preview.innerHTML = image
+            ? `<div style="display:flex;align-items:center;gap:10px;"><img src="${image.replace(/"/g,"&quot;")}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:12px;background:#19314a;" onerror="this.style.display='none'"><span>${name}</span></div>`
+            : `${icon} ${name}`;
     }
 
     nameInput.addEventListener(
@@ -1481,6 +1527,11 @@ window.editCategory = async function (id) {
     );
 
     iconInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+    imageInput?.addEventListener(
         "input",
         updatePreview
     );
@@ -1523,8 +1574,12 @@ window.editCategory = async function (id) {
             const finalName =
                 nameInput.value.trim();
 
-            const finalIcon =
-                iconInput.value.trim() || "📦";
+            const enteredIcon = iconInput.value.trim();
+            let finalImage = imageInput?.value.trim() || "";
+            if (!finalImage && /^https?:\/\//i.test(enteredIcon)) finalImage = enteredIcon;
+            const finalIcon = /^https?:\/\//i.test(enteredIcon)
+                ? "📦"
+                : (enteredIcon || "📦");
 
             if (!finalName) {
 
@@ -1556,7 +1611,10 @@ window.editCategory = async function (id) {
                     doc(db, "categories", id),
                     {
                         name: finalName,
-                        icon: finalIcon
+                        icon: finalIcon,
+                        image: finalImage,
+                        imageUrl: finalImage,
+                        iconUrl: finalImage
                     }
                 );
 

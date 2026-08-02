@@ -27,6 +27,8 @@ import {
 const panel = document.getElementById("notificationPanel");
 const list = document.getElementById("notificationList");
 const badge = document.getElementById("notificationCount");
+const headerBadge = document.getElementById("notificationBadge");
+const panelCount = document.getElementById("notificationPanelCount");
 
 const openBtn = document.getElementById("notificationBtn");
 const closeBtn = document.getElementById("closeNotification");
@@ -118,6 +120,8 @@ onAuthStateChanged(auth, (user) => {
             `;
 
             if (badge) badge.textContent = "0";
+            if (headerBadge) headerBadge.textContent = "0";
+            if (panelCount) panelCount.textContent = "0 Notifications";
             return;
 
         }
@@ -160,6 +164,8 @@ onAuthStateChanged(auth, (user) => {
         });
 
         if (badge) badge.textContent = unread;
+        if (headerBadge) headerBadge.textContent = unread;
+        if (panelCount) panelCount.textContent = unread + (unread === 1 ? " Notification" : " Notifications");
     });
 
 });
@@ -316,8 +322,14 @@ function iconByType(type){
 function syncNotificationLanguage(){
   const lang=localStorage.getItem('jn_language')||'en';
   const count=document.getElementById('notificationCount');
+  const panelCount=document.getElementById('notificationPanelCount');
+  // Header badge must remain numeric only: never show the word "Notifications" here.
   if(count && !count.dataset.dynamic){
-    count.textContent=lang==='bn'?'০টি নোটিফিকেশন':'0 Notifications';
+    count.textContent = count.textContent.match(/\d+/)?.[0] || '0';
+  }
+  if(panelCount && !panelCount.dataset.dynamic){
+    const n = parseInt(count?.textContent || '0', 10) || 0;
+    panelCount.textContent = lang==='bn' ? `${n}টি নোটিফিকেশন` : `${n} ${n === 1 ? 'Notification' : 'Notifications'}`;
   }
   document.querySelectorAll('[data-notification-i18n="empty"]').forEach(el=>{
     el.textContent=lang==='bn'?'কোনো নোটিফিকেশন নেই':'No Notifications';

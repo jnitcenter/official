@@ -34,21 +34,9 @@ HEADER
     </div>
 
     <div class="admin-header-right">
-
-        <div class="datetime-box">
-
-            <span id="liveDateTime"></span>
-
-        </div>
-        
-        <button
+<button
 id="notificationBtn"
-class="notification-btn">
-
-🔔
-<span id="notificationCount">0</span>
-
-</button>
+class="notification-btn"><span class="notification-bell" aria-label="Notifications">🔔</span><span id="notificationCount">0</span></button>
 
         <button id="logoutBtn" class="logout-btn">
             🚪 Logout
@@ -59,127 +47,82 @@ class="notification-btn">
 </header>
 
 <!-- =========================
-PROFILE
-========================= -->
-<section class="admin-profile-card">
-
-<div class="profile-left">
-
-<img src="https://i.postimg.cc/jqfFRkWQ/preview.png" alt="Logo">
-
-</div>
-
-<div class="profile-right">
-
-<h2>Administrator</h2>
-
-<p>
-<strong>Name :</strong>
-Admin
-</p>
-
-<p>
-<strong>Role :</strong>
-Super Admin
-</p>
-
-<p>
-
-<strong>Status :</strong>
-
-<span class="online">
-
-🟢 Online
-
-</span>
-
-</p>
-
-</div>
-
-</section>
-
-<!-- =========================
 STATS
 ========================= -->
 
 <section class="admin-stats">
 
-    <div class="stat-card">
-
-        <h3>👥 Users</h3>
-
-        <h1 id="totalUsers">0</h1>
-
+    <div class="stat-card stat-card-users">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+            <div class="stat-title">Users</div>
+            <div class="stat-value" id="totalUsers">0</div>
+            <div class="stat-subtitle">Registered users</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-
-        <h3>📦 Orders</h3>
-
-        <h1 id="totalOrders">0</h1>
-
+    <div class="stat-card stat-card-orders">
+        <div class="stat-icon">📦</div>
+        <div class="stat-content">
+            <div class="stat-title">Orders</div>
+            <div class="stat-value" id="totalOrders">0</div>
+            <div class="stat-subtitle">Total orders</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-
-        <h3>💰 User Balance</h3>
-
-        <h1 id="pendingBalance">৳0.00</h1>
-
+    <div class="stat-card stat-card-balance">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+            <div class="stat-title">User Balance</div>
+            <div class="stat-value" id="pendingBalance">৳0.00</div>
+            <div class="stat-subtitle">Current user balance</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-
-        <h3>🛠 Services</h3>
-
-        <h1 id="totalServices">0</h1>
-
+    <div class="stat-card stat-card-services">
+        <div class="stat-icon">🛠</div>
+        <div class="stat-content">
+            <div class="stat-title">Services</div>
+            <div class="stat-value" id="totalServices">0</div>
+            <div class="stat-subtitle">Available services</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-
-        <h3>💵 Revenue</h3>
-
-        <h1 id="totalRevenue">৳0</h1>
-
+    <div class="stat-card stat-card-revenue">
+        <div class="stat-icon">💵</div>
+        <div class="stat-content">
+            <div class="stat-title">Revenue</div>
+            <div class="stat-value" id="totalRevenue">৳0</div>
+            <div class="stat-subtitle">Total revenue</div>
+        </div>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card stat-card-today">
+        <div class="stat-icon">📅</div>
+        <div class="stat-content">
+            <div class="stat-title">Today</div>
+            <div class="stat-value" id="todayRevenue">৳0</div>
+            <div class="stat-subtitle">Today's revenue</div>
+        </div>
+    </div>
 
-    <h3>📅 Today</h3>
+    <div class="stat-card stat-card-month">
+        <div class="stat-icon">🗓</div>
+        <div class="stat-content">
+            <div class="stat-title">This Month</div>
+            <div class="stat-value" id="monthRevenue">৳0</div>
+            <div class="stat-subtitle">This month's revenue</div>
+        </div>
+    </div>
 
-    <h1 id="todayRevenue">
-
-        ৳0
-
-    </h1>
-
-</div>
-
-<div class="stat-card">
-
-    <h3>🗓 This Month</h3>
-
-    <h1 id="monthRevenue">
-
-        ৳0
-
-    </h1>
-
-</div>
-
-  <div class="stat-card">
-
-    <h3>⏳ Pending Requests</h3>
-
-    <h1 id="pendingRequests">
-
-        0
-
-    </h1>
-
-</div>  
+    <div class="stat-card stat-card-pending">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+            <div class="stat-title">Pending Requests</div>
+            <div class="stat-value" id="pendingRequests">0</div>
+            <div class="stat-subtitle">Waiting for action</div>
+        </div>
+    </div>
 
 </section>
 
@@ -575,7 +518,18 @@ CATEGORY MANAGEMENT
             id="categoryName"
             placeholder="e.g. Social Media">
 
-        <label>Category Icon / Emoji</label>
+        <label>Category Picture URL</label>
+        <input
+            type="url"
+            id="categoryImage"
+            placeholder="https://example.com/category-image.jpg"
+            autocomplete="off">
+
+        <small style="display:block;color:#94a3b8;margin:-4px 0 12px;">
+            Paste a direct image link. JPG, PNG, WEBP etc. are supported.
+        </small>
+
+        <label>Category Icon / Emoji <small>(optional fallback)</small></label>
         <input
             type="text"
             id="categoryIcon"
@@ -838,7 +792,7 @@ USER DETAILS MODAL
 
             <h3>Notifications</h3>
 
-            <small id="notificationCount">0 Notifications</small>
+            <small id="notificationPanelCount">0 Notifications</small>
 
         </div>
 
