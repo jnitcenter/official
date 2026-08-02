@@ -1,10 +1,10 @@
 JN IT CENTER - Automatic SAFOLLOW Order Setup
 
-The ZIP includes api-worker/worker.js. This keeps the SAFOLLOW API key OFF the customer website.
+The ZIP includes worker.js in the main project folder. This keeps the SAFOLLOW API key OFF the customer website.
 
 One-time free setup:
 1. Create a Cloudflare Worker (free plan is enough for light use).
-2. Paste api-worker/worker.js into the Worker and deploy it.
+2. Paste worker.js into the Worker and deploy it.
 3. Add a Worker Secret named SAFOLLOW_API_KEY and paste your SAFOLLOW API key there.
 4. Copy the deployed Worker URL, ending in /order.
 5. In Admin Panel > Service Management, enable API for a service.

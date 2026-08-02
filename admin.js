@@ -272,8 +272,7 @@ const data = {
     minimumQuantity,
     maximumQuantity,
     estimatedDelivery,
-    estimatedDelivery,
-apiEnabled,
+    apiEnabled,
 apiUrl,
 apiServiceId
 
