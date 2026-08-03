@@ -1,0 +1,6 @@
+SUB CATEGORY UPDATE
+
+The user dashboard now has an optional Sub Category box directly below the main Category picker.
+It appears only when the selected category has services with a non-empty subCategory field.
+Admin Service Management includes an optional Sub Category field saved as service.subCategory.
+Existing API/automatic order fields are preserved.

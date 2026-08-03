@@ -65,6 +65,7 @@ SPECIAL MENU
 
     <div class="special-menu-nav">
         <button class="special-menu-item" id="menuDashboardBtn" type="button">🏠 Dashboard</button>
+        <button class="special-menu-item" id="menuNewOrderBtn" type="button">🛒 New Order</button>
         <button class="special-menu-item" id="menuProfileBtn" type="button">👤 My Profile</button>
 <!-- Special services added from Admin Panel appear here directly. -->
         <div id="specialServiceMenuList" class="special-service-menu-list"></div>
@@ -112,10 +113,10 @@ SPECIAL MENU
 </div>
 
 <div class="dashboard-stat-card add-balance-stat-card" id="dashboardAddBalanceCard" role="button" tabindex="0">
-  <div class="stat-icon stat-icon-add-balance">+</div>
+  <div class="stat-icon stat-icon-add-balance">✈</div>
   <div class="stat-content">
-    <div class="stat-title">Add Balance</div>
-    <div class="support-link-text add-balance-link-text">Add Balance →</div>
+    <div class="stat-title">Telegram Support</div>
+    <div class="support-link-text add-balance-link-text">Telegram →</div>
     <div class="stat-subtitle">Recharge your account</div>
   </div>
 </div>
@@ -126,39 +127,57 @@ SPECIAL MENU
 
 <div class="dashboard-main">
 
-<section class="services-section">
+<!-- =========================
+NEW ORDER / SERVICE PICKER
+========================= -->
+<section class="services-section new-order-section" id="newOrderSection">
 
-<h2 data-i18n="allServices">🛠 All Services</h2>
+    <div class="new-order-actions">
+        <button type="button" class="new-order-main-btn" id="newOrderBtn">🛒 New Order</button>
+        <button type="button" class="new-order-balance-btn" id="newOrderBalanceBtn">▣ Addfunds</button>
+    </div>
 
-<input
-type="text"
-id="serviceSearch"
-placeholder="🔍 Search Service..." data-i18n-placeholder="searchService"
-style="
-width:100%;
-padding:12px;
-margin:15px 0 20px;
-border:none;
-border-radius:10px;
-background:#0a1d31;
-color:#fff;
-font-size:16px;
-box-sizing:border-box;
-">
-<div id="categoryFilter" style="
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-margin-bottom:20px;
-">
+    <div id="newOrderPanel" class="new-order-panel" style="display:none;">
 
-<button type="button" class="category-btn active" data-category="all">
-    <span data-i18n="all">All</span>
-</button>
+        <h2>🛒 New Order</h2>
+        <p class="new-order-help">Choose your preferred service.</p>
 
-</div>
+        <div class="new-order-field">
+            <label for="newOrderCategory">Category</label>
+            <select id="newOrderCategory">
+                <option value="">Select Category</option>
+            </select>
+        </div>
 
-<div id="serviceList"></div>
+        <div class="new-order-field" id="newOrderSubCategoryBox" style="display:none;">
+            <label for="newOrderSubCategory">Sub Category</label>
+            <select id="newOrderSubCategory">
+                <option value="">Select Sub Category</option>
+            </select>
+        </div>
+
+        <div class="new-order-field" id="newOrderServiceBox" style="display:none;">
+            <label for="newOrderService">Service</label>
+            <select id="newOrderService">
+                <option value="">Select Service</option>
+            </select>
+        </div>
+
+        <button type="button" class="new-order-continue-btn" id="newOrderContinueBtn" disabled>
+            Continue to Order →
+        </button>
+    </div>
+
+    <!-- Legacy service/filter elements are kept hidden so the existing
+         Firebase/service code and old data remain compatible. -->
+    <div id="legacyServiceArea" style="display:none;">
+        <input type="text" id="serviceSearch">
+        <div id="categoryFilter"><button type="button" class="category-btn active" data-category="all">All</button></div>
+        <div id="subCategoryBox">
+            <select id="subCategoryFilter"><option value="">Select Sub Category</option></select>
+        </div>
+        <div id="serviceList"></div>
+    </div>
 
 </section>
 

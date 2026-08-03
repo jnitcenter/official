@@ -2791,3 +2791,98 @@ body.light-mode .order-table td{
     display:block !important;
     background:#172235;
 }
+
+
+/* Sub Category box directly below the main Category picker */
+#subCategoryBox{width:100%;}
+#subCategoryBox label{color:inherit;}
+#subCategoryFilter{min-height:44px;}
+@media(max-width:768px){#subCategoryFilter{font-size:14px;padding:11px;}}
+
+
+/* =========================================
+   NEW ORDER PICKER
+   ========================================= */
+.new-order-section{
+    background:#111827;
+    border-radius:18px;
+    padding:22px;
+    margin-bottom:30px;
+}
+.new-order-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+.new-order-main-btn,
+.new-order-balance-btn{
+    width:100%;
+    min-height:52px;
+    border:0;
+    border-radius:10px;
+    color:#fff;
+    font-size:17px;
+    font-weight:700;
+    cursor:pointer;
+}
+.new-order-main-btn{background:#3b82f6;}
+.new-order-balance-btn{background:#3b82f6;}
+.new-order-main-btn:hover,
+.new-order-balance-btn:hover{filter:brightness(1.08);}
+.new-order-panel{
+    margin-top:14px;
+    padding:18px;
+    background:#0f1b2d;
+    border:1px solid #26344a;
+    border-radius:14px;
+}
+.new-order-panel h2{
+    margin:0 0 6px;
+    color:#22c55e;
+    font-size:26px;
+}
+.new-order-help{
+    margin:0 0 16px;
+    color:#94a3b8;
+    font-size:14px;
+}
+.new-order-field{margin-top:14px;}
+.new-order-field label{
+    display:block;
+    margin:0 0 7px;
+    color:#fff;
+    font-weight:700;
+}
+.new-order-field select{
+    width:100%;
+    min-height:48px;
+    padding:12px;
+    border:1px solid #334155;
+    border-radius:10px;
+    background:#172235;
+    color:#fff;
+    font-size:15px;
+    outline:none;
+}
+.new-order-field select:focus{border-color:#22c55e;}
+.new-order-continue-btn{
+    width:100%;
+    min-height:50px;
+    margin-top:18px;
+    border:0;
+    border-radius:10px;
+    background:#22c55e;
+    color:#06130b;
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+}
+.new-order-continue-btn:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+}
+@media(max-width:600px){
+    .new-order-actions{grid-template-columns:1fr 1fr;}
+    .new-order-section{padding:15px;}
+    .new-order-panel{padding:15px;}
+}

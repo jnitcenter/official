@@ -219,6 +219,7 @@ window.saveService = async function(){
     const description = document.getElementById("serviceDescription").value.trim();
     const active = document.getElementById("serviceActive").checked;
 const category = document.getElementById("serviceCategory").value;
+const subCategory = document.getElementById("serviceSubCategory")?.value.trim() || "";
 
 const image = document.getElementById("serviceImage").value.trim();
 
@@ -265,6 +266,7 @@ const data = {
     price: Number(price || 0),
     ratePer1000,
     category,
+    subCategory,
     requiredInfo,
     description,
     active,
@@ -353,6 +355,7 @@ for (const userDoc of users.docs) {
     document.getElementById("servicePrice").value="";
     if (document.getElementById("serviceRatePer1000")) document.getElementById("serviceRatePer1000").value="";
     document.getElementById("serviceCategory").value = "";
+    if (document.getElementById("serviceSubCategory")) document.getElementById("serviceSubCategory").value = "";
     document.getElementById("requiredInfo").value="";
     document.getElementById("serviceDescription").value="";
     document.getElementById("serviceActive").checked=true;
@@ -379,6 +382,7 @@ window.editService = async function(id){
     document.getElementById("servicePrice").value = service.price;
     if (document.getElementById("serviceRatePer1000")) document.getElementById("serviceRatePer1000").value = service.ratePer1000 || "";
     document.getElementById("serviceCategory").value = service.category || "";
+    if (document.getElementById("serviceSubCategory")) document.getElementById("serviceSubCategory").value = service.subCategory || service.subcategory || service.sub_category || "";
     document.getElementById("requiredInfo").value = service.requiredInfo || "";
     document.getElementById("serviceDescription").value = service.description || "";
     document.getElementById("serviceImage").value = service.image || "";

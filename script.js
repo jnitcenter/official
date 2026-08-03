@@ -137,6 +137,38 @@ sourceServices.forEach(service => {
                 console.warn("Categories collection unavailable:", categoryError);
             }
 
+            // Build the optional sub-category picker directly below the main category picker.
+            // It is populated from service.subCategory (also accepts older field spellings).
+            const subCategoryBox = document.getElementById("subCategoryBox");
+            const subCategorySelect = document.getElementById("subCategoryFilter");
+            const selectedSubCategory = String(subCategorySelect?.value || "").trim();
+            const subCategorySet = new Set();
+            if (activeCategory !== "all") {
+                sourceServices.forEach(service => {
+                    const category = String(service.category || "Other").trim() || "Other";
+                    if (category !== activeCategory) return;
+                    const sub = String(
+                        service.subCategory ?? service.subcategory ?? service.sub_category ?? ""
+                    ).trim();
+                    if (sub) subCategorySet.add(sub);
+                });
+            }
+            const subCategories = Array.from(subCategorySet).sort((a,b) => a.localeCompare(b));
+            if (subCategoryBox && subCategorySelect) {
+                if (subCategories.length) {
+                    subCategoryBox.style.display = "block";
+                    subCategorySelect.innerHTML = `<option value="">Select Sub Category</option>` +
+                        subCategories.map(sub => `<option value="${escapeHtml(sub)}">${escapeHtml(sub)}</option>`).join("");
+                    if (subCategories.includes(selectedSubCategory)) subCategorySelect.value = selectedSubCategory;
+                } else {
+                    subCategoryBox.style.display = "none";
+                    subCategorySelect.innerHTML = `<option value="">Select Sub Category</option>`;
+                }
+                subCategorySelect.onchange = async () => {
+                    await loadServices();
+                };
+            }
+
             if (filter) {
                 // Customer-facing category picker: show a compact 5-card preview
                 // first, then let the user expand to see every category. The
@@ -165,6 +197,8 @@ sourceServices.forEach(service => {
                     btn.addEventListener("click", async () => {
                         filter.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
                         btn.classList.add("active");
+                        const sub = document.getElementById("subCategoryFilter");
+                        if (sub) sub.value = "";
                         await loadServices();
                     });
                 });
@@ -182,11 +216,16 @@ sourceServices.forEach(service => {
                 }
             }
 
+            const currentSubCategory = String(document.getElementById("subCategoryFilter")?.value || "").trim();
             const services = sourceServices.filter(service => {
                 const name = String(service.name || "").toLowerCase();
                 const category = String(service.category || "Other").trim() || "Other";
+                const subCategory = String(
+                    service.subCategory ?? service.subcategory ?? service.sub_category ?? ""
+                ).trim();
                 if (searchText && !name.includes(searchText)) return false;
                 if (activeCategory !== "all" && category !== activeCategory) return false;
+                if (currentSubCategory && subCategory !== currentSubCategory) return false;
                 return true;
             });
 
@@ -249,15 +288,220 @@ sourceServices.forEach(service => {
         }
     }
 
+
+    // =====================================
+    // NEW ORDER PICKER
+    // =====================================
+    async function loadNewOrderPicker() {
+        const categorySelect = document.getElementById("newOrderCategory");
+        const subSelect = document.getElementById("newOrderSubCategory");
+        const serviceSelect = document.getElementById("newOrderService");
+        const subBox = document.getElementById("newOrderSubCategoryBox");
+        const serviceBox = document.getElementById("newOrderServiceBox");
+        const continueBtn = document.getElementById("newOrderContinueBtn");
+
+        if (!categorySelect || !subSelect || !serviceSelect) return;
+
+        let services = [];
+
+        try {
+            const snapshot = await getDocs(collection(db, "services"));
+
+            snapshot.forEach(docSnap => {
+                const service = { id: docSnap.id, ...docSnap.data() };
+                if (service.isSpecial === true) return;
+                if (service.active === false) return;
+                services.push(service);
+            });
+
+            // Keep older service records visible if all active flags are absent/false.
+            if (!services.length) {
+                snapshot.forEach(docSnap => {
+                    const service = { id: docSnap.id, ...docSnap.data() };
+                    if (service.isSpecial === true) return;
+                    services.push(service);
+                });
+            }
+
+            const categoryNames = new Set();
+
+            services.forEach(service => {
+                const name = String(service.category || "Other").trim();
+                if (name) categoryNames.add(name);
+            });
+
+            // Category Management can contain categories even before a service
+            // is assigned to them, so include those too.
+            try {
+                const categorySnap = await getDocs(collection(db, "categories"));
+                categorySnap.forEach(categoryDoc => {
+                    const c = categoryDoc.data() || {};
+                    const name = String(c.name || c.title || c.category || "").trim();
+                    if (name) categoryNames.add(name);
+                });
+            } catch (e) {
+                console.warn("Category collection unavailable:", e);
+            }
+
+            categorySelect.innerHTML =
+                `<option value="">Select Category</option>` +
+                Array.from(categoryNames)
+                    .sort((a,b) => a.localeCompare(b))
+                    .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
+                    .join("");
+
+            subSelect.innerHTML = `<option value="">Select Sub Category</option>`;
+            serviceSelect.innerHTML = `<option value="">Select Service</option>`;
+            subBox.style.display = "none";
+            serviceBox.style.display = "none";
+            continueBtn.disabled = true;
+            continueBtn.dataset.serviceId = "";
+
+            function refreshSubCategories() {
+                const category = String(categorySelect.value || "").trim();
+
+                const subs = new Set();
+                services.forEach(service => {
+                    const serviceCategory = String(service.category || "Other").trim() || "Other";
+                    const sub = String(
+                        service.subCategory ?? service.subcategory ?? service.sub_category ?? ""
+                    ).trim();
+
+                    if (category && serviceCategory === category && sub) {
+                        subs.add(sub);
+                    }
+                });
+
+                subSelect.innerHTML =
+                    `<option value="">Select Sub Category</option>` +
+                    Array.from(subs)
+                        .sort((a,b) => a.localeCompare(b))
+                        .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
+                        .join("");
+
+                if (subs.size) {
+                    // This category has sub-categories: wait for the user to choose one.
+                    subBox.style.display = "block";
+                    serviceBox.style.display = "none";
+                    serviceSelect.innerHTML = `<option value="">Select Service</option>`;
+                    continueBtn.disabled = true;
+                    continueBtn.dataset.serviceId = "";
+                } else {
+                    // This category has NO sub-category: show its services directly.
+                    subBox.style.display = "none";
+                    refreshServices();
+                }
+            }
+
+            function refreshServices() {
+                const category = String(categorySelect.value || "").trim();
+                const sub = String(subSelect.value || "").trim();
+
+                if (!category) {
+                    serviceBox.style.display = "none";
+                    continueBtn.disabled = true;
+                    continueBtn.dataset.serviceId = "";
+                    return;
+                }
+
+                const filtered = services.filter(service => {
+                    const serviceCategory = String(service.category || "Other").trim() || "Other";
+                    const serviceSub = String(
+                        service.subCategory ?? service.subcategory ?? service.sub_category ?? ""
+                    ).trim();
+
+                    if (serviceCategory !== category) return false;
+                    if (sub && serviceSub !== sub) return false;
+                    return true;
+                });
+
+                serviceSelect.innerHTML =
+                    `<option value="">Select Service</option>` +
+                    filtered
+                        .sort((a,b) => String(a.name || "").localeCompare(String(b.name || "")))
+                        .map(service => {
+                            const rate = Number(service.ratePer1000 || 0);
+                            const price = Number(service.price || 0);
+                            const priceText = rate > 0
+                                ? `৳${rate.toLocaleString()} / 1000`
+                                : `৳${price.toLocaleString()}`;
+                            return `<option value="${escapeHtml(service.id)}">${escapeHtml(service.name || "Service")} — ${priceText}</option>`;
+                        })
+                        .join("");
+
+                serviceBox.style.display = filtered.length ? "block" : "none";
+                continueBtn.disabled = true;
+                continueBtn.dataset.serviceId = "";
+            }
+
+            categorySelect.onchange = refreshSubCategories;
+            subSelect.onchange = refreshServices;
+
+            serviceSelect.onchange = () => {
+                const id = serviceSelect.value;
+                continueBtn.dataset.serviceId = id;
+                continueBtn.disabled = !id;
+            };
+
+            continueBtn.onclick = () => {
+                const id = continueBtn.dataset.serviceId;
+                if (id) window.goToOrder(id);
+            };
+
+        } catch (error) {
+            console.error("New Order picker error:", error);
+            categorySelect.innerHTML = `<option value="">Unable to load categories</option>`;
+        }
+    }
+
     function escapeHtml(value) {
         return String(value ?? "").replace(/[&<>"']/g, ch => ({
             "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
         }[ch]));
     }
 
-    // Initial service load
-    // IMPORTANT: keep the existing Firebase categories/services visible.
+    // Initial service load. The legacy service area is hidden on the
+    // homepage, but keeping this load preserves compatibility with the
+    // existing Firebase/category/service code.
     await loadServices();
+    await loadNewOrderPicker();
+
+    // New Order quick action
+    const newOrderBtn = document.getElementById("newOrderBtn");
+    const newOrderPanel = document.getElementById("newOrderPanel");
+    if (newOrderBtn && newOrderPanel) {
+        newOrderBtn.addEventListener("click", async () => {
+            const opening = newOrderPanel.style.display === "none";
+            newOrderPanel.style.display = opening ? "block" : "none";
+            if (opening) {
+                await loadNewOrderPicker();
+                newOrderPanel.scrollIntoView({behavior:"smooth", block:"start"});
+            }
+        });
+    }
+
+    // Addfunds quick action keeps the existing balance popup.
+    const newOrderBalanceBtn = document.getElementById("newOrderBalanceBtn");
+    if (newOrderBalanceBtn) {
+        newOrderBalanceBtn.addEventListener("click", () => {
+            if (typeof window.openBalancePopup === "function") window.openBalancePopup();
+            else document.getElementById("balancePopup")?.classList.add("active");
+        });
+    }
+
+    // New Order item in the side menu opens the same picker.
+    const menuNewOrderBtn = document.getElementById("menuNewOrderBtn");
+    if (menuNewOrderBtn) {
+        menuNewOrderBtn.addEventListener("click", async () => {
+            if (newOrderPanel) {
+                newOrderPanel.style.display = "block";
+                await loadNewOrderPicker();
+                newOrderPanel.scrollIntoView({behavior:"smooth", block:"start"});
+            }
+            document.getElementById("specialMenu")?.classList.remove("show");
+            document.getElementById("specialMenuOverlay")?.classList.remove("show");
+        });
+    }
 
     // Live service search
     const serviceSearch = document.getElementById("serviceSearch");
@@ -1144,15 +1388,20 @@ window.addEventListener("DOMContentLoaded",()=>{
     });
 });
 
-// Dashboard Add Balance quick card
+// Dashboard Telegram Support quick card
 document.addEventListener("DOMContentLoaded", () => {
     const card = document.getElementById("dashboardAddBalanceCard");
     if (!card) return;
-    const open = () => {
-        if (typeof window.openBalancePopup === "function") window.openBalancePopup();
+
+    const openTelegramSupport = () => {
+        window.open("https://t.me/jnitcenter", "_blank", "noopener,noreferrer");
     };
-    card.addEventListener("click", open);
+
+    card.addEventListener("click", openTelegramSupport);
     card.addEventListener("keydown", e => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openTelegramSupport();
+        }
     });
 });
