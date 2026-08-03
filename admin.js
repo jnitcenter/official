@@ -2779,9 +2779,11 @@ function loadAdminSupportChats(){
         if(!chats.length){list.innerHTML='<div class="support-admin-empty">No support conversations yet.</div>';return;}
         list.innerHTML=chats.map(c=>{
             const last=(c.messages||[]).slice(-1)[0];
-            return `<button class="support-chat-item ${adminSupportActiveId===c.id?'active':''}" data-chat-id="${c.id}" type="button">
-                <strong>${supportEsc(c.userName || c.userEmail || 'Customer')}</strong>
-                <small>${supportEsc(last?.text || 'New conversation')}</small>
+            const lastSender = last?.senderRole === 'admin' ? 'You (Admin)' : 'Customer';
+            const lastClass = last?.senderRole === 'admin' ? 'last-from-admin' : 'last-from-user';
+            return `<button class="support-chat-item ${lastClass} ${adminSupportActiveId===c.id?'active':''}" data-chat-id="${c.id}" type="button">
+                <strong>🎧 ${supportEsc(c.userName || c.userEmail || 'Customer')}</strong>
+                <small><span class="support-last-sender">${last ? supportEsc(lastSender) + ':' : ''}</span>${supportEsc(last?.text || 'New conversation')}</small>
             </button>`;
         }).join('');
         list.querySelectorAll('.support-chat-item').forEach(btn=>btn.addEventListener('click',()=>{
