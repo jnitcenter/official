@@ -2780,3 +2780,14 @@ body.light-mode .order-table th,
 body.light-mode .order-table td{
     color:#0f172a;
 }
+
+/* Special service image override */
+.special-service-menu-item .special-service-menu-icon{
+    width:42px !important;
+    height:42px !important;
+    min-width:42px !important;
+    object-fit:cover !important;
+    border-radius:8px !important;
+    display:block !important;
+    background:#172235;
+}

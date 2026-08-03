@@ -39,6 +39,108 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("profileEmail").value = data.email || "";
     document.getElementById("profilePhone").value = data.phone || "";
 
+    const savedPhoto =
+        data.profileImage ||
+        data.photoURL ||
+        data.photoUrl ||
+        data.imageUrl ||
+        "";
+
+    if (savedPhoto) {
+        document.getElementById("profileImage").src = savedPhoto;
+    }
+
+});
+
+// =========================
+// PROFILE PHOTO LINK
+// =========================
+
+const photoLinkModal = document.getElementById("photoLinkModal");
+const photoLinkInput = document.getElementById("photoLinkInput");
+const photoLinkCancel = document.getElementById("photoLinkCancel");
+const photoLinkSave = document.getElementById("photoLinkSave");
+const changePhotoBtn = document.getElementById("changePhotoBtn");
+const profileImage = document.getElementById("profileImage");
+
+changePhotoBtn.addEventListener("click", () => {
+    photoLinkInput.value = profileImage.src.includes("default-user.png")
+        ? ""
+        : profileImage.src;
+
+    photoLinkModal.classList.add("show");
+    photoLinkModal.setAttribute("aria-hidden", "false");
+    setTimeout(() => photoLinkInput.focus(), 50);
+});
+
+function closePhotoLinkModal() {
+    photoLinkModal.classList.remove("show");
+    photoLinkModal.setAttribute("aria-hidden", "true");
+}
+
+photoLinkCancel.addEventListener("click", closePhotoLinkModal);
+
+photoLinkModal.addEventListener("click", (e) => {
+    if (e.target === photoLinkModal) closePhotoLinkModal();
+});
+
+photoLinkSave.addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const url = photoLinkInput.value.trim();
+
+    if (!url) {
+        showPopup("warning", "Photo Link", "Please enter a photo link.");
+        return;
+    }
+
+    try {
+        const parsed = new URL(url);
+
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+            throw new Error("Invalid protocol");
+        }
+
+        // Test the image before saving it.
+        const testImage = new Image();
+
+        testImage.onload = async () => {
+            try {
+                await updateDoc(doc(db, "users", user.uid), {
+                    profileImage: url
+                });
+
+                profileImage.src = url;
+                closePhotoLinkModal();
+
+                showPopup(
+                    "success",
+                    "Photo Updated",
+                    "Profile photo updated successfully."
+                );
+            } catch (error) {
+                showPopup("error", "Error", error.message);
+            }
+        };
+
+        testImage.onerror = () => {
+            showPopup(
+                "error",
+                "Invalid Photo",
+                "This link does not appear to be a valid image link."
+            );
+        };
+
+        testImage.src = url;
+
+    } catch (error) {
+        showPopup(
+            "warning",
+            "Invalid Link",
+            "Please enter a valid http:// or https:// photo link."
+        );
+    }
 });
 
 // =========================

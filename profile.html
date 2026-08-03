@@ -25,10 +25,21 @@ id="profileImage"
 src="images/default-user.png"
 class="profile-image">
 
+<div id="photoLinkModal" class="photo-link-modal" aria-hidden="true">
+<div class="photo-link-box">
+<h3>🔗 Add Profile Photo</h3>
+<label for="photoLinkInput">Photo Link</label>
 <input
-type="file"
-id="photoInput"
-hidden>
+type="url"
+id="photoLinkInput"
+placeholder="https://example.com/photo.jpg"
+autocomplete="off">
+<div class="photo-link-actions">
+<button type="button" id="photoLinkCancel">Cancel</button>
+<button type="button" id="photoLinkSave">Save Photo</button>
+</div>
+</div>
+</div>
 
 <button id="changePhotoBtn">
 

@@ -827,21 +827,35 @@ async function loadSpecialServiceMenu(){
 
         snapshot.forEach(docSnap => {
             const service = { id: docSnap.id, ...docSnap.data() };
+
+            // Keep the original working condition.
             if(service.isSpecial === true && service.active !== false){
                 services.push(service);
             }
         });
 
-        list.innerHTML = services.map(service => `
+        list.innerHTML = services.map(service => {
+            const image = String(service.image || "").trim();
+
+            return `
             <button
                 type="button"
                 class="special-service-menu-item"
                 data-service-id="${service.id}"
                 title="${service.name || "Special Service"}">
-                <span class="special-service-menu-icon">⭐</span>
+                ${
+                    image
+                        ? `<img
+                            class="special-service-menu-icon"
+                            src="${image}"
+                            alt=""
+                            loading="lazy"
+                            onerror="this.style.display='none';">`
+                        : `<span class="special-service-menu-icon">⭐</span>`
+                }
                 <span class="special-service-menu-name">${service.name || "Special Service"}</span>
-            </button>
-        `).join("");
+            </button>`;
+        }).join("");
 
         list.querySelectorAll(".special-service-menu-item").forEach(button => {
             button.addEventListener("click", () => {
@@ -856,7 +870,6 @@ async function loadSpecialServiceMenu(){
         list.innerHTML = "";
     }
 }
-
 function openSpecialMenu(){
     loadSpecialServiceMenu();
     document.getElementById("specialMenu")?.classList.add("show");
@@ -887,11 +900,12 @@ document.getElementById("menuDashboardBtn")?.addEventListener("click", () => {
 
 document.getElementById("menuProfileBtn")?.addEventListener("click", () => {
     closeSpecialMenu();
-    document.getElementById("profileBtn")?.click();
-});
-
-document.getElementById("menuPlaceOrderBtn")?.addEventListener("click", () => {
-    scrollToSection("allServicesSection");
+    const profileBtn = document.getElementById("profileBtn");
+    if (profileBtn) {
+        profileBtn.click();
+    } else {
+        window.location.href = "profile.html";
+    }
 });
 
 document.getElementById("menuOrdersBtn")?.addEventListener("click", () => {

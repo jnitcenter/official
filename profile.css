@@ -97,3 +97,66 @@ body{
 .profile-card a:hover{
     text-decoration:underline;
 }
+
+.photo-link-modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.65);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:9999;
+}
+
+.photo-link-modal.show{
+    display:flex;
+}
+
+.photo-link-box{
+    width:100%;
+    max-width:420px;
+    background:#1e293b;
+    border-radius:15px;
+    padding:22px;
+    box-shadow:0 15px 40px rgba(0,0,0,.5);
+}
+
+.photo-link-box h3{
+    color:#fff;
+    margin-bottom:18px;
+    text-align:center;
+}
+
+.photo-link-box label{
+    margin-top:0;
+}
+
+.photo-link-box input{
+    margin-top:6px;
+}
+
+.photo-link-actions{
+    display:flex;
+    gap:10px;
+    margin-top:18px;
+}
+
+.photo-link-actions button{
+    flex:1;
+    padding:12px;
+    border:0;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+#photoLinkCancel{
+    background:#475569;
+    color:#fff;
+}
+
+#photoLinkSave{
+    background:#22c55e;
+    color:#fff;
+}
