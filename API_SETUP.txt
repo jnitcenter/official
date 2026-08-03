@@ -6,9 +6,9 @@ One-time free setup:
 1. Create a Cloudflare Worker (free plan is enough for light use).
 2. Paste worker.js into the Worker and deploy it.
 3. Add a Worker Secret named SAFOLLOW_API_KEY and paste your SAFOLLOW API key there.
-4. Copy the deployed Worker URL, ending in /order.
+4. Copy the deployed Worker URL. You can enter the Worker root URL or its /order URL in Admin.
 5. In Admin Panel > Service Management, enable API for a service.
-6. Put the Worker /order URL into API Proxy URL.
+6. Put the deployed Worker URL into API Proxy / Worker URL. Do NOT put https://www.safollow.com/api/v2 here.
 7. Put the SAFOLLOW Service ID into SAFOLLOW Service ID.
 8. For automatic services, make sure the service's required fields include a target Link/URL (the code automatically finds an http/https value).
 
@@ -26,3 +26,10 @@ UPDATED API KEY MODE:
 - API-enabled orders send the configured API key to the Worker, and the Worker uses it for the provider request.
 - API status checks also use the saved key.
 - IMPORTANT: this mode makes the key available to the browser/order data. It is less secure than keeping the key only as a Worker Secret. Use Worker Secret mode for production when possible.
+
+
+TROUBLESHOOTING - 'Failed to fetch'
+- This error usually means the browser could not reach the configured Worker/Proxy (wrong URL, Worker not deployed, CORS, or direct provider URL).
+- API Proxy / Worker URL must be the deployed Cloudflare Worker URL, NOT the SAFOLLOW provider URL.
+- If the Worker is deployed at https://example.workers.dev, enter that URL (the site will use /order and /status automatically).
+- After deployment, opening the Worker URL in a browser should return JSON containing ok:true.

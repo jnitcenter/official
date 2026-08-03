@@ -381,10 +381,7 @@ async function placeOrder() {
             }
 
             try {
-                const apiEndpoint =
-                    /\/order$/i.test(apiUrl)
-                        ? apiUrl
-                        : apiUrl.replace(/\/$/, "") + "/order";
+                const apiEndpoint = buildApiEndpoint(apiUrl, "order");
 
                 const apiResponse = await fetch(apiEndpoint, {
                     method: "POST",
@@ -493,6 +490,50 @@ async function placeOrder() {
 // =====================================
 // API HELPERS
 // =====================================
+
+function buildApiEndpoint(configuredUrl, action) {
+    let value = String(configuredUrl || "").trim();
+    if (!value) throw new Error("API Proxy URL is missing.");
+
+    // Allow the admin to paste either:
+    // https://worker.example.workers.dev
+    // https://worker.example.workers.dev/order
+    // https://worker.example.workers.dev/status
+    // Normalize it to the requested Worker route.
+    try {
+        const url = new URL(value);
+        if (!/^https?:$/i.test(url.protocol)) {
+            throw new Error("API Proxy URL must start with http:// or https://.");
+        }
+
+        const path = url.pathname.replace(/\/+$/, "");
+        if (/\/api\/v2$/i.test(path) || /safollow\.com$/i.test(url.hostname)) {
+            throw new Error(
+                "This is the provider API URL. Put your deployed Cloudflare Worker/Proxy URL here instead."
+            );
+        }
+
+        const cleanAction = action === "status" ? "status" : "order";
+
+        if (new RegExp("/" + cleanAction + "$", "i").test(path)) {
+            return url.toString();
+        }
+
+        // If the admin previously saved /order, status should use /status.
+        if (cleanAction === "status" && /\/order$/i.test(path)) {
+            url.pathname = path.replace(/\/order$/i, "/status");
+            return url.toString();
+        }
+
+        url.pathname = (path || "") + "/" + cleanAction;
+        return url.toString();
+    } catch (e) {
+        if (e instanceof TypeError) {
+            throw new Error("Invalid API Proxy URL.");
+        }
+        throw e;
+    }
+}
 
 function findApiLink(userInfo) {
     const entries = Object.entries(userInfo || {});

@@ -2,7 +2,7 @@ export default {
   async fetch(request, env) {
     const cors = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
     if (request.method === 'OPTIONS') return new Response('', {headers:cors});
@@ -17,13 +17,13 @@ export default {
       form.set('key', String(body.apiKey || env.SAFOLLOW_API_KEY || ''));
       if (!body.apiKey && !env.SAFOLLOW_API_KEY) return json({error:'API key is not configured'}, 500, cors);
 
-      if (url.pathname === '/order') {
+      if (url.pathname === '/order' || (url.pathname === '/' && String(body.action || 'add').toLowerCase() === 'add')) {
         form.set('action','add');
         form.set('service',String(body.service));
         form.set('link',String(body.link));
         form.set('quantity',String(body.quantity));
         if (body.comments) form.set('comments',String(body.comments));
-      } else if (url.pathname === '/status') {
+      } else if (url.pathname === '/status' || (url.pathname === '/' && String(body.action || '').toLowerCase() === 'status')) {
         form.set('action','status');
         form.set('order',String(body.order));
       } else {

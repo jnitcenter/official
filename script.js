@@ -369,8 +369,45 @@ ${
     }
 
     // =========================
-// SYNC AUTOMATIC API ORDER STATUS
-// =========================
+// Normalize the configured Worker/Proxy URL for order/status calls.
+function buildApiEndpoint(configuredUrl, action) {
+    let value = String(configuredUrl || "").trim();
+    if (!value) throw new Error("API Proxy URL is missing.");
+
+    try {
+        const url = new URL(value);
+        if (!/^https?:$/i.test(url.protocol)) {
+            throw new Error("API Proxy URL must start with http:// or https://.");
+        }
+
+        const path = url.pathname.replace(/\/+$/, "");
+
+        // A provider API URL cannot be called safely from the browser.
+        if (/\/api\/v2$/i.test(path) || /safollow\.com$/i.test(url.hostname)) {
+            throw new Error(
+                "This is the provider API URL. Put your deployed Cloudflare Worker/Proxy URL in API Proxy URL."
+            );
+        }
+
+        const cleanAction = action === "status" ? "status" : "order";
+
+        if (new RegExp("/" + cleanAction + "$", "i").test(path)) {
+            return url.toString();
+        }
+
+        if (cleanAction === "status" && /\/order$/i.test(path)) {
+            url.pathname = path.replace(/\/order$/i, "/status");
+            return url.toString();
+        }
+
+        url.pathname = (path || "") + "/" + cleanAction;
+        return url.toString();
+    } catch (e) {
+        if (e instanceof TypeError) throw new Error("Invalid API Proxy URL.");
+        throw e;
+    }
+}
+
 async function syncApiOrderStatuses(uid){
     const q = query(collection(db,"orders"), where("userId","==",uid));
     const snapshot = await getDocs(q);
@@ -379,8 +416,8 @@ async function syncApiOrderStatuses(uid){
         if (!order.apiEnabled || !order.apiOrderId || !order.apiProxyUrl) continue;
         if (["Completed","Rejected","Canceled","Partial"].includes(order.status)) continue;
         try {
-            const base = String(order.apiProxyUrl).replace(/\/$/,"");
-            const r = await fetch(base + "/status", {
+            const statusEndpoint = buildApiEndpoint(order.apiProxyUrl, "status");
+            const r = await fetch(statusEndpoint, {
                 method:"POST",
                 headers:{"Content-Type":"application/json"},
                 body:JSON.stringify({
