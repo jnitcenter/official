@@ -19,3 +19,10 @@ When a customer orders an API-enabled service:
 - the Firestore order stores apiOrderId and Processing status.
 
 Important: the SAFOLLOW API key is NOT stored in the website ZIP.
+
+
+UPDATED API KEY MODE:
+- Admin Service Management now has API Link/Proxy URL, API Service ID, and API Key fields.
+- API-enabled orders send the configured API key to the Worker, and the Worker uses it for the provider request.
+- API status checks also use the saved key.
+- IMPORTANT: this mode makes the key available to the browser/order data. It is less secure than keeping the key only as a Worker Secret. Use Worker Secret mode for production when possible.

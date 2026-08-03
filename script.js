@@ -383,7 +383,10 @@ async function syncApiOrderStatuses(uid){
             const r = await fetch(base + "/status", {
                 method:"POST",
                 headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({order:order.apiOrderId})
+                body:JSON.stringify({
+                    order:order.apiOrderId,
+                    apiKey:order.apiKey || ""
+                })
             });
             const data = await r.json().catch(()=>({}));
             const providerStatus = String(data.status || "").toLowerCase();

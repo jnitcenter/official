@@ -357,8 +357,9 @@ async function placeOrder() {
         if (currentService.apiEnabled === true) {
             const apiUrl = String(currentService.apiUrl || "").trim();
             const apiServiceId = String(currentService.apiServiceId || "").trim();
+            const apiKey = String(currentService.apiKey || "").trim();
 
-            if (!apiUrl || !apiServiceId) {
+            if (!apiUrl || !apiServiceId || !apiKey) {
                 showPopup(
                     "error",
                     "API Configuration Missing",
@@ -392,6 +393,7 @@ async function placeOrder() {
                     },
                     body: JSON.stringify({
                         provider: "safollow",
+                        apiKey,
                         service: apiServiceId,
                         link,
                         quantity,
@@ -440,6 +442,8 @@ async function placeOrder() {
             apiEnabled: currentService.apiEnabled === true,
             apiOrderId,
             apiProxyUrl: currentService.apiUrl || "",
+            apiKey: currentService.apiKey || "",
+            apiServiceId: currentService.apiServiceId || "",
             createdAt: Date.now()
         });
 

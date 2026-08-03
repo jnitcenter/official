@@ -243,6 +243,9 @@ const apiUrl =
 
 const apiServiceId =
     document.getElementById("apiServiceId").value.trim();
+
+const apiKey =
+    document.getElementById("apiKey").value.trim();
     
     if(!name || (!price && ratePer1000 <= 0)){
 
@@ -271,8 +274,9 @@ const data = {
     maximumQuantity,
     estimatedDelivery,
     apiEnabled,
-apiUrl,
-apiServiceId
+    apiUrl,
+    apiServiceId,
+    apiKey
 
 };
 
@@ -399,6 +403,9 @@ document.getElementById("apiUrl").value =
 
 document.getElementById("apiServiceId").value =
     service.apiServiceId || "";
+
+document.getElementById("apiKey").value =
+    service.apiKey || "";
 
 document.getElementById("apiSettings").style.display =
     service.apiEnabled ? "block" : "none";

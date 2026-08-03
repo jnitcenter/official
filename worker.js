@@ -9,12 +9,13 @@ export default {
     if (request.method !== 'POST') return new Response('Not found', {status:404, headers:cors});
 
     const url = new URL(request.url);
-    if (!env.SAFOLLOW_API_KEY) return json({error:'SAFOLLOW_API_KEY is not configured'}, 500, cors);
+    
 
     try {
       const body = await request.json();
       const form = new URLSearchParams();
-      form.set('key', env.SAFOLLOW_API_KEY);
+      form.set('key', String(body.apiKey || env.SAFOLLOW_API_KEY || ''));
+      if (!body.apiKey && !env.SAFOLLOW_API_KEY) return json({error:'API key is not configured'}, 500, cors);
 
       if (url.pathname === '/order') {
         form.set('action','add');
