@@ -2571,3 +2571,212 @@ select{
         font-size:6.2px !important;
     }
 }
+
+
+/* =========================================================
+   LIGHT MODE — FINAL OVERRIDES
+   These rules intentionally come LAST so the final dark-theme
+   !important rules above cannot override Light Mode.
+========================================================= */
+body.light-mode{
+    background:#f5f7fb !important;
+    color:#0f172a !important;
+}
+
+body.light-mode .dashboard-header{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border-bottom:2px solid #22c55e !important;
+}
+body.light-mode .dashboard-header .menu-btn{
+    color:#0f172a !important;
+    background:transparent !important;
+}
+body.light-mode .dashboard-header .logo-area h2{
+    color:#16a34a !important;
+}
+body.light-mode .dashboard-header .logo-area span{
+    color:#475569 !important;
+}
+body.light-mode .dashboard-header .header-icon-btn{
+    background:#f1f5f9 !important;
+    color:#0f172a !important;
+    border-color:#cbd5e1 !important;
+}
+body.light-mode .notification-badge{
+    border-color:#ffffff !important;
+}
+
+body.light-mode .dashboard-container{
+    color:#0f172a !important;
+}
+body.light-mode .dashboard-card,
+body.light-mode .services-section{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border-color:#dbe3ee !important;
+}
+body.light-mode .dashboard-card p{
+    color:#475569 !important;
+}
+body.light-mode .dashboard-stat-card{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border-color:#dbe3ee !important;
+    box-shadow:0 8px 22px rgba(15,23,42,.10) !important;
+}
+body.light-mode .dashboard-stat-card .stat-title{
+    color:#475569 !important;
+}
+body.light-mode .dashboard-stat-card .stat-value{
+    color:#0f172a !important;
+}
+body.light-mode .dashboard-stat-card .stat-subtitle{
+    color:#64748b !important;
+}
+body.light-mode .dashboard-stat-card:hover{
+    background:#f8fafc !important;
+}
+body.light-mode .dashboard-stat-card .support-link-text,
+body.light-mode .add-balance-link-text{
+    color:#16a34a !important;
+}
+
+body.light-mode #categoryFilter .category-btn{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border-color:#dbe3ee !important;
+}
+body.light-mode #categoryFilter .category-btn.active{
+    background:#ecfdf5 !important;
+    color:#166534 !important;
+    border-color:#22c55e !important;
+}
+body.light-mode #categoryFilter .category-pick-image,
+body.light-mode #categoryFilter .category-pick-icon{
+    background:#f1f5f9 !important;
+}
+body.light-mode #categoryFilter .category-pick-count{
+    color:#64748b !important;
+}
+body.light-mode #categoryFilter .category-all-btn,
+body.light-mode #categoryFilter .category-view-all-btn{
+    color:#16a34a !important;
+    border-color:#22c55e !important;
+    background:#f0fdf4 !important;
+}
+
+body.light-mode .service-card{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border:1px solid #dbe3ee !important;
+}
+body.light-mode .service-title{
+    color:#16a34a !important;
+}
+body.light-mode .service-price{
+    color:#0f172a !important;
+}
+body.light-mode .smm-service-row{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border-color:#dbe3ee !important;
+}
+body.light-mode .smm-service-row h3{
+    color:#0f172a !important;
+}
+body.light-mode .smm-service-row p,
+body.light-mode .smm-meta{
+    color:#64748b !important;
+}
+
+body.light-mode .special-menu{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border-color:#dbe3ee !important;
+    box-shadow:0 20px 60px rgba(15,23,42,.20) !important;
+}
+body.light-mode .special-menu-header{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border-color:#dbe3ee !important;
+}
+body.light-mode .special-menu-header strong{
+    color:#16a34a !important;
+}
+body.light-mode .special-menu-header span{
+    color:#64748b !important;
+}
+body.light-mode .special-menu-nav .special-menu-item{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border-color:#e2e8f0 !important;
+}
+body.light-mode .special-menu-nav .special-menu-item:hover,
+body.light-mode .special-menu-nav .special-menu-item.active{
+    background:#ecfdf5 !important;
+    color:#166534 !important;
+}
+body.light-mode .special-menu-overlay{
+    background:rgba(15,23,42,.30) !important;
+}
+
+body.light-mode .support-chat-box{
+    background:#ffffff !important;
+    color:#0f172a !important;
+    border-color:#dbe3ee !important;
+}
+body.light-mode .support-chat-header{
+    background:#ffffff !important;
+    border-color:#dbe3ee !important;
+}
+body.light-mode .support-chat-header h2{
+    color:#16a34a !important;
+}
+body.light-mode .support-chat-header small{
+    color:#64748b !important;
+}
+body.light-mode .support-messages{
+    background:#f1f5f9 !important;
+}
+body.light-mode .support-msg-bubble{
+    background:#e2e8f0 !important;
+    color:#0f172a !important;
+}
+body.light-mode .support-msg.user .support-msg-bubble{
+    background:#22c55e !important;
+    color:#052e16 !important;
+}
+body.light-mode .support-msg small{
+    color:#64748b !important;
+}
+body.light-mode .support-chat-input-row{
+    background:#ffffff !important;
+    border-color:#dbe3ee !important;
+}
+body.light-mode .support-chat-input-row textarea{
+    background:#f8fafc !important;
+    color:#0f172a !important;
+    border-color:#cbd5e1 !important;
+}
+body.light-mode .support-chat-input-row textarea::placeholder{
+    color:#64748b !important;
+}
+
+body.light-mode .modal,
+body.light-mode .popup,
+body.light-mode .modal-content{
+    color:#0f172a;
+}
+
+body.light-mode input,
+body.light-mode select,
+body.light-mode textarea{
+    color:#0f172a;
+}
+
+body.light-mode .order-table,
+body.light-mode .order-table th,
+body.light-mode .order-table td{
+    color:#0f172a;
+}

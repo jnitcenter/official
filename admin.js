@@ -2760,7 +2760,9 @@ function renderAdminSupportMessages(messages){
 function openAdminSupportChat(id, chat){
     adminSupportActiveId=id;
     document.querySelectorAll('.support-chat-item').forEach(el=>el.classList.toggle('active',el.dataset.chatId===id));
-    const header=document.getElementById('supportAdminHeader');
+    const header=document.getElementById('supportAdminHeaderText');
+    const conversation=document.querySelector('.support-admin-conversation');
+    conversation?.classList.remove('admin-support-hidden');
     if(header) header.innerHTML=`🎧 ${supportEsc(chat.userName || chat.userEmail || 'Customer')} <small style="color:#94a3b8">${supportEsc(chat.userEmail || '')}</small>`;
     if(adminSupportActiveUnsub) adminSupportActiveUnsub();
     adminSupportActiveUnsub=onSnapshot(doc(db,'supportChats',id),snap=>{
@@ -2789,6 +2791,26 @@ function loadAdminSupportChats(){
         if(!adminSupportActiveId && chats[0]) openAdminSupportChat(chats[0].id,chats[0]);
     });
 }
+
+window.closeAdminSupportChat = function(){
+    const conversation = document.querySelector('.support-admin-conversation');
+    conversation?.classList.add('admin-support-hidden');
+
+    if(adminSupportActiveUnsub){
+        adminSupportActiveUnsub();
+        adminSupportActiveUnsub = null;
+    }
+
+    adminSupportActiveId = null;
+
+    document.querySelectorAll('.support-chat-item').forEach(el => el.classList.remove('active'));
+
+    const header = document.getElementById('supportAdminHeaderText');
+    if(header) header.textContent = 'Select a customer';
+
+    const box = document.getElementById('supportAdminMessages');
+    if(box) box.innerHTML = '<div class="support-admin-empty">Select a conversation to reply.</div>';
+};
 
 window.sendAdminSupportMessage=async function(){
     const input=document.getElementById('supportAdminInput');
@@ -2822,4 +2844,5 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('supportAdminInput')?.addEventListener('keydown',e=>{
         if(e.key==='Enter' && !e.shiftKey){e.preventDefault();window.sendAdminSupportMessage();}
     });
+    document.getElementById('closeAdminSupportBtn')?.addEventListener('click', window.closeAdminSupportChat);
 });

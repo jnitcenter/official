@@ -1952,3 +1952,50 @@ align-items:center;
     .notification-btn{width:40px !important;height:40px !important;min-width:40px !important;font-size:20px !important;}
     .logout-btn{height:40px !important;min-height:40px !important;padding:0 10px !important;font-size:13px !important;}
 }
+
+
+/* =========================================================
+   ADMIN LIVE SUPPORT — CLOSE/HIDE BUTTON
+========================================================= */
+.support-admin-header{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:10px !important;
+}
+.support-admin-header > span{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.support-admin-close{
+    flex:0 0 auto;
+    width:42px;
+    height:42px;
+    border:0;
+    border-radius:10px;
+    background:transparent;
+    color:#fff;
+    font-size:28px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.support-admin-close:hover{
+    background:rgba(239,68,68,.14);
+    color:#ef4444;
+}
+.support-admin-conversation.admin-support-hidden{
+    display:none !important;
+}
+
+@media(max-width:768px){
+    .support-admin-close{
+        width:40px;
+        height:40px;
+        font-size:26px;
+    }
+}
