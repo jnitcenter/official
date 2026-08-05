@@ -296,6 +296,25 @@ sourceServices.forEach(service => {
         const categorySelect = document.getElementById("newOrderCategory");
         const subSelect = document.getElementById("newOrderSubCategory");
         const serviceSelect = document.getElementById("newOrderService");
+
+        const categoryPicker = document.getElementById("newOrderCategoryPicker");
+        const categorySelected = document.getElementById("newOrderCategorySelected");
+        const categorySelectedText = categorySelected?.querySelector(".new-order-picker-selected-text");
+        const categorySelectedIcon = categorySelected?.querySelector(".new-order-picker-selected-icon");
+        const categoryList = document.getElementById("newOrderCategoryList");
+
+        const subPicker = document.getElementById("newOrderSubCategoryPicker");
+        const subSelected = document.getElementById("newOrderSubCategorySelected");
+        const subSelectedText = subSelected?.querySelector(".new-order-picker-selected-text");
+        const subSelectedIcon = subSelected?.querySelector(".new-order-picker-selected-icon");
+        const subList = document.getElementById("newOrderSubCategoryList");
+
+        const servicePicker = document.getElementById("newOrderServicePicker");
+        const serviceSelected = document.getElementById("newOrderServiceSelected");
+        const serviceSelectedText = serviceSelected?.querySelector(".new-order-service-selected-text");
+        const serviceSelectedIcon = serviceSelected?.querySelector(".new-order-service-selected-icon");
+        const serviceList = document.getElementById("newOrderServiceList");
+
         const subBox = document.getElementById("newOrderSubCategoryBox");
         const serviceBox = document.getElementById("newOrderServiceBox");
         const continueBtn = document.getElementById("newOrderContinueBtn");
@@ -303,6 +322,7 @@ sourceServices.forEach(service => {
         if (!categorySelect || !subSelect || !serviceSelect) return;
 
         let services = [];
+        let categoryMeta = new Map();
 
         try {
             const snapshot = await getDocs(collection(db, "services"));
@@ -314,7 +334,7 @@ sourceServices.forEach(service => {
                 services.push(service);
             });
 
-            // Keep older service records visible if all active flags are absent/false.
+            // Keep older service records visible if all active flags are absent.
             if (!services.length) {
                 snapshot.forEach(docSnap => {
                     const service = { id: docSnap.id, ...docSnap.data() };
@@ -323,25 +343,31 @@ sourceServices.forEach(service => {
                 });
             }
 
-            const categoryNames = new Set();
-
-            services.forEach(service => {
-                const name = String(service.category || "Other").trim();
-                if (name) categoryNames.add(name);
-            });
-
-            // Category Management can contain categories even before a service
-            // is assigned to them, so include those too.
+            // Category images/details from the categories collection.
             try {
                 const categorySnap = await getDocs(collection(db, "categories"));
                 categorySnap.forEach(categoryDoc => {
                     const c = categoryDoc.data() || {};
                     const name = String(c.name || c.title || c.category || "").trim();
-                    if (name) categoryNames.add(name);
+                    if (!name) return;
+
+                    const image = String(
+                        c.image || c.imageUrl || c.picture || c.categoryImage ||
+                        c.iconUrl || c.iconImage || ""
+                    ).trim();
+
+                    categoryMeta.set(name, { image });
                 });
             } catch (e) {
                 console.warn("Category collection unavailable:", e);
             }
+
+            const categoryNames = new Set();
+            services.forEach(service => {
+                const name = String(service.category || "Other").trim();
+                if (name) categoryNames.add(name);
+            });
+            categoryMeta.forEach((_, name) => categoryNames.add(name));
 
             categorySelect.innerHTML =
                 `<option value="">Select Category</option>` +
@@ -350,47 +376,291 @@ sourceServices.forEach(service => {
                     .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
                     .join("");
 
-            subSelect.innerHTML = `<option value="">Select Sub Category</option>`;
-            serviceSelect.innerHTML = `<option value="">Select Service</option>`;
-            subBox.style.display = "none";
-            serviceBox.style.display = "none";
-            continueBtn.disabled = true;
-            continueBtn.dataset.serviceId = "";
+            // ---------- Shared picker helpers ----------
+            function closePicker(picker, button) {
+                picker?.classList.remove("is-open");
+                button?.setAttribute("aria-expanded", "false");
+            }
 
+            function togglePicker(picker, button) {
+                if (!picker || picker.classList.contains("is-disabled")) return;
+                const shouldOpen = !picker.classList.contains("is-open");
+
+                [categoryPicker, subPicker, servicePicker].forEach(p => p?.classList.remove("is-open"));
+                [categorySelected, subSelected, serviceSelected].forEach(b => b?.setAttribute("aria-expanded", "false"));
+
+                if (shouldOpen) {
+                    picker.classList.add("is-open");
+                    button?.setAttribute("aria-expanded", "true");
+                }
+            }
+
+            function getPlatformVisual(category, image = "") {
+                const img = String(image || "").trim();
+                if (img) {
+                    return `<img src="${escapeHtml(img)}" alt="" class="new-order-picker-row-icon" loading="lazy">`;
+                }
+
+                const value = String(category || "").toLowerCase();
+                if (value.includes("facebook")) return `<span class="new-order-picker-row-icon emoji-icon">f</span>`;
+                if (value.includes("instagram")) return `<span class="new-order-picker-row-icon emoji-icon">◎</span>`;
+                if (value.includes("youtube")) return `<span class="new-order-picker-row-icon emoji-icon">▶</span>`;
+                if (value.includes("telegram")) return `<span class="new-order-picker-row-icon emoji-icon">➤</span>`;
+                if (value.includes("tiktok")) return `<span class="new-order-picker-row-icon emoji-icon">♪</span>`;
+                if (value.includes("premium")) return `<span class="new-order-picker-row-icon emoji-icon">♛</span>`;
+                return `<span class="new-order-picker-row-icon emoji-icon">★</span>`;
+            }
+
+            function getServiceVisual(service) {
+                const image = String(
+                    service.image || service.serviceImage || service.iconUrl ||
+                    service.categoryImage || service.categoryImageUrl || ""
+                ).trim();
+
+                if (image) {
+                    return `<img src="${escapeHtml(image)}" alt="" class="new-order-service-row-icon" loading="lazy">`;
+                }
+                return getPlatformVisual(service.category, "");
+                    }
+
+            function setCategorySelected(name) {
+                categorySelect.value = name || "";
+                if (categorySelectedText) categorySelectedText.textContent = name || "Select Category";
+                if (categorySelectedIcon) {
+                    categorySelectedIcon.innerHTML = getPlatformVisual(name, categoryMeta.get(name)?.image || "");
+                }
+                closePicker(categoryPicker, categorySelected);
+            }
+
+            function setSubSelected(name, options = {}) {
+                const noSub = options.noSub === true;
+                subSelect.value = noSub ? "" : (name || "");
+
+                if (subSelectedText) {
+                    subSelectedText.textContent = noSub ? "No Sub Category" : (name || "Select Sub Category");
+                }
+                if (subSelectedIcon) {
+                    subSelectedIcon.innerHTML = noSub
+                        ? `<span class="new-order-picker-row-icon emoji-icon">—</span>`
+                        : getPlatformVisual(options.category || categorySelect.value, options.image || "");
+                }
+                closePicker(subPicker, subSelected);
+            }
+
+            function setSelectedService(service) {
+                if (!service) {
+                    serviceSelect.value = "";
+                    continueBtn.dataset.serviceId = "";
+                    continueBtn.disabled = true;
+                    if (serviceSelectedText) serviceSelectedText.textContent = "Select Service";
+                    if (serviceSelectedIcon) serviceSelectedIcon.innerHTML = "🛒";
+                    serviceList?.querySelectorAll(".new-order-service-row").forEach(row => row.classList.remove("selected"));
+                    closePicker(servicePicker, serviceSelected);
+                    return;
+                }
+
+                serviceSelect.value = service.id;
+                continueBtn.dataset.serviceId = service.id;
+                continueBtn.disabled = false;
+
+                if (serviceSelectedText) {
+                    serviceSelectedText.textContent = `ID: ${service.serviceId || service.id} — ${service.name || "Service"}`;
+                }
+                if (serviceSelectedIcon) {
+                    serviceSelectedIcon.innerHTML = getServiceVisual(service);
+                }
+
+                serviceList?.querySelectorAll(".new-order-service-row").forEach(row => {
+                    row.classList.toggle("selected", row.dataset.serviceId === service.id);
+                });
+
+                // IMPORTANT: after selecting a service, show ONLY the selected service.
+                closePicker(servicePicker, serviceSelected);
+            }
+
+            // ---------- Category picker ----------
+            function renderCategoryList() {
+                if (!categoryList) return;
+
+                categoryList.innerHTML = Array.from(categoryNames)
+                    .sort((a,b) => a.localeCompare(b))
+                    .map(category => {
+                        const count = services.filter(s =>
+                            String(s.category || "Other").trim() === category
+                        ).length;
+
+                        return `
+                            <button type="button" class="new-order-picker-row" data-category="${escapeHtml(category)}">
+                                <span class="new-order-picker-row-left">
+                                    ${getPlatformVisual(category, categoryMeta.get(category)?.image || "")}
+                                    <span class="new-order-picker-row-info">
+                                        <span class="new-order-picker-row-name">${escapeHtml(category)}</span>
+                                        <span class="new-order-picker-row-meta">${count} service${count === 1 ? "" : "s"}</span>
+                                    </span>
+                                </span>
+                            </button>`;
+                    }).join("");
+
+                categoryList.querySelectorAll(".new-order-picker-row").forEach(row => {
+                    row.addEventListener("click", () => {
+                        const category = row.dataset.category || "";
+                        setCategorySelected(category);
+                        refreshSubCategories();
+                    });
+                });
+            }
+
+            // ---------- Sub Category picker ----------
             function refreshSubCategories() {
                 const category = String(categorySelect.value || "").trim();
 
-                const subs = new Set();
+                subSelect.value = "";
+                serviceSelect.value = "";
+                continueBtn.dataset.serviceId = "";
+                continueBtn.disabled = true;
+
+                setSubSelected("");
+                closePicker(subPicker, subSelected);
+                closePicker(servicePicker, serviceSelected);
+
+                if (!category) {
+                    subPicker?.classList.add("is-disabled");
+                    subSelect.disabled = true;
+                    subSelect.innerHTML = `<option value="">Select Sub Category</option>`;
+                    if (subSelectedText) subSelectedText.textContent = "Select Sub Category";
+                    if (subSelectedIcon) subSelectedIcon.innerHTML = "★";
+
+                    serviceSelect.disabled = true;
+                    serviceSelect.innerHTML = `<option value="">Select Service</option>`;
+                    if (serviceList) serviceList.innerHTML = `<div class="new-order-service-empty">Select a Category first.</div>`;
+                    setSelectedService(null);
+                    return;
+                }
+
+                const subs = new Map();
                 services.forEach(service => {
                     const serviceCategory = String(service.category || "Other").trim() || "Other";
                     const sub = String(
                         service.subCategory ?? service.subcategory ?? service.sub_category ?? ""
                     ).trim();
 
-                    if (category && serviceCategory === category && sub) {
-                        subs.add(sub);
-                    }
+                    if (serviceCategory !== category || !sub) return;
+                    if (!subs.has(sub)) subs.set(sub, service);
                 });
 
+                subBox.style.display = "block";
+                serviceBox.style.display = "block";
+
+                if (!subs.size) {
+                    // Keep the box visible even when the category has no sub-category.
+                    subSelect.disabled = true;
+                    subSelect.innerHTML = `<option value="">No Sub Category</option>`;
+                    subPicker?.classList.add("is-disabled");
+                    if (subSelectedText) subSelectedText.textContent = "No Sub Category";
+                    if (subSelectedIcon) subSelectedIcon.innerHTML = `<span class="new-order-picker-row-icon emoji-icon">—</span>`;
+                    refreshServices();
+                    return;
+                }
+
+                subSelect.disabled = false;
+                subPicker?.classList.remove("is-disabled");
+
+                const sortedSubs = Array.from(subs.keys()).sort((a,b) => a.localeCompare(b));
                 subSelect.innerHTML =
                     `<option value="">Select Sub Category</option>` +
-                    Array.from(subs)
-                        .sort((a,b) => a.localeCompare(b))
-                        .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
-                        .join("");
+                    sortedSubs.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
 
-                if (subs.size) {
-                    // This category has sub-categories: wait for the user to choose one.
-                    subBox.style.display = "block";
-                    serviceBox.style.display = "none";
-                    serviceSelect.innerHTML = `<option value="">Select Service</option>`;
-                    continueBtn.disabled = true;
-                    continueBtn.dataset.serviceId = "";
-                } else {
-                    // This category has NO sub-category: show its services directly.
-                    subBox.style.display = "none";
-                    refreshServices();
+                subList.innerHTML = sortedSubs.map(sub => {
+                    const matching = services.filter(service => {
+                        const serviceCategory = String(service.category || "Other").trim() || "Other";
+                        const serviceSub = String(
+                            service.subCategory ?? service.subcategory ?? service.sub_category ?? ""
+                        ).trim();
+                        return serviceCategory === category && serviceSub === sub;
+                    });
+                    const representative = matching[0] || {};
+                    return `
+                        <button type="button" class="new-order-picker-row" data-sub-category="${escapeHtml(sub)}">
+                            <span class="new-order-picker-row-left">
+                                ${getPlatformVisual(category, representative.image || representative.serviceImage || "")}
+                                <span class="new-order-picker-row-info">
+                                    <span class="new-order-picker-row-name">${escapeHtml(sub)}</span>
+                                    <span class="new-order-picker-row-meta">${matching.length} service${matching.length === 1 ? "" : "s"}</span>
+                                </span>
+                            </span>
+                        </button>`;
+                }).join("");
+
+                subList.querySelectorAll(".new-order-picker-row").forEach(row => {
+                    row.addEventListener("click", () => {
+                        const sub = row.dataset.subCategory || "";
+                        setSubSelected(sub, { category });
+                        refreshServices();
+                    });
+                });
+
+                serviceSelect.disabled = true;
+                serviceSelect.innerHTML = `<option value="">Select Service</option>`;
+                if (serviceList) serviceList.innerHTML = `<div class="new-order-service-empty">Select a Sub Category first.</div>`;
+            }
+
+            // ---------- Service picker ----------
+            function renderServiceList(filtered) {
+                if (!serviceList) return;
+
+                if (!filtered.length) {
+                    serviceList.innerHTML = `<div class="new-order-service-empty">No services found for this selection.</div>`;
+                    serviceSelect.disabled = true;
+                    setSelectedService(null);
+                    return;
                 }
+
+                serviceSelect.disabled = false;
+                serviceSelect.innerHTML =
+                    `<option value="">Select Service</option>` +
+                    filtered.map(service =>
+                        `<option value="${escapeHtml(service.id)}">${escapeHtml(service.name || "Service")}</option>`
+                    ).join("");
+
+                serviceList.innerHTML = filtered.map(service => {
+                    const sub = String(
+                        service.subCategory ?? service.subcategory ?? service.sub_category ?? ""
+                    ).trim();
+                    const category = String(service.category || "Other").trim() || "Other";
+                    const rate = Number(service.ratePer1000 || 0);
+                    const price = Number(service.price || 0);
+                    const priceText = rate > 0
+                        ? `৳${rate.toLocaleString()} / 1000`
+                        : `৳${price.toLocaleString()}`;
+
+                    return `
+                        <button type="button"
+                            class="new-order-service-row"
+                            data-service-id="${escapeHtml(service.id)}">
+                            <span class="new-order-service-row-left">
+                                ${getServiceVisual(service)}
+                                <span class="new-order-service-row-info">
+                                    <span class="new-order-service-row-name">${escapeHtml(service.name || "Unnamed Service")}</span>
+                                    <span class="new-order-service-row-id">ID: ${escapeHtml(service.serviceId || service.id)}</span>
+                                    ${sub
+                                        ? `<span class="new-order-service-row-sub">${escapeHtml(category)} → ${escapeHtml(sub)}</span>`
+                                        : `<span class="new-order-service-row-sub">${escapeHtml(category)}</span>`}
+                                </span>
+                            </span>
+                            <span class="new-order-service-row-price">${escapeHtml(priceText)}</span>
+                        </button>`;
+                }).join("");
+
+                serviceList.querySelectorAll(".new-order-service-row").forEach(row => {
+                    row.addEventListener("click", () => {
+                        const service = filtered.find(item => item.id === row.dataset.serviceId);
+                        setSelectedService(service);
+                    });
+                });
+
+                // Do not keep the list open. User opens it by clicking the selected box.
+                closePicker(servicePicker, serviceSelected);
+                setSelectedService(null);
             }
 
             function refreshServices() {
@@ -398,9 +668,16 @@ sourceServices.forEach(service => {
                 const sub = String(subSelect.value || "").trim();
 
                 if (!category) {
-                    serviceBox.style.display = "none";
-                    continueBtn.disabled = true;
-                    continueBtn.dataset.serviceId = "";
+                    subBox.style.display = "block";
+                    serviceBox.style.display = "block";
+                    subSelect.disabled = true;
+                    serviceSelect.disabled = true;
+                    subSelect.innerHTML = `<option value="">Select Sub Category</option>`;
+                    serviceSelect.innerHTML = `<option value="">Select Service</option>`;
+                    if (subSelectedText) subSelectedText.textContent = "Select Sub Category";
+                    if (subSelectedIcon) subSelectedIcon.innerHTML = "★";
+                    if (serviceList) serviceList.innerHTML = `<div class="new-order-service-empty">Select a Category first.</div>`;
+                    setSelectedService(null);
                     return;
                 }
 
@@ -413,35 +690,75 @@ sourceServices.forEach(service => {
                     if (serviceCategory !== category) return false;
                     if (sub && serviceSub !== sub) return false;
                     return true;
-                });
+                }).sort((a,b) => String(a.name || "").localeCompare(String(b.name || "")));
 
-                serviceSelect.innerHTML =
-                    `<option value="">Select Service</option>` +
-                    filtered
-                        .sort((a,b) => String(a.name || "").localeCompare(String(b.name || "")))
-                        .map(service => {
-                            const rate = Number(service.ratePer1000 || 0);
-                            const price = Number(service.price || 0);
-                            const priceText = rate > 0
-                                ? `৳${rate.toLocaleString()} / 1000`
-                                : `৳${price.toLocaleString()}`;
-                            return `<option value="${escapeHtml(service.id)}">${escapeHtml(service.name || "Service")} — ${priceText}</option>`;
-                        })
-                        .join("");
-
-                serviceBox.style.display = filtered.length ? "block" : "none";
-                continueBtn.disabled = true;
-                continueBtn.dataset.serviceId = "";
+                serviceBox.style.display = "block";
+                renderServiceList(filtered);
             }
 
-            categorySelect.onchange = refreshSubCategories;
-            subSelect.onchange = refreshServices;
+            // Initial state: all three boxes are visible, but their lists are closed.
+            subBox.style.display = "block";
+            serviceBox.style.display = "block";
+            subPicker?.classList.add("is-disabled");
+            subSelect.disabled = true;
+            serviceSelect.disabled = true;
+            continueBtn.disabled = true;
+            continueBtn.dataset.serviceId = "";
+
+            if (categorySelectedText) categorySelectedText.textContent = "Select Category";
+            if (categorySelectedIcon) categorySelectedIcon.innerHTML = "★";
+            if (subSelectedText) subSelectedText.textContent = "Select Sub Category";
+            if (subSelectedIcon) subSelectedIcon.innerHTML = "★";
+            if (serviceSelectedText) serviceSelectedText.textContent = "Select Service";
+            if (serviceSelectedIcon) serviceSelectedIcon.innerHTML = "🛒";
+
+            renderCategoryList();
+
+            categorySelected?.addEventListener("click", (event) => {
+                event.stopPropagation();
+                togglePicker(categoryPicker, categorySelected);
+            });
+
+            subSelected?.addEventListener("click", (event) => {
+                event.stopPropagation();
+                togglePicker(subPicker, subSelected);
+            });
+
+            serviceSelected?.addEventListener("click", (event) => {
+                event.stopPropagation();
+                togglePicker(servicePicker, serviceSelected);
+            });
+
+            categorySelect.onchange = () => {
+                setCategorySelected(categorySelect.value);
+                refreshSubCategories();
+            };
+
+            subSelect.onchange = () => {
+                const value = String(subSelect.value || "").trim();
+                if (value) setSubSelected(value, { category: categorySelect.value });
+                refreshServices();
+            };
 
             serviceSelect.onchange = () => {
                 const id = serviceSelect.value;
-                continueBtn.dataset.serviceId = id;
-                continueBtn.disabled = !id;
+                const selected = services.find(service => service.id === id);
+                setSelectedService(selected || null);
             };
+
+            // Close all open pickers when clicking outside.
+            if (!window.__newOrderPickerOutsideHandler) {
+                window.__newOrderPickerOutsideHandler = (event) => {
+                    const inside = event.target.closest?.(
+                        "#newOrderCategoryPicker, #newOrderSubCategoryPicker, #newOrderServicePicker"
+                    );
+                    if (inside) return;
+
+                    [categoryPicker, subPicker, servicePicker].forEach(p => p?.classList.remove("is-open"));
+                    [categorySelected, subSelected, serviceSelected].forEach(b => b?.setAttribute("aria-expanded", "false"));
+                };
+                document.addEventListener("click", window.__newOrderPickerOutsideHandler);
+            }
 
             continueBtn.onclick = () => {
                 const id = continueBtn.dataset.serviceId;
@@ -450,6 +767,7 @@ sourceServices.forEach(service => {
 
         } catch (error) {
             console.error("New Order picker error:", error);
+            if (categoryList) categoryList.innerHTML = `<div class="new-order-picker-empty">Unable to load categories.</div>`;
             categorySelect.innerHTML = `<option value="">Unable to load categories</option>`;
         }
     }
@@ -470,13 +788,13 @@ sourceServices.forEach(service => {
     const newOrderBtn = document.getElementById("newOrderBtn");
     const newOrderPanel = document.getElementById("newOrderPanel");
     if (newOrderBtn && newOrderPanel) {
+        // New Order picker stays visible on the homepage.
+        // Clicking the button simply refreshes the picker and scrolls to it.
+        newOrderPanel.style.display = "block";
         newOrderBtn.addEventListener("click", async () => {
-            const opening = newOrderPanel.style.display === "none";
-            newOrderPanel.style.display = opening ? "block" : "none";
-            if (opening) {
-                await loadNewOrderPicker();
-                newOrderPanel.scrollIntoView({behavior:"smooth", block:"start"});
-            }
+            newOrderPanel.style.display = "block";
+            await loadNewOrderPicker();
+            newOrderPanel.scrollIntoView({behavior:"smooth", block:"start"});
         });
     }
 

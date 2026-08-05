@@ -96,6 +96,7 @@ return;
 });
 
 let editId = null;
+let subCategoryEditId = null;
 // ===============================
 // LOAD SERVICES
 // ===============================
@@ -120,8 +121,12 @@ async function loadServiceList(){
         <tr>
 
         <td>
+            <code class="service-id-cell">${service.serviceId || serviceDoc.id}</code>
+        </td>
+
+        <td>
     <img
-        src="${service.image}"
+        src="${service.image || 'images/no-image.png'}"
         style="
             width:60px;
             height:60px;
@@ -132,10 +137,10 @@ async function loadServiceList(){
         "
     >
 
-    ${service.name}
+    ${service.name || ""}
 </td>
 
-            <td>৳ ${service.price}</td>
+            <td>৳ ${service.price || 0}</td>
 
             <td>${service.active ? "Active" : "Inactive"}</td>
 
@@ -212,6 +217,7 @@ async function loadServiceCategories() {
 
 window.saveService = async function(){
 
+    const serviceId = document.getElementById("serviceId")?.value.trim() || "";
     const name = document.getElementById("serviceName").value.trim();
     const price = document.getElementById("servicePrice").value.trim();
     const ratePer1000 = Number(document.getElementById("serviceRatePer1000")?.value || 0);
@@ -219,7 +225,7 @@ window.saveService = async function(){
     const description = document.getElementById("serviceDescription").value.trim();
     const active = document.getElementById("serviceActive").checked;
 const category = document.getElementById("serviceCategory").value;
-const subCategory = document.getElementById("serviceSubCategory")?.value.trim() || "";
+const subCategory = document.getElementById("serviceSubCategory")?.value || "";
 
 const image = document.getElementById("serviceImage").value.trim();
 
@@ -248,7 +254,7 @@ const apiServiceId =
 const apiKey =
     document.getElementById("apiKey").value.trim();
     
-    if(!name || (!price && ratePer1000 <= 0)){
+    if(!serviceId || !name || (!price && ratePer1000 <= 0)){
 
         showPopup(
     "warning",
@@ -260,8 +266,18 @@ const apiKey =
 
     }
 
+// Custom Service ID must be unique.
+    const idQuery = query(collection(db, "services"), where("serviceId", "==", serviceId));
+    const idSnap = await getDocs(idQuery);
+    const duplicate = idSnap.docs.some(d => d.id !== editId);
+    if (duplicate) {
+        showPopup("warning", "Duplicate Service ID", "এই Service ID already exists. Please use another ID.");
+        return;
+    }
+
 const data = {
 
+    serviceId,
     name,
     price: Number(price || 0),
     ratePer1000,
@@ -351,6 +367,7 @@ for (const userDoc of users.docs) {
     }
     
 
+    if (document.getElementById("serviceId")) document.getElementById("serviceId").value="";
     document.getElementById("serviceName").value="";
     document.getElementById("servicePrice").value="";
     if (document.getElementById("serviceRatePer1000")) document.getElementById("serviceRatePer1000").value="";
@@ -378,6 +395,7 @@ window.editService = async function(id){
 
     const service = snap.data();
 
+    document.getElementById("serviceId").value = service.serviceId || id;
     document.getElementById("serviceName").value = service.name;
     document.getElementById("servicePrice").value = service.price;
     if (document.getElementById("serviceRatePer1000")) document.getElementById("serviceRatePer1000").value = service.ratePer1000 || "";
@@ -1848,6 +1866,105 @@ window.deleteCategory = async function (id) {
 
 };
 
+// =========================
+// SUB CATEGORY MANAGEMENT
+// =========================
+
+async function loadSubCategoryAdminCategories() {
+    const selects = [
+        document.getElementById("subCategoryAdminCategory"),
+        document.getElementById("serviceCategory")
+    ].filter(Boolean);
+    if (!selects.length) return;
+    const snap = await getDocs(collection(db, "categories"));
+    const cats = [];
+    snap.forEach(d => { const c=d.data()||{}; if(c.name) cats.push(c.name); });
+    cats.sort((a,b)=>a.localeCompare(b));
+    selects.forEach(select => {
+        const current = select.value;
+        const first = select.id === "serviceCategory" ? "<option value=\"\">Select Category</option>" : "<option value=\"\">Select Category</option>";
+        select.innerHTML = first + cats.map(n=>`<option value="${escapeHtmlAdmin(n)}">${escapeHtmlAdmin(n)}</option>`).join("");
+        if (cats.includes(current)) select.value=current;
+    });
+}
+
+function escapeHtmlAdmin(value) {
+    return String(value ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+async function loadSubCategoryAdminList() {
+    const list=document.getElementById("subCategoryList");
+    if(!list) return;
+    list.innerHTML="<p>Loading sub categories...</p>";
+    try {
+        const snap=await getDocs(collection(db,"subCategories"));
+        if(snap.empty){ list.innerHTML="<p>No sub categories added yet.</p>"; return; }
+        list.innerHTML="";
+        snap.forEach(d=>{
+            const x=d.data()||{};
+            const img=x.image||"";
+            list.innerHTML += `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;margin-bottom:10px;background:#1f2937;border-radius:10px;">\n                <div style="display:flex;align-items:center;gap:10px;min-width:0;">\n                ${img?`<img src="${escapeHtmlAdmin(img)}" style="width:42px;height:42px;object-fit:cover;border-radius:12px;" onerror="this.style.display='none'">`:''}\n                <div><strong>${escapeHtmlAdmin(x.name||"")}</strong><div style="font-size:12px;opacity:.75;">${escapeHtmlAdmin(x.category||"")}</div></div></div>\n                <div style="display:flex;gap:8px;"><button class="action-btn" onclick="editSubCategory('${d.id}')">✏️</button><button class="action-btn" onclick="deleteSubCategory('${d.id}')">🗑️</button></div>\n            </div>`;
+        });
+    } catch(e){ console.error(e); list.innerHTML="<p>Failed to load sub categories.</p>"; }
+}
+
+async function loadServiceSubCategoryPicker() {
+    const select=document.getElementById("serviceSubCategory");
+    if(!select) return;
+    const category=document.getElementById("serviceCategory")?.value || "";
+    const current=select.value;
+    const snap=await getDocs(collection(db,"subCategories"));
+    const names=[];
+    snap.forEach(d=>{const x=d.data()||{}; if(x.name && (!category || x.category===category)) names.push(x.name);});
+    // Also keep legacy subcategories already used by services.
+    const servicesSnap=await getDocs(collection(db,"services"));
+    servicesSnap.forEach(d=>{const x=d.data()||{}; const c=x.category||""; const n=x.subCategory||x.subcategory||x.sub_category||""; if(n && (!category || c===category)) names.push(n);});
+    const unique=[...new Set(names)].sort((a,b)=>a.localeCompare(b));
+    select.innerHTML='<option value="">No Sub Category</option>'+unique.map(n=>`<option value="${escapeHtmlAdmin(n)}">${escapeHtmlAdmin(n)}</option>`).join("");
+    if(unique.includes(current)) select.value=current;
+}
+
+window.saveSubCategory = async function(){
+    const category=document.getElementById("subCategoryAdminCategory")?.value.trim()||"";
+    const name=document.getElementById("subCategoryAdminName")?.value.trim()||"";
+    const image=document.getElementById("subCategoryAdminImage")?.value.trim()||"";
+    if(!category||!name){ showPopup("warning","Missing Information","Please select a category and enter a sub category name."); return; }
+    const snap=await getDocs(collection(db,"subCategories"));
+    const duplicate=snap.docs.some(d=>{const x=d.data()||{}; return d.id!==subCategoryEditId && x.category===category && String(x.name||"").toLowerCase()===name.toLowerCase();});
+    if(duplicate){showPopup("warning","Duplicate","This sub category already exists under this category.");return;}
+    const data={category,name,image,updatedAt:Date.now()};
+    if(subCategoryEditId){ await updateDoc(doc(db,"subCategories",subCategoryEditId),data); showPopup("success","Updated","Sub Category updated successfully."); }
+    else { data.createdAt=Date.now(); await addDoc(collection(db,"subCategories"),data); showPopup("success","Added","Sub Category added successfully."); }
+    subCategoryEditId=null;
+    document.getElementById("subCategoryAdminCategory").value="";
+    document.getElementById("subCategoryAdminName").value="";
+    document.getElementById("subCategoryAdminImage").value="";
+    document.getElementById("saveSubCategoryBtn").style.display="inline-block";
+    document.getElementById("updateSubCategoryBtn").style.display="none";
+    await loadSubCategoryAdminList(); await loadServiceSubCategoryPicker();
+};
+
+window.editSubCategory = async function(id){
+    const snap=await getDoc(doc(db,"subCategories",id)); if(!snap.exists()) return;
+    const x=snap.data()||{}; subCategoryEditId=id;
+    document.getElementById("subCategoryAdminCategory").value=x.category||"";
+    document.getElementById("subCategoryAdminName").value=x.name||"";
+    document.getElementById("subCategoryAdminImage").value=x.image||"";
+    document.getElementById("saveSubCategoryBtn").style.display="none";
+    document.getElementById("updateSubCategoryBtn").style.display="inline-block";
+    document.getElementById("subCategoryAdminName")?.scrollIntoView({behavior:"smooth",block:"center"});
+};
+
+window.deleteSubCategory = async function(id){
+    showConfirmPopup("Delete Sub Category","Are you sure you want to delete this sub category?",async()=>{
+        await deleteDoc(doc(db,"subCategories",id));
+        await loadSubCategoryAdminList(); await loadServiceSubCategoryPicker();
+        showPopup("success","Deleted","Sub Category deleted successfully.");
+    });
+};
+
+document.getElementById("serviceCategory")?.addEventListener("change", loadServiceSubCategoryPicker);
+
 // ===============================
 // PAGE LOAD
 // ===============================
@@ -1861,6 +1978,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadDashboardStats();
     await loadCategories();
     await loadServiceCategories();
+    await loadSubCategoryAdminCategories();
+    await loadSubCategoryAdminList();
+    await loadServiceSubCategoryPicker();
 
 });
 // =========================

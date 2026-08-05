@@ -80,6 +80,29 @@ async function loadService() {
 
         setText("serviceTitle", currentService.name || "Service");
         setText("serviceNameText", currentService.name || "Service");
+        setText("serviceIdDisplay", `Service ID: ${currentService.id || "N/A"}`);
+
+        const serviceCategory = String(currentService.category || "Other").trim() || "Other";
+        const serviceSubCategory = String(
+            currentService.subCategory ??
+            currentService.subcategory ??
+            currentService.sub_category ??
+            ""
+        ).trim();
+
+        setText("serviceCategoryDisplay", `Category: ${serviceCategory}`);
+
+        const subCategoryNode = el("serviceSubCategoryDisplay");
+        if (subCategoryNode) {
+            if (serviceSubCategory) {
+                subCategoryNode.textContent = `Sub Category: ${serviceSubCategory}`;
+                subCategoryNode.style.display = "block";
+            } else {
+                subCategoryNode.textContent = "";
+                subCategoryNode.style.display = "none";
+            }
+        }
+
         const descriptionNode = el("serviceDescription");
         const serviceDescription = String(currentService.description || "").trim();
         if (descriptionNode) {

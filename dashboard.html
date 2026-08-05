@@ -137,30 +137,69 @@ NEW ORDER / SERVICE PICKER
         <button type="button" class="new-order-balance-btn" id="newOrderBalanceBtn">▣ Addfunds</button>
     </div>
 
-    <div id="newOrderPanel" class="new-order-panel" style="display:none;">
+    <div id="newOrderPanel" class="new-order-panel" style="display:block;">
 
         <h2>🛒 New Order</h2>
         <p class="new-order-help">Choose your preferred service.</p>
 
-        <div class="new-order-field">
-            <label for="newOrderCategory">Category</label>
-            <select id="newOrderCategory">
+        <div class="new-order-field new-order-custom-picker-field">
+            <label>Category</label>
+
+            <!-- Hidden native select keeps existing order logic compatible. -->
+            <select id="newOrderCategory" class="new-order-picker-native" aria-hidden="true" tabindex="-1">
                 <option value="">Select Category</option>
             </select>
+
+            <div class="new-order-custom-picker" id="newOrderCategoryPicker">
+                <button type="button" class="new-order-picker-selected" id="newOrderCategorySelected" aria-expanded="false">
+                    <span class="new-order-picker-selected-icon">★</span>
+                    <span class="new-order-picker-selected-text">Select Category</span>
+                    <span class="new-order-picker-chevron">⌄</span>
+                </button>
+                <div class="new-order-picker-list" id="newOrderCategoryList">
+                    <div class="new-order-picker-empty">Loading categories...</div>
+                </div>
+            </div>
         </div>
 
-        <div class="new-order-field" id="newOrderSubCategoryBox" style="display:none;">
-            <label for="newOrderSubCategory">Sub Category</label>
-            <select id="newOrderSubCategory">
+        <div class="new-order-field new-order-custom-picker-field" id="newOrderSubCategoryBox" style="display:block;">
+            <label>Sub Category</label>
+
+            <select id="newOrderSubCategory" class="new-order-picker-native" aria-hidden="true" tabindex="-1">
                 <option value="">Select Sub Category</option>
             </select>
+
+            <div class="new-order-custom-picker is-disabled" id="newOrderSubCategoryPicker">
+                <button type="button" class="new-order-picker-selected" id="newOrderSubCategorySelected" aria-expanded="false">
+                    <span class="new-order-picker-selected-icon">★</span>
+                    <span class="new-order-picker-selected-text">Select Sub Category</span>
+                    <span class="new-order-picker-chevron">⌄</span>
+                </button>
+                <div class="new-order-picker-list" id="newOrderSubCategoryList">
+                    <div class="new-order-picker-empty">Select a Category first.</div>
+                </div>
+            </div>
         </div>
 
-        <div class="new-order-field" id="newOrderServiceBox" style="display:none;">
-            <label for="newOrderService">Service</label>
-            <select id="newOrderService">
+        <div class="new-order-field new-order-service-picker-field" id="newOrderServiceBox" style="display:block;">
+            <label>Service</label>
+
+            <!-- Hidden native select keeps the existing order logic compatible. -->
+            <select id="newOrderService" class="new-order-service-native" aria-hidden="true" tabindex="-1">
                 <option value="">Select Service</option>
             </select>
+
+            <div class="new-order-service-picker" id="newOrderServicePicker">
+                <button type="button" class="new-order-service-selected" id="newOrderServiceSelected" aria-expanded="false">
+                    <span class="new-order-service-selected-icon">🛒</span>
+                    <span class="new-order-service-selected-text">Select Service</span>
+                    <span class="new-order-service-chevron">⌄</span>
+                </button>
+
+                <div class="new-order-service-list" id="newOrderServiceList">
+                    <div class="new-order-service-empty">Select a Category first.</div>
+                </div>
+            </div>
         </div>
 
         <button type="button" class="new-order-continue-btn" id="newOrderContinueBtn" disabled>

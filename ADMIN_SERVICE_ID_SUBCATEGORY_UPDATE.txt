@@ -1,0 +1,7 @@
+ADMIN UPDATE
+- Added custom Service ID field to normal services. Saved as serviceId while Firestore document ID remains unchanged for internal order references.
+- Service ID is shown in admin service list and customer service picker.
+- Added Sub Category Management using Firestore collection: subCategories.
+- Sub Category records contain category, name, image, createdAt/updatedAt.
+- Service Add/Edit now uses a Sub Category picker populated from admin-created subcategories and legacy service subCategory values.
+- Existing services without serviceId continue to work and display their Firestore document ID as fallback.

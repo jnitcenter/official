@@ -277,6 +277,9 @@ SERVICE MANAGEMENT
 
 <div class="service-form">
 
+<label>Service ID</label>
+<input type="text" id="serviceId" placeholder="e.g. SVC001">
+
 <label>Service Name</label>
 <input type="text" id="serviceName">
 
@@ -295,7 +298,9 @@ SERVICE MANAGEMENT
 </select>
 
 <label>Sub Category <small>(optional)</small></label>
-<input type="text" id="serviceSubCategory" placeholder="e.g. Post Engagement">
+<select id="serviceSubCategory">
+    <option value="">No Sub Category</option>
+</select>
 
 <label>Required Information</label>
 <textarea id="requiredInfo"></textarea>
@@ -411,6 +416,8 @@ placeholder="🔍 Search Service...">
 <thead>
 
 <tr>
+
+<th>Service ID</th>
 
 <th>Name</th>
 
@@ -562,6 +569,32 @@ CATEGORY MANAGEMENT
 
     </div>
 
+</section>
+
+<!-- =========================
+SUB CATEGORY MANAGEMENT
+========================= -->
+<section class="admin-section">
+    <div class="notice-box">
+        <h2>📁 Sub Category Management</h2>
+        <label>Main Category</label>
+        <select id="subCategoryAdminCategory">
+            <option value="">Select Category</option>
+        </select>
+
+        <label>Sub Category Name</label>
+        <input type="text" id="subCategoryAdminName" placeholder="e.g. Followers">
+
+        <label>Sub Category Picture URL <small>(optional)</small></label>
+        <input type="url" id="subCategoryAdminImage" placeholder="https://example.com/subcategory.png">
+
+        <button class="green-btn" id="saveSubCategoryBtn" onclick="saveSubCategory()">➕ Add Sub Category</button>
+        <button class="green-btn" id="updateSubCategoryBtn" onclick="saveSubCategory()" style="display:none">✏️ Update Sub Category</button>
+
+        <hr>
+        <h3>📋 Existing Sub Categories</h3>
+        <div id="subCategoryList"><p>Loading sub categories...</p></div>
+    </div>
 </section>
 
 <section class="admin-section">

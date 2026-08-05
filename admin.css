@@ -2022,3 +2022,16 @@ align-items:center;
         font-size:26px;
     }
 }
+
+/* Service ID visibility */
+.service-id-cell{
+    display:inline-block;
+    max-width:180px;
+    padding:6px 8px;
+    border-radius:7px;
+    background:#172235;
+    color:#38bdf8;
+    font-size:12px;
+    font-weight:700;
+    word-break:break-all;
+}

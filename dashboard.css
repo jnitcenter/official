@@ -2886,3 +2886,401 @@ body.light-mode .order-table td{
     .new-order-section{padding:15px;}
     .new-order-panel{padding:15px;}
 }
+
+
+/* =========================================================
+   NEW ORDER - SERVICE PICKER
+   Customer-facing service list, similar to the existing
+   service picker UI. The native select remains hidden for
+   compatibility with the existing order flow.
+========================================================= */
+
+.new-order-service-picker-field {
+    position: relative;
+}
+
+.new-order-service-native {
+    display: none !important;
+}
+
+.new-order-service-picker {
+    width: 100%;
+    position: relative;
+}
+
+.new-order-service-selected {
+    width: 100%;
+    min-height: 52px;
+    border: 1px solid rgba(148, 163, 184, .28);
+    border-radius: 12px;
+    background: #071b2f;
+    color: #f5f7fb;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 13px;
+    cursor: default;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.new-order-service-selected-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 30px;
+    overflow: hidden;
+    font-weight: 800;
+    background: rgba(255,255,255,.08);
+}
+
+.new-order-service-selected-icon img,
+.new-order-service-selected-icon .new-order-service-row-icon {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+}
+
+.new-order-service-selected-text {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 14px;
+}
+
+.new-order-service-chevron {
+    font-size: 20px;
+    opacity: .7;
+}
+
+.new-order-service-list {
+    margin-top: 2px;
+    width: 100%;
+    max-height: 390px;
+    overflow-y: auto;
+    border: 1px solid rgba(148, 163, 184, .35);
+    border-radius: 0 0 12px 12px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(0,0,0,.22);
+    box-sizing: border-box;
+}
+
+.new-order-service-row {
+    width: 100%;
+    min-height: 52px;
+    border: 0;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+    color: #172033;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background .16s ease;
+}
+
+.new-order-service-row:last-child {
+    border-bottom: 0;
+}
+
+.new-order-service-row:hover,
+.new-order-service-row.selected {
+    background: #e8f4ff;
+}
+
+.new-order-service-row-left {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.new-order-service-row-icon {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.new-order-service-row-icon.emoji-icon {
+    background: #2f80ed;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.new-order-service-row-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.new-order-service-row-name {
+    font-size: 14px;
+    line-height: 1.35;
+    white-space: normal;
+}
+
+.new-order-service-row-id,
+.new-order-service-row-sub {
+    font-size: 11px;
+    color: #667085;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.new-order-service-row-price {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: #16824b;
+    white-space: nowrap;
+}
+
+.new-order-service-empty {
+    padding: 18px 14px;
+    text-align: center;
+    color: #667085;
+    font-size: 13px;
+    background: #fff;
+}
+
+@media (max-width: 600px) {
+    .new-order-service-list {
+        max-height: 340px;
+    }
+
+    .new-order-service-row {
+        padding: 8px 9px;
+    }
+
+    .new-order-service-row-price {
+        display: none;
+    }
+}
+
+
+/* =========================================================
+   NEW ORDER - CATEGORY / SUB CATEGORY / SERVICE PICKERS
+   All three use the same custom picker interaction.
+   Native selects stay hidden for existing JS/order compatibility.
+========================================================= */
+.new-order-picker-native{
+    display:none !important;
+}
+
+.new-order-custom-picker-field{
+    position:relative;
+}
+
+.new-order-custom-picker,
+.new-order-service-picker{
+    width:100%;
+    position:relative;
+}
+
+.new-order-picker-selected{
+    width:100%;
+    min-height:52px;
+    border:1px solid rgba(148,163,184,.28);
+    border-radius:12px;
+    background:#071b2f;
+    color:#f5f7fb;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 13px;
+    cursor:pointer;
+    text-align:left;
+    box-sizing:border-box;
+}
+
+.new-order-picker-selected:hover,
+.new-order-service-selected:hover{
+    border-color:rgba(59,130,246,.65);
+}
+
+.new-order-picker-selected-icon{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 30px;
+    overflow:hidden;
+    font-weight:800;
+    background:rgba(255,255,255,.08);
+}
+
+.new-order-picker-selected-icon img,
+.new-order-picker-selected-icon .new-order-picker-row-icon{
+    width:30px;
+    height:30px;
+    object-fit:cover;
+}
+
+.new-order-picker-selected-text{
+    flex:1;
+    min-width:0;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    font-size:14px;
+}
+
+.new-order-picker-chevron{
+    font-size:20px;
+    opacity:.7;
+    transition:transform .16s ease;
+}
+
+.new-order-custom-picker.is-open .new-order-picker-chevron,
+.new-order-service-picker.is-open .new-order-service-chevron{
+    transform:rotate(180deg);
+}
+
+.new-order-picker-list{
+    display:none;
+    margin-top:2px;
+    width:100%;
+    max-height:300px;
+    overflow-y:auto;
+    border:1px solid rgba(148,163,184,.35);
+    border-radius:0 0 12px 12px;
+    background:#fff;
+    box-shadow:0 10px 28px rgba(0,0,0,.22);
+    box-sizing:border-box;
+    position:relative;
+    z-index:50;
+}
+
+.new-order-custom-picker.is-open .new-order-picker-list{
+    display:block;
+}
+
+.new-order-custom-picker.is-disabled .new-order-picker-selected{
+    opacity:.58;
+    cursor:not-allowed;
+}
+
+.new-order-picker-row{
+    width:100%;
+    min-height:55px;
+    border:0;
+    border-bottom:1px solid #e5e7eb;
+    background:#fff;
+    color:#172033;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:8px 12px;
+    text-align:left;
+    cursor:pointer;
+    box-sizing:border-box;
+    transition:background .16s ease;
+}
+
+.new-order-picker-row:last-child{
+    border-bottom:0;
+}
+
+.new-order-picker-row:hover,
+.new-order-picker-row.selected{
+    background:#e8f4ff;
+}
+
+.new-order-picker-row-left{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.new-order-picker-row-icon{
+    width:30px;
+    height:30px;
+    min-width:30px;
+    border-radius:50%;
+    object-fit:cover;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+}
+
+.new-order-picker-row-icon.emoji-icon{
+    background:#2f80ed;
+    color:#fff;
+    font-size:16px;
+    font-weight:800;
+}
+
+.new-order-picker-row-info{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
+.new-order-picker-row-name{
+    font-size:14px;
+    line-height:1.35;
+    white-space:normal;
+}
+
+.new-order-picker-row-meta{
+    font-size:11px;
+    color:#667085;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.new-order-picker-empty{
+    padding:18px 14px;
+    text-align:center;
+    color:#667085;
+    font-size:13px;
+    background:#fff;
+}
+
+/* Service picker uses the same closed-by-default behavior. */
+.new-order-service-picker .new-order-service-list{
+    display:none;
+    position:relative;
+    z-index:50;
+}
+
+.new-order-service-picker.is-open .new-order-service-list{
+    display:block;
+}
+
+.new-order-service-selected{
+    cursor:pointer;
+}
+
+@media(max-width:600px){
+    .new-order-picker-list{
+        max-height:280px;
+    }
+    .new-order-picker-row{
+        padding:8px 9px;
+    }
+}
