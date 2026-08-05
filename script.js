@@ -933,18 +933,36 @@ ${
     // =========================
 // Normalize the configured Worker/Proxy URL for order/status calls.
 function buildApiEndpoint(providerUrl, action) {
-    const gateway = String(UNIVERSAL_API_PROXY_URL || "").trim();
-    if (!gateway) throw new Error("Universal API Gateway is not configured.");
+    let gateway = String(UNIVERSAL_API_PROXY_URL || "").trim();
+
+    if (!gateway) {
+        throw new Error("Universal API Gateway is not configured.");
+    }
+
+    // Always treat the gateway as a web URL, never as a local file path.
+    if (!/^https?:\/\//i.test(gateway)) {
+        gateway = "https://" + gateway;
+    }
+
     try {
         const url = new URL(gateway);
-        if (!/^https?:$/i.test(url.protocol)) throw new Error("Invalid Universal API Gateway URL.");
+        if (!/^https?:$/i.test(url.protocol)) {
+            throw new Error("Universal API Gateway URL must start with http:// or https://.");
+        }
+
         const cleanAction = action === "status" ? "status" : "order";
         const path = url.pathname.replace(/\/+$/, "");
-        if (new RegExp("/" + cleanAction + "$", "i").test(path)) return url.toString();
+
+        if (path.toLowerCase().endsWith("/" + cleanAction)) {
+            return url.toString();
+        }
+
         url.pathname = (path || "") + "/" + cleanAction;
         return url.toString();
     } catch (e) {
-        if (e instanceof TypeError) throw new Error("Invalid Universal API Gateway URL.");
+        if (e instanceof TypeError) {
+            throw new Error("Invalid Universal API Gateway URL.");
+        }
         throw e;
     }
 }

@@ -15,7 +15,7 @@ const firebaseConfig = {
 // One-time Universal API Gateway URL. Deploy the included worker.js to Cloudflare
 // and paste its URL here once. After that, new services only need Provider API URL,
 // API Key and Provider Service ID from Admin Panel.
-const UNIVERSAL_API_PROXY_URL = "";
+const UNIVERSAL_API_PROXY_URL = "https://jn-it-api.jnmusicpresentofficial.workers.dev";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
