@@ -389,22 +389,33 @@ text-align:center;
 Loading...
 </div>
 
+<div id="automaticPaymentNote"
+style="display:none;margin:10px 0;padding:10px;border-radius:8px;background:#103b2c;color:#7dffb0;font-weight:600;text-align:center;">
+⚡ Automatic payment enabled
+</div>
+
 <label data-i18n="amount">Amount</label>
 
 <input
 type="number"
 id="balanceAmount"
+min="1"
+step="0.01"
 placeholder="Enter Amount" data-i18n-placeholder="enterAmount">
 
+<div id="manualTrxBox">
 <label data-i18n="trxId">TRX ID</label>
 
 <input
 type="text"
 id="trxId"
 placeholder="Enter TRX ID" data-i18n-placeholder="enterTrxId">
+</div>
 
         <button
+        id="payBalanceBtn"
         class="green-btn"
+        type="button"
         onclick="submitBalanceRequest()">
 
             Submit Request

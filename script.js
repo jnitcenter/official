@@ -1085,104 +1085,158 @@ window.closeBalancePopup = function () {
 
 };
 
-async function loadPaymentNumber(){
-
+async function getPaymentSettings(){
     const snap = await getDoc(doc(db,"settings","payment"));
+    return snap.exists() ? snap.data() : {};
+}
 
-    if(!snap.exists()) return;
+function isWaitmarkAutomaticPayment(data){
+    const enabled = data?.paymentApiEnabled === true;
+    const url = String(data?.paymentApiUrl || "").trim().toLowerCase();
+    return enabled && url.includes("pay.waitmark.com/checkout");
+}
 
-    const data = snap.data();
-
-    const method = document.getElementById("paymentMethod").value;
-
+function updatePaymentUi(data){
+    const auto = isWaitmarkAutomaticPayment(data);
+    const method = document.getElementById("paymentMethod")?.value || "Bkash";
     const box = document.getElementById("paymentNumber");
+    const trxBox = document.getElementById("manualTrxBox");
+    const note = document.getElementById("automaticPaymentNote");
+    const button = document.getElementById("payBalanceBtn");
 
-    if(method==="Bkash"){
-        box.innerHTML="Bkash Number : "+data.bkash;
+    if(auto){
+        if(box) {
+            box.style.display = "none";
+            box.innerHTML = "";
+        }
+        if(trxBox) trxBox.style.display = "none";
+        if(note) note.style.display = "block";
+        if(button) button.innerText = "⚡ Pay Now";
+        return;
     }
 
-    if(method==="Nagad"){
-        box.innerHTML="Nagad Number : "+data.nagad;
+    if(trxBox) trxBox.style.display = "block";
+    if(note) note.style.display = "none";
+    if(button) button.innerText = "Submit Request";
+    if(box) box.style.display = "block";
+
+    if(!box) return;
+    if(method==="Bkash") box.innerHTML="Bkash Number : "+(data.bkash || "");
+    if(method==="Nagad") box.innerHTML="Nagad Number : "+(data.nagad || "");
+    if(method==="Rocket") box.innerHTML="Rocket Number : "+(data.rocket || "");
+}
+
+async function loadPaymentNumber(){
+    try{
+        const data = await getPaymentSettings();
+        updatePaymentUi(data);
+    }catch(error){
+        console.warn("Payment settings load failed:", error);
+    }
+}
+
+async function startAutomaticWaitmarkPayment(){
+    const amount = Number(document.getElementById("balanceAmount")?.value || 0);
+    const user = auth.currentUser;
+
+    if(!user){
+        showPopup("error","Session Expired","Please login again.");
+        return;
     }
 
-    if(method==="Rocket"){
-        box.innerHTML="Rocket Number : "+data.rocket;
+    if(!Number.isFinite(amount) || amount <= 0){
+        showPopup("warning","Invalid Amount","Please enter a valid amount.");
+        return;
     }
 
+    const settings = await getPaymentSettings();
+    if(!isWaitmarkAutomaticPayment(settings)){
+        throw new Error("Automatic Waitmark payment is not enabled.");
+    }
+
+    const publicKey = String(settings.paymentApiKey || "").trim();
+    if(!publicKey){
+        throw new Error("Waitmark Public Key is missing in Admin Payment Settings.");
+    }
+
+    /*
+     * The order ID carries the authenticated user's UID so the success page
+     * can credit only the same logged-in account. The Worker verifies the
+     * Waitmark signature before allowing the success redirect.
+     */
+    const uidBase64 = btoa(user.uid).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+    const orderId = `JNIC.${uidBase64}.${Date.now()}.${Math.random().toString(36).slice(2,8)}`;
+    const webhookBase = String(UNIVERSAL_API_PROXY_URL || "").trim().replace(/\/+$/,"");
+    if(!webhookBase) throw new Error("Payment gateway Worker URL is not configured.");
+
+    const successPage = `${window.location.origin}/payment-success.html`;
+    const webhookUrl =
+        `${webhookBase}/?action=waitmark-webhook` +
+        `&return_url=${encodeURIComponent(successPage)}`;
+
+    const checkoutUrl = new URL(String(settings.paymentApiUrl).trim());
+    checkoutUrl.searchParams.set("public_key", publicKey);
+    checkoutUrl.searchParams.set("amount", amount.toFixed(2));
+    checkoutUrl.searchParams.set("order_id", orderId);
+    checkoutUrl.searchParams.set("success_url", webhookUrl);
+
+    window.location.href = checkoutUrl.toString();
 }
 
 window.submitBalanceRequest = async function () {
+    const settings = await getPaymentSettings();
 
-    const method =
-        document.getElementById("paymentMethod").value;
+    if(isWaitmarkAutomaticPayment(settings)){
+        try{
+            await startAutomaticWaitmarkPayment();
+        }catch(err){
+            console.error("Automatic payment start failed:", err);
+            showPopup("error","Payment Failed",err.message || "Could not start payment.");
+        }
+        return;
+    }
 
-    const amount =
-        document.getElementById("balanceAmount").value.trim();
-
-    const trxId =
-        document.getElementById("trxId").value.trim();
+    const method = document.getElementById("paymentMethod").value;
+    const amount = document.getElementById("balanceAmount").value.trim();
+    const trxId = document.getElementById("trxId").value.trim();
 
     if (!amount || !trxId) {
-
-        showPopup(
-            "warning",
-            "Warning",
-            "Please fill all fields."
-        );
-
+        showPopup("warning","Warning","Please fill all fields.");
         return;
-
     }
 
     const user = auth.currentUser;
-
     if (!user) {
-
-        showPopup(
-            "error",
-            "Session Expired",
-            "Please login again."
-        );
-
+        showPopup("error","Session Expired","Please login again.");
         return;
-
     }
 
     try {
-
         await addDoc(collection(db, "balanceRequests"), {
-
             uid: user.uid,
             email: user.email,
-
             method: method,
             amount: Number(amount),
             trxId: trxId,
-
             status: "Pending",
-
             createdAt: Date.now()
-
         });
-        
-        // Notify all admins
-const adminQuery = query(
-    collection(db, "users"),
-    where("role", "==", "admin")
-);
 
-const adminSnap = await getDocs(adminQuery);
+        const adminQuery = query(
+            collection(db, "users"),
+            where("role", "==", "admin")
+        );
 
-for (const adminDoc of adminSnap.docs) {
+        const adminSnap = await getDocs(adminQuery);
 
-    await sendNotification(
-        adminDoc.id,
-        "💰 New Balance Request",
-        `${user.email} requested ৳${amount} balance via ${method}.`,
-        "balance"
-    );
-
-}
+        for (const adminDoc of adminSnap.docs) {
+            await sendNotification(
+                adminDoc.id,
+                "💰 New Balance Request",
+                `${user.email} requested ৳${amount} balance via ${method}.`,
+                "balance"
+            );
+        }
 
         showPopup(
             "success",
@@ -1192,22 +1246,14 @@ for (const adminDoc of adminSnap.docs) {
 
         document.getElementById("balanceAmount").value = "";
         document.getElementById("trxId").value = "";
-
         closeBalancePopup();
 
     } catch (err) {
-
         console.error(err);
-
-        showPopup(
-            "error",
-            "Request Failed",
-            err.message
-        );
-
+        showPopup("error","Request Failed",err.message);
     }
-
 };
+
 function openBalancePopup() {
 
     document.getElementById("balancePopup").style.display = "flex";

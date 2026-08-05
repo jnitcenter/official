@@ -1,0 +1,43 @@
+JN IT CENTER - WAITMARK AUTOMATIC PAYMENT
+
+This update adds a Waitmark automatic balance flow.
+
+USER FLOW:
+1. User opens Add Balance.
+2. Admin Payment API is enabled and API URL contains pay.waitmark.com/checkout.
+3. TRX ID is hidden automatically.
+4. User enters amount and taps Pay Now.
+5. The site redirects to Waitmark checkout with:
+   public_key
+   amount
+   order_id
+   success_url
+6. Waitmark POSTs the completed payment JSON to the Cloudflare Worker.
+7. The Worker verifies X-Waitmark-Signature using HMAC SHA256.
+8. The customer is returned to payment-success.html.
+9. The logged-in user balance is increased exactly once using a Firestore transaction.
+10. An Approved balanceRequests record and paymentReceipts record are created.
+
+IMPORTANT ONE-TIME STEP:
+The included worker.js MUST be deployed again to the SAME Cloudflare Worker URL already configured in firebase-config.js.
+
+RECOMMENDED SECURITY:
+In Cloudflare Worker > Settings > Variables and Secrets, create:
+WAITMARK_SECRET = the same Waitmark API Secret stored in Admin Payment Settings.
+
+The worker also has a compatibility fallback that attempts to read settings/payment from the existing Firestore project, but the Worker Secret is strongly preferred.
+
+ADMIN SETTINGS:
+Enable Payment API
+Provider: Bkash (or your preferred label)
+API URL: https://pay.waitmark.com/checkout
+API Key / Client ID: Waitmark Public Key (for example pk_live_...)
+API Secret / Client Secret: Waitmark Secret Key
+Merchant ID: optional
+Mode: use the mode supplied by your Waitmark account
+
+IMPORTANT:
+The checkout API only needs the Public Key in the browser. The Secret is used by the Worker to verify the webhook signature and should not be exposed to customers.
+
+LIVE TEST:
+Use a small amount on the live site after the Worker has been redeployed. The success URL must be publicly reachable; do not use localhost as the only production URL.

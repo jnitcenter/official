@@ -619,7 +619,7 @@ SUB CATEGORY MANAGEMENT
 
         <div style="margin-top:18px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.03);">
             <h3 style="margin:0 0 12px;">⚡ Automatic Payment API (Optional)</h3>
-            <p style="font-size:12px;opacity:.75;margin:0 0 12px;">Configure Bkash/Nagad/Rocket API details from Admin Panel. No code edit is needed for the settings themselves.</p>
+            <p style="font-size:12px;opacity:.75;margin:0 0 12px;">Configure payment API details from Admin Panel. For Waitmark automatic payment, use the checkout URL, Public Key and Secret Key shown in Waitmark Developers (API Docs).</p>
             <label><input type="checkbox" id="paymentApiEnabled"> Enable Payment API</label>
             <label>Payment Provider</label>
             <select id="paymentApiProvider">
@@ -630,9 +630,9 @@ SUB CATEGORY MANAGEMENT
             </select>
             <label>API URL</label>
             <input type="text" id="paymentApiUrl" placeholder="https://provider.example/api/...">
-            <label>API Key / Client ID</label>
+            <label>API Key / Public Key</label>
             <input type="text" id="paymentApiKey" placeholder="Enter API key or client ID">
-            <label>API Secret / Client Secret</label>
+            <label>API Secret / Secret Key</label>
             <input type="password" id="paymentApiSecret" placeholder="Enter API secret">
             <label>Merchant ID</label>
             <input type="text" id="paymentMerchantId" placeholder="Merchant ID (if required)">

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Result | JN IT CENTER</title>
+<style>
+body{margin:0;background:#081829;color:#fff;font-family:Arial,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}
+.card{width:min(520px,100%);background:#17263a;border-radius:18px;padding:30px;box-sizing:border-box;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.icon{font-size:55px;margin-bottom:10px}.title{font-size:26px;font-weight:700;margin:8px 0 12px}.text{opacity:.85;line-height:1.6}.amount{font-size:32px;color:#25d366;font-weight:800;margin:18px 0}.btn{display:inline-block;background:#20c765;color:#fff;border:0;border-radius:10px;padding:13px 22px;text-decoration:none;font-weight:700;margin-top:15px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="icon" class="icon">⏳</div>
+  <div id="title" class="title">Checking payment...</div>
+  <div id="text" class="text">Please wait while your payment is verified and your balance is updated.</div>
+  <div id="amount" class="amount" style="display:none"></div>
+  <a class="btn" href="dashboard.html">Go to Dashboard</a>
+</div>
+
+<script type="module">
+import { auth, db } from "./firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const params = new URLSearchParams(location.search);
+const orderId = params.get("order_id") || "";
+const paymentUid = params.get("uid") || "";
+const amount = Number(params.get("amount") || 0);
+const trxId = params.get("trx_id") || "";
+const status = (params.get("status") || "").toLowerCase();
+
+const icon = document.getElementById("icon");
+const title = document.getElementById("title");
+const text = document.getElementById("text");
+const amountEl = document.getElementById("amount");
+
+function fail(message){
+  icon.textContent = "❌";
+  title.textContent = "Payment not credited";
+  text.textContent = message;
+}
+
+if(status !== "completed" || !orderId || !paymentUid || !Number.isFinite(amount) || amount <= 0){
+  fail("The payment callback is incomplete or was not marked as completed.");
+} else {
+  amountEl.textContent = "৳ " + amount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  amountEl.style.display = "block";
+
+  onAuthStateChanged(auth, async (user)=>{
+    if(!user){
+      fail("Please log in with the account that started this payment, then open the payment result again.");
+      return;
+    }
+
+    if(user.uid !== paymentUid){
+      fail("This payment belongs to a different account.");
+      return;
+    }
+
+    try{
+      const receiptRef = doc(db,"paymentReceipts",orderId);
+      const userRef = doc(db,"users",user.uid);
+      const balanceRequestRef = doc(db,"balanceRequests",`AUTO_${orderId}`);
+
+      await runTransaction(db, async(transaction)=>{
+        const receiptSnap = await transaction.get(receiptRef);
+        if(receiptSnap.exists()) return;
+
+        const userSnap = await transaction.get(userRef);
+        if(!userSnap.exists()) throw new Error("User account was not found.");
+
+        const currentBalance = Number(userSnap.data().balance || 0);
+
+        transaction.update(userRef,{
+          balance: currentBalance + amount
+        });
+
+        transaction.set(receiptRef,{
+          orderId,
+          uid:user.uid,
+          email:user.email || "",
+          amount,
+          trxId,
+          status:"Completed",
+          provider:"Waitmark",
+          createdAt:Date.now()
+        });
+
+        transaction.set(balanceRequestRef,{
+          uid:user.uid,
+          email:user.email || "",
+          method:"Waitmark",
+          amount,
+          trxId:trxId || orderId,
+          status:"Approved",
+          provider:"Waitmark",
+          paymentOrderId:orderId,
+          createdAt:Date.now()
+        });
+      });
+
+      icon.textContent = "✅";
+      title.textContent = "Payment Successful";
+      text.textContent = "Your payment has been verified and the balance has been added automatically.";
+    }catch(error){
+      console.error(error);
+      fail(error?.message || "Could not update the balance.");
+    }
+  });
+}
+</script>
+</body>
+</html>
