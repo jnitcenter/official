@@ -1,0 +1,8 @@
+JN IT CENTER - PAYMENT API SETTINGS
+
+Admin Panel now includes optional Bkash/Nagad/Rocket/Custom payment API configuration fields.
+You can save provider, API URL, key/client ID, secret/client secret, merchant ID and sandbox/live mode without editing source files.
+
+Important: actual automatic payment initiation/verification is provider-specific. Bkash, Nagad and Rocket do not all use the same API contract. The fields are stored as configuration; to make a specific provider fully automatic, its official API documentation/merchant credentials and request/response format are required. Do not expose production secrets in client-side code.
+
+Quantity: API orders now default to quantity 1 when Enable Quantity is OFF.

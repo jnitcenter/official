@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+import { auth, db, UNIVERSAL_API_PROXY_URL } from "./firebase-config.js";
 import { sendNotification } from "./notification.js";
 import {
     doc,
@@ -412,7 +412,7 @@ async function placeOrder() {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        provider: "safollow",
+                        providerUrl: apiUrl,
                         apiKey,
                         service: apiServiceId,
                         link,
@@ -461,7 +461,8 @@ async function placeOrder() {
             delivery: "Automatic",
             apiEnabled: currentService.apiEnabled === true,
             apiOrderId,
-            apiProxyUrl: currentService.apiUrl || "",
+            apiProxyUrl: UNIVERSAL_API_PROXY_URL || "",
+            apiProviderUrl: currentService.apiUrl || "",
             apiKey: currentService.apiKey || "",
             apiServiceId: currentService.apiServiceId || "",
             createdAt: Date.now()
@@ -514,46 +515,22 @@ async function placeOrder() {
 // API HELPERS
 // =====================================
 
-function buildApiEndpoint(configuredUrl, action) {
-    let value = String(configuredUrl || "").trim();
-    if (!value) throw new Error("API Proxy URL is missing.");
+function buildApiEndpoint(providerUrl, action) {
+    const gateway = String(UNIVERSAL_API_PROXY_URL || "").trim();
+    if (!gateway) {
+        throw new Error("Universal API Gateway is not configured. Set UNIVERSAL_API_PROXY_URL once in firebase-config.js.");
+    }
 
-    // Allow the admin to paste either:
-    // https://worker.example.workers.dev
-    // https://worker.example.workers.dev/order
-    // https://worker.example.workers.dev/status
-    // Normalize it to the requested Worker route.
     try {
-        const url = new URL(value);
-        if (!/^https?:$/i.test(url.protocol)) {
-            throw new Error("API Proxy URL must start with http:// or https://.");
-        }
-
-        const path = url.pathname.replace(/\/+$/, "");
-        if (/\/api\/v2$/i.test(path) || /safollow\.com$/i.test(url.hostname)) {
-            throw new Error(
-                "This is the provider API URL. Put your deployed Cloudflare Worker/Proxy URL here instead."
-            );
-        }
-
+        const url = new URL(gateway);
+        if (!/^https?:$/i.test(url.protocol)) throw new Error("Universal API Gateway URL must start with http:// or https://.");
         const cleanAction = action === "status" ? "status" : "order";
-
-        if (new RegExp("/" + cleanAction + "$", "i").test(path)) {
-            return url.toString();
-        }
-
-        // If the admin previously saved /order, status should use /status.
-        if (cleanAction === "status" && /\/order$/i.test(path)) {
-            url.pathname = path.replace(/\/order$/i, "/status");
-            return url.toString();
-        }
-
+        const path = url.pathname.replace(/\/+$/, "");
+        if (new RegExp("/" + cleanAction + "$", "i").test(path)) return url.toString();
         url.pathname = (path || "") + "/" + cleanAction;
         return url.toString();
     } catch (e) {
-        if (e instanceof TypeError) {
-            throw new Error("Invalid API Proxy URL.");
-        }
+        if (e instanceof TypeError) throw new Error("Invalid Universal API Gateway URL.");
         throw e;
     }
 }

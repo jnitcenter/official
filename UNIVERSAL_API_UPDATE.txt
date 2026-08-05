@@ -1,0 +1,6 @@
+Universal API system added.
+- One generic Cloudflare Worker handles standard SMM Panel API v2 providers.
+- Service add/edit uses Provider API URL, API Service ID and API Key.
+- New providers do not require new JS files/workers.
+- One-time gateway URL is configured in firebase-config.js.
+- Existing SAFOLLOW-style API v2 services remain compatible.

@@ -2706,11 +2706,16 @@ window.savePaymentSettings = async function () {
 
     await setDoc(doc(db,"settings","payment"),{
 
-        bkash: document.getElementById("bkashNumber").value,
-
-        nagad: document.getElementById("nagadNumber").value,
-
-        rocket: document.getElementById("rocketNumber").value
+        bkash: document.getElementById("bkashNumber").value.trim(),
+        nagad: document.getElementById("nagadNumber").value.trim(),
+        rocket: document.getElementById("rocketNumber").value.trim(),
+        paymentApiEnabled: document.getElementById("paymentApiEnabled")?.checked || false,
+        paymentApiProvider: document.getElementById("paymentApiProvider")?.value || "Bkash",
+        paymentApiUrl: document.getElementById("paymentApiUrl")?.value.trim() || "",
+        paymentApiKey: document.getElementById("paymentApiKey")?.value.trim() || "",
+        paymentApiSecret: document.getElementById("paymentApiSecret")?.value.trim() || "",
+        paymentMerchantId: document.getElementById("paymentMerchantId")?.value.trim() || "",
+        paymentApiMode: document.getElementById("paymentApiMode")?.value || "sandbox"
 
     });
 
@@ -2734,6 +2739,20 @@ async function loadPaymentSettings(){
     document.getElementById("nagadNumber").value = data.nagad || "";
 
     document.getElementById("rocketNumber").value = data.rocket || "";
+    const apiEnabled = document.getElementById("paymentApiEnabled");
+    if (apiEnabled) apiEnabled.checked = data.paymentApiEnabled === true;
+    const provider = document.getElementById("paymentApiProvider");
+    if (provider) provider.value = data.paymentApiProvider || "Bkash";
+    const apiUrl = document.getElementById("paymentApiUrl");
+    if (apiUrl) apiUrl.value = data.paymentApiUrl || "";
+    const apiKey = document.getElementById("paymentApiKey");
+    if (apiKey) apiKey.value = data.paymentApiKey || "";
+    const apiSecret = document.getElementById("paymentApiSecret");
+    if (apiSecret) apiSecret.value = data.paymentApiSecret || "";
+    const merchant = document.getElementById("paymentMerchantId");
+    if (merchant) merchant.value = data.paymentMerchantId || "";
+    const mode = document.getElementById("paymentApiMode");
+    if (mode) mode.value = data.paymentApiMode || "sandbox";
 
 }
 

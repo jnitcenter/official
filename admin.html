@@ -323,70 +323,75 @@ Active
 
 </label>
 
+    <!-- API SETTINGS: independent of Quantity -->
+    <label>
+        <input type="checkbox" id="apiEnabled">
+        Enable API
+    </label>
+
+    <div id="apiSettings" style="display:none;">
+
+        <label>Provider API URL</label>
+        <input
+            type="text"
+            id="apiUrl"
+            placeholder="https://provider.example.com/api/v2">
+
+        <label>API Service ID (Provider)</label>
+        <input
+            type="text"
+            id="apiServiceId"
+            placeholder="e.g. 1234">
+
+        <label>API Key</label>
+        <input
+            type="password"
+            id="apiKey"
+            placeholder="Enter provider API key"
+            autocomplete="new-password">
+
+        <div style="font-size:12px;opacity:.8;margin-top:8px;line-height:1.5;">
+            API is independent of Quantity. You can enable API even when Enable Quantity is OFF.
+            When Quantity is OFF, the API order quantity will automatically be 1.
+        </div>
+    </div>
+
+    <br><br>
+
+    <!-- QUANTITY SETTINGS -->
     <label>
         <input type="checkbox" id="enableQuantity">
         Enable Quantity
     </label>
+
     <div id="quantitySettings">
 
-    <label>Minimum Quantity</label>
-    <input
-    type="number"
-    id="minimumQuantity"
-    min="1"
-    placeholder="e.g. 100">
+        <label>Minimum Quantity</label>
+        <input
+            type="number"
+            id="minimumQuantity"
+            min="1"
+            placeholder="e.g. 100">
 
-    <br><br>
+        <br><br>
 
-    <label>Maximum Quantity</label>
-    <input
-    type="number"
-    id="maximumQuantity"
-    min="1"
-    placeholder="e.g. 10000">
+        <label>Maximum Quantity</label>
+        <input
+            type="number"
+            id="maximumQuantity"
+            min="1"
+            placeholder="e.g. 10000">
 
-    <br><br>
+        <br><br>
 
-    <label>Estimated Delivery</label>
-    <input
-    type="text"
-    id="estimatedDelivery"
-    placeholder="e.g. 1 - 6 Hours">
-
-
-<br><br>
-
-<label>
-    <input type="checkbox" id="apiEnabled">
-    Enable API
-</label>
-
-<div id="apiSettings" style="display:none;">
-
-    <label>API Proxy / Worker URL</label>
-    <input
-        type="text"
-        id="apiUrl"
-        placeholder="https://your-worker.example.workers.dev (or /order)">
-
-    <label>API Service ID (Provider)</label>
-    <input
-        type="text"
-        id="apiServiceId"
-        placeholder="e.g. 1234">
-
-    <label>API Key</label>
-    <input
-        type="password"
-        id="apiKey"
-        placeholder="Enter provider API key"
-        autocomplete="new-password">
+        <label>Estimated Delivery</label>
+        <input
+            type="text"
+            id="estimatedDelivery"
+            placeholder="e.g. 1 - 6 Hours">
+    </div>
 
 </div>
-
-</div>
-</div>
-
 
 <br><br>
 
@@ -611,6 +616,32 @@ SUB CATEGORY MANAGEMENT
 
         <label>Rocket Number</label>
         <input type="text" id="rocketNumber">
+
+        <div style="margin-top:18px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.03);">
+            <h3 style="margin:0 0 12px;">⚡ Automatic Payment API (Optional)</h3>
+            <p style="font-size:12px;opacity:.75;margin:0 0 12px;">Configure Bkash/Nagad/Rocket API details from Admin Panel. No code edit is needed for the settings themselves.</p>
+            <label><input type="checkbox" id="paymentApiEnabled"> Enable Payment API</label>
+            <label>Payment Provider</label>
+            <select id="paymentApiProvider">
+                <option value="Bkash">Bkash</option>
+                <option value="Nagad">Nagad</option>
+                <option value="Rocket">Rocket</option>
+                <option value="Custom">Custom</option>
+            </select>
+            <label>API URL</label>
+            <input type="text" id="paymentApiUrl" placeholder="https://provider.example/api/...">
+            <label>API Key / Client ID</label>
+            <input type="text" id="paymentApiKey" placeholder="Enter API key or client ID">
+            <label>API Secret / Client Secret</label>
+            <input type="password" id="paymentApiSecret" placeholder="Enter API secret">
+            <label>Merchant ID</label>
+            <input type="text" id="paymentMerchantId" placeholder="Merchant ID (if required)">
+            <label>Mode</label>
+            <select id="paymentApiMode">
+                <option value="sandbox">Sandbox / Test</option>
+                <option value="live">Live / Production</option>
+            </select>
+        </div>
 
         <button
             class="green-btn"

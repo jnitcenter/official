@@ -1,0 +1,31 @@
+JN IT CENTER - UNIVERSAL API SETUP
+
+Goal:
+After this one-time setup, you do NOT need to create a new JS/worker file for every API.
+For each new compatible provider/service, Admin only needs:
+1. Provider API URL
+2. Provider API Key
+3. Provider Service ID
+
+ONE-TIME SETUP:
+1. Deploy the included worker.js as a Cloudflare Worker.
+2. Copy the deployed Worker URL.
+3. Open firebase-config.js and set:
+   const UNIVERSAL_API_PROXY_URL = "https://YOUR-WORKER.workers.dev";
+4. Deploy the website.
+
+ADDING A NEW SERVICE:
+Admin Panel > Service Management > Enable API
+- Provider API URL: https://provider.example.com/api/v2
+- API Service ID: provider's service ID
+- API Key: provider's API key
+Save.
+
+IMPORTANT LIMITATION:
+The universal worker uses the common SMM Panel API v2 contract:
+- add: key, action=add, service, link, quantity, comments
+- status: key, action=status, order
+If a provider uses a completely different request/response format, URL + key + service ID alone are not enough to know how to call it. That provider needs a custom format/adapter.
+
+SECURITY:
+The current admin/service model stores the API key in Firestore and sends it through the browser to the gateway. This is convenient but not the most secure option. For production, a stronger design is to store provider credentials server-side in Cloudflare/another backend.

@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+import { auth, db, UNIVERSAL_API_PROXY_URL } from "./firebase-config.js";
 import { sendNotification } from "./notification.js";
 import {
     collection,
@@ -932,40 +932,19 @@ ${
 
     // =========================
 // Normalize the configured Worker/Proxy URL for order/status calls.
-function buildApiEndpoint(configuredUrl, action) {
-    let value = String(configuredUrl || "").trim();
-    if (!value) throw new Error("API Proxy URL is missing.");
-
+function buildApiEndpoint(providerUrl, action) {
+    const gateway = String(UNIVERSAL_API_PROXY_URL || "").trim();
+    if (!gateway) throw new Error("Universal API Gateway is not configured.");
     try {
-        const url = new URL(value);
-        if (!/^https?:$/i.test(url.protocol)) {
-            throw new Error("API Proxy URL must start with http:// or https://.");
-        }
-
-        const path = url.pathname.replace(/\/+$/, "");
-
-        // A provider API URL cannot be called safely from the browser.
-        if (/\/api\/v2$/i.test(path) || /safollow\.com$/i.test(url.hostname)) {
-            throw new Error(
-                "This is the provider API URL. Put your deployed Cloudflare Worker/Proxy URL in API Proxy URL."
-            );
-        }
-
+        const url = new URL(gateway);
+        if (!/^https?:$/i.test(url.protocol)) throw new Error("Invalid Universal API Gateway URL.");
         const cleanAction = action === "status" ? "status" : "order";
-
-        if (new RegExp("/" + cleanAction + "$", "i").test(path)) {
-            return url.toString();
-        }
-
-        if (cleanAction === "status" && /\/order$/i.test(path)) {
-            url.pathname = path.replace(/\/order$/i, "/status");
-            return url.toString();
-        }
-
+        const path = url.pathname.replace(/\/+$/, "");
+        if (new RegExp("/" + cleanAction + "$", "i").test(path)) return url.toString();
         url.pathname = (path || "") + "/" + cleanAction;
         return url.toString();
     } catch (e) {
-        if (e instanceof TypeError) throw new Error("Invalid API Proxy URL.");
+        if (e instanceof TypeError) throw new Error("Invalid Universal API Gateway URL.");
         throw e;
     }
 }
@@ -983,6 +962,7 @@ async function syncApiOrderStatuses(uid){
                 method:"POST",
                 headers:{"Content-Type":"application/json"},
                 body:JSON.stringify({
+                    providerUrl:order.apiProviderUrl || "",
                     order:order.apiOrderId,
                     apiKey:order.apiKey || ""
                 })
