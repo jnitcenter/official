@@ -258,7 +258,7 @@ sourceServices.forEach(service => {
                         <div>
                             <div class="smm-category-label">${escapeHtml(category)}</div>
                             <div class="smm-service-topline">
-                                <span class="service-id-badge">ID: ${escapeHtml(service.apiServiceId || service.serviceId || service.id)}</span>
+                                <span class="service-id-badge">ID: ${escapeHtml(service.serviceId || service.apiServiceId || service.id)}</span>
                                 <span class="smm-inline-rate">${escapeHtml(rateText)}</span>
                                 <h3>${escapeHtml(service.name || "Unnamed Service")}</h3>
                             </div>
@@ -466,7 +466,7 @@ sourceServices.forEach(service => {
                 continueBtn.disabled = false;
 
                 if (serviceSelectedText) {
-                   serviceSelectedText.textContent = `ID: ${service.apiServiceId || service.serviceId || service.id} — ${service.name || "Service"}`;
+                   serviceSelectedText.textContent = `ID: ${service.serviceId || service.apiServiceId || service.id} — ${service.name || "Service"}`;
                 }
                 if (serviceSelectedIcon) {
                     serviceSelectedIcon.innerHTML = getServiceVisual(service);
@@ -644,7 +644,7 @@ const priceText = "৳" + displayPrice.toLocaleString();
                                 <span class="new-order-service-row-info">
                                     <div class="new-order-service-header">
     <span class="new-order-service-row-id service-id-badge">
-        ID: ${escapeHtml(service.apiServiceId || service.serviceId || service.id)}
+        ID: ${escapeHtml(service.serviceId || service.apiServiceId || service.id)}
     </span>
 
     <span class="new-order-service-row-price">
@@ -857,12 +857,15 @@ const priceText = "৳" + displayPrice.toLocaleString();
 // =========================
 async function loadMyOrders(uid) {
     const table = document.getElementById("myOrders");
+    const pagination = document.getElementById("myOrdersPagination");
     if (!table || !uid) return;
 
     table.innerHTML = `<tr><td colspan="5">Loading orders...</td></tr>`;
+    if (pagination) pagination.innerHTML = "";
 
     try {
-        // Use the same userId field used when orders are created.
+        // Load the current user's orders. Pagination is applied only to the
+        // customer-facing My Orders list, so other dashboard/admin lists remain unchanged.
         const q = query(
             collection(db, "orders"),
             where("userId", "==", uid)
@@ -875,6 +878,7 @@ async function loadMyOrders(uid) {
                 <tr>
                     <td colspan="5">No Orders Found</td>
                 </tr>`;
+            if (pagination) pagination.innerHTML = "";
             return;
         }
 
@@ -883,9 +887,7 @@ async function loadMyOrders(uid) {
             ...(orderDoc.data() || {})
         }));
 
-        // Always show the Service ID entered in Admin Panel. Older orders may have
-        // stored the Firestore document ID or API provider ID, so resolve them
-        // against the services collection without changing the order itself.
+        // Resolve the actual Service ID configured in Admin Panel.
         let serviceLookup = [];
         try {
             const serviceSnap = await getDocs(collection(db, "services"));
@@ -912,21 +914,21 @@ async function loadMyOrders(uid) {
             return String(match?.serviceId || raw || "—").trim() || "—";
         };
 
-        // Newest order first. createdAt is stored as milliseconds in new orders.
-        orders.sort((a, b) => {
-            const getTime = order => {
-                const value = order.createdAt || order.created_at || order.timestamp || order.date;
-                if (value && typeof value.toMillis === "function") return value.toMillis();
-                if (value instanceof Date) return value.getTime();
-                if (typeof value === "number") return value;
-                if (typeof value === "string") {
-                    const parsed = Date.parse(value);
-                    return Number.isNaN(parsed) ? 0 : parsed;
-                }
-                return 0;
-            };
-            return getTime(b) - getTime(a);
-        });
+        const getOrderTime = order => {
+            const value = order.createdAt || order.created_at || order.timestamp || order.date;
+            if (value && typeof value.toMillis === "function") return value.toMillis();
+            if (value && typeof value.toDate === "function") return value.toDate().getTime();
+            if (value instanceof Date) return value.getTime();
+            if (typeof value === "number") return value;
+            if (typeof value === "string") {
+                const parsed = Date.parse(value);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            }
+            return 0;
+        };
+
+        // Newest order first.
+        orders.sort((a, b) => getOrderTime(b) - getOrderTime(a));
 
         const escapeCell = value => String(value ?? "")
             .replace(/&/g, "&amp;")
@@ -938,6 +940,7 @@ async function loadMyOrders(uid) {
         const formatDateTime = order => {
             const value = order.createdAt || order.created_at || order.timestamp || order.date;
             let date = null;
+
             if (value && typeof value.toDate === "function") date = value.toDate();
             else if (value && typeof value.toMillis === "function") date = new Date(value.toMillis());
             else if (value instanceof Date) date = value;
@@ -948,6 +951,7 @@ async function loadMyOrders(uid) {
             }
 
             if (!date || Number.isNaN(date.getTime())) return "—";
+
             return date.toLocaleString("en-GB", {
                 day: "2-digit",
                 month: "2-digit",
@@ -970,26 +974,85 @@ async function loadMyOrders(uid) {
             return escapeCell(s);
         };
 
-        table.innerHTML = orders.map(order => {
-            const serviceId = resolveCustomerServiceId(order);
-            const serviceName = order.serviceName || order.name || "Service";
-            const price = order.price ?? order.totalPrice ?? 0;
-            const result = order.resultLink
-                ? `<a href="${escapeCell(order.resultLink)}" target="_blank" rel="noopener">📥 Download</a>`
-                : "—";
+        const renderPage = page => {
+            const perPage = 10;
+            const totalPages = Math.max(1, Math.ceil(orders.length / perPage));
+            const currentPage = Math.min(Math.max(1, page), totalPages);
+            const startIndex = (currentPage - 1) * perPage;
+            const pageOrders = orders.slice(startIndex, startIndex + perPage);
 
-            return `
-                <tr>
-                    <td>
-                        <span class="my-order-service-id">ID: ${escapeCell(serviceId)}</span>
-                        <span class="my-order-service-name">${escapeCell(serviceName)}</span>
-                    </td>
-                    <td>৳ ${escapeCell(price)}</td>
-                    <td>${formatDateTime(order)}</td>
-                    <td>${statusHtml(order.status)}</td>
-                    <td>${result}</td>
-                </tr>`;
-        }).join("");
+            table.innerHTML = pageOrders.map(order => {
+                const serviceId = resolveCustomerServiceId(order);
+                const serviceName = order.serviceName || order.name || "Service";
+                const price = order.price ?? order.totalPrice ?? 0;
+                const result = order.resultLink
+                    ? `<a href="${escapeCell(order.resultLink)}" target="_blank" rel="noopener">📥 Download</a>`
+                    : "—";
+
+                return `
+                    <tr>
+                        <td>
+                            <span class="my-order-service-id">ID: ${escapeCell(serviceId)}</span>
+                            <span class="my-order-service-name">${escapeCell(serviceName)}</span>
+                        </td>
+                        <td>৳ ${escapeCell(price)}</td>
+                        <td class="my-order-date-time">${escapeCell(formatDateTime(order))}</td>
+                        <td>${statusHtml(order.status)}</td>
+                        <td>${result}</td>
+                    </tr>`;
+            }).join("");
+
+            if (!pagination) return;
+
+            const pageButtons = [];
+            const addPage = p => pageButtons.push(
+                `<button type="button" class="my-orders-page-btn${p === currentPage ? " active" : ""}" data-page="${p}" aria-label="Page ${p}" ${p === currentPage ? "aria-current=\"page\"" : ""}>${p}</button>`
+            );
+
+            // Compact pagination: always show first/last and nearby pages.
+            if (totalPages <= 5) {
+                for (let p = 1; p <= totalPages; p++) addPage(p);
+            } else {
+                addPage(1);
+                if (currentPage > 3) pageButtons.push(`<span class="my-orders-page-dots">…</span>`);
+
+                const from = Math.max(2, currentPage - 1);
+                const to = Math.min(totalPages - 1, currentPage + 1);
+                for (let p = from; p <= to; p++) addPage(p);
+
+                if (currentPage < totalPages - 2) pageButtons.push(`<span class="my-orders-page-dots">…</span>`);
+                addPage(totalPages);
+            }
+
+            const firstShown = startIndex + 1;
+            const lastShown = Math.min(startIndex + perPage, orders.length);
+
+            pagination.innerHTML = `
+                <div class="my-orders-pagination-info">
+                    Showing ${firstShown} to ${lastShown} of ${orders.length}
+                </div>
+                <div class="my-orders-pagination-controls">
+                    <button type="button" class="my-orders-page-btn my-orders-prev" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""}>Previous</button>
+                    ${pageButtons.join("")}
+                    <button type="button" class="my-orders-page-btn my-orders-next" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
+                </div>`;
+
+            pagination.querySelectorAll("[data-page]").forEach(button => {
+                button.addEventListener("click", () => {
+                    const nextPage = Number(button.dataset.page);
+                    if (!Number.isFinite(nextPage) || nextPage < 1 || nextPage > totalPages || nextPage === currentPage) return;
+                    renderPage(nextPage);
+                    const section = document.getElementById("myOrdersSection");
+                    if (section && window.innerWidth < 700) {
+                        const top = section.getBoundingClientRect().top + window.scrollY - 12;
+                        window.scrollTo({ top, behavior: "smooth" });
+                    }
+                });
+            });
+        };
+
+        renderPage(1);
+
     } catch (error) {
         console.error("Could not load orders:", error);
         table.innerHTML = `
@@ -998,6 +1061,7 @@ async function loadMyOrders(uid) {
                     Could not load orders. Please try again.
                 </td>
             </tr>`;
+        if (pagination) pagination.innerHTML = "";
     }
 }
 

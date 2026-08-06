@@ -98,71 +98,127 @@ return;
 let editId = null;
 let subCategoryEditId = null;
 // ===============================
+// ADMIN PAGINATION HELPERS
+// ===============================
+const ADMIN_PAGE_SIZE = 10;
+const adminPageState = {
+    services: 1,
+    orders: 1,
+    users: 1,
+    balanceRequests: 1
+};
+
+function renderAdminPagination(containerId, stateKey, totalItems, onPageChange){
+    const box = document.getElementById(containerId);
+    if(!box) return;
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / ADMIN_PAGE_SIZE));
+    let page = Number(adminPageState[stateKey] || 1);
+    if(page > totalPages) page = totalPages;
+    if(page < 1) page = 1;
+    adminPageState[stateKey] = page;
+
+    if(totalItems <= ADMIN_PAGE_SIZE){
+        box.innerHTML = '';
+        box.style.display = 'none';
+        return;
+    }
+
+    const buttons = [];
+    const addButton = (label, target, disabled=false, active=false) => {
+        buttons.push(`<button type="button" class="admin-page-btn${active?' active':''}" ${disabled?'disabled':''} onclick="${disabled?'return false':`adminGoToPage('${stateKey}',${target})`}">${label}</button>`);
+    };
+
+    addButton('Previous', page-1, page === 1);
+
+    const pages = [];
+    if(totalPages <= 7){
+        for(let i=1;i<=totalPages;i++) pages.push(i);
+    }else{
+        pages.push(1);
+        if(page > 4) pages.push('...');
+        const start = Math.max(2, page-1);
+        const end = Math.min(totalPages-1, page+1);
+        for(let i=start;i<=end;i++) pages.push(i);
+        if(page < totalPages-3) pages.push('...');
+        pages.push(totalPages);
+    }
+
+    pages.forEach(p => {
+        if(p === '...') buttons.push('<span class="admin-page-ellipsis">...</span>');
+        else addButton(String(p), p, false, p === page);
+    });
+
+    addButton('Next', page+1, page === totalPages);
+
+    box.innerHTML = `<div class="admin-pagination-controls">${buttons.join('')}</div><div class="admin-pagination-summary">Showing ${((page-1)*ADMIN_PAGE_SIZE)+1} to ${Math.min(page*ADMIN_PAGE_SIZE,totalItems)} of ${totalItems}</div>`;
+    box.style.display = 'block';
+}
+
+window.adminGoToPage = function(stateKey, page){
+    adminPageState[stateKey] = Number(page) || 1;
+    const loaders = {
+        services: loadServiceList,
+        orders: loadOrders,
+        users: loadUsers,
+        balanceRequests: loadBalanceRequests
+    };
+    if(loaders[stateKey]) loaders[stateKey]();
+};
+
+// ===============================
 // LOAD SERVICES
 // ===============================
 
 async function loadServiceList(){
-
     const table = document.getElementById("serviceList");
-
     if(!table) return;
 
-    table.innerHTML = "";
+    table.innerHTML = `<tr><td colspan="5">Loading services...</td></tr>`;
 
-    const snapshot = await getDocs(collection(db,"services"));
+    try{
+        const snapshot = await getDocs(collection(db,"services"));
+        const services = snapshot.docs
+            .filter(serviceDoc => serviceDoc.data()?.isSpecial !== true)
+            .map(serviceDoc => ({ docId: serviceDoc.id, ...(serviceDoc.data() || {}) }));
 
-    snapshot.forEach((serviceDoc)=>{
+        const keyword = document.getElementById("searchBox")?.value.toLowerCase().trim() || "";
+        const filtered = keyword
+            ? services.filter(service => JSON.stringify(service).toLowerCase().includes(keyword))
+            : services;
 
-        const service = serviceDoc.data();
+        const totalPages = Math.max(1, Math.ceil(filtered.length / ADMIN_PAGE_SIZE));
+        if(adminPageState.services > totalPages) adminPageState.services = totalPages;
+        const page = adminPageState.services;
+        const start = (page - 1) * ADMIN_PAGE_SIZE;
+        const pageItems = filtered.slice(start, start + ADMIN_PAGE_SIZE);
 
-        if (service.isSpecial === true) return;
+        if(!pageItems.length){
+            table.innerHTML = `<tr><td colspan="5">No services found.</td></tr>`;
+        }else{
+            table.innerHTML = pageItems.map(service => `
+                <tr>
+                    <td><code class="service-id-cell">${escapeHtmlAdmin(service.serviceId || service.docId)}</code></td>
+                    <td>
+                        <img src="${escapeHtmlAdmin(service.image || 'images/no-image.png')}"
+                             style="width:60px;height:60px;object-fit:cover;border-radius:8px;display:block;margin:0 auto 5px;"
+                             onerror="this.style.display='none'">
+                        ${escapeHtmlAdmin(service.name || "")}
+                    </td>
+                    <td>৳ ${escapeHtmlAdmin(service.price || service.ratePer1000 || 0)}</td>
+                    <td>${service.active ? "Active" : "Inactive"}</td>
+                    <td class="action-cell">
+                        <button class="action-btn" onclick="editService('${service.docId}')">✏️</button>
+                        <button class="action-btn" onclick="deleteService('${service.docId}')">🗑️</button>
+                    </td>
+                </tr>`).join('');
+        }
 
-        table.innerHTML += `
-        <tr>
-
-        <td>
-            <code class="service-id-cell">${service.serviceId || serviceDoc.id}</code>
-        </td>
-
-        <td>
-    <img
-        src="${service.image || 'images/no-image.png'}"
-        style="
-            width:60px;
-            height:60px;
-            object-fit:cover;
-            border-radius:8px;
-            display:block;
-            margin:0 auto 5px;
-        "
-    >
-
-    ${service.name || ""}
-</td>
-
-            <td>৳ ${service.price || 0}</td>
-
-            <td>${service.active ? "Active" : "Inactive"}</td>
-
-            <td class="action-cell">
-
-    <button class="action-btn"
-        onclick="editService('${serviceDoc.id}')">
-        ✏️
-    </button>
-
-    <button class="action-btn"
-        onclick="deleteService('${serviceDoc.id}')">
-        🗑️
-    </button>
-
-</td>
-
-        </tr>
-        `;
-
-    });
-
+        renderAdminPagination('servicePagination','services',filtered.length,loadServiceList);
+    }catch(error){
+        console.error('Could not load services:', error);
+        table.innerHTML = `<tr><td colspan="5">Could not load services.</td></tr>`;
+    }
 }
 
 // =========================
@@ -693,132 +749,147 @@ for (const userDoc of users.docs) {
 // ===============================
 
 async function loadOrders(){
-
     const table = document.getElementById("orderTable");
-    const keyword = document.getElementById("orderSearch")?.value.toLowerCase() || "";
-
     if(!table) return;
 
-    table.innerHTML = "";
+    table.innerHTML = `<tr><td colspan="5">Loading orders...</td></tr>`;
 
-    const snapshot = await getDocs(collection(db,"orders"));
+    try{
+        const keyword = document.getElementById("orderSearch")?.value.toLowerCase().trim() || "";
+        const snapshot = await getDocs(collection(db,"orders"));
+        const orders = snapshot.docs.map(orderDoc => ({
+            docId: orderDoc.id,
+            ...(orderDoc.data() || {})
+        }));
 
-    snapshot.forEach((orderDoc)=>{
+        const getTime = order => {
+            const value = order.createdAt || order.created_at || order.timestamp || order.date || order.orderDate;
+            if(value && typeof value.toMillis === 'function') return value.toMillis();
+            if(value && typeof value.toDate === 'function') return value.toDate().getTime();
+            if(typeof value === 'number') return value;
+            if(typeof value === 'string'){
+                const parsed = Date.parse(value);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            }
+            return 0;
+        };
+        orders.sort((a,b)=>getTime(b)-getTime(a));
 
-        const order = orderDoc.data();
+        const filtered = keyword
+            ? orders.filter(order => JSON.stringify(order).toLowerCase().includes(keyword))
+            : orders;
 
-        let info = "";
+        let serviceLookup = [];
+        try{
+            const serviceSnap = await getDocs(collection(db,"services"));
+            serviceLookup = serviceSnap.docs.map(serviceDoc => ({docId:serviceDoc.id,...(serviceDoc.data()||{})}));
+        }catch(e){ console.warn('Service lookup skipped for admin orders:',e); }
 
-        const searchText = JSON.stringify(order).toLowerCase();
+        const resolveServiceId = order => {
+            const raw = String(order.serviceId || '').trim();
+            const apiId = String(order.apiServiceId || '').trim();
+            const name = String(order.serviceName || order.name || '').trim();
+            const match = serviceLookup.find(s =>
+                (raw && String(s.serviceId || '').trim() === raw) ||
+                (raw && s.docId === raw) ||
+                (apiId && String(s.apiServiceId || '').trim() === apiId) ||
+                (name && String(s.name || '').trim() === name)
+            );
+            return String(match?.serviceId || raw || '—').trim() || '—';
+        };
 
-if(keyword && !searchText.includes(keyword)){
-    return;
-}
+        const formatDateTime = order => {
+            const value = order.createdAt || order.created_at || order.timestamp || order.date || order.orderDate;
+            let date = null;
+            if(value && typeof value.toDate === 'function') date=value.toDate();
+            else if(value && typeof value.toMillis === 'function') date=new Date(value.toMillis());
+            else if(value instanceof Date) date=value;
+            else if(typeof value === 'number') date=new Date(value);
+            else if(typeof value === 'string'){
+                const d=new Date(value); if(!Number.isNaN(d.getTime())) date=d;
+            }
+            return date && !Number.isNaN(date.getTime()) ? date.toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+        };
 
-        if(order.userInfo){
+        const totalPages = Math.max(1,Math.ceil(filtered.length/ADMIN_PAGE_SIZE));
+        if(adminPageState.orders>totalPages) adminPageState.orders=totalPages;
+        const page=adminPageState.orders;
+        const pageItems=filtered.slice((page-1)*ADMIN_PAGE_SIZE,page*ADMIN_PAGE_SIZE);
 
-            Object.entries(order.userInfo).forEach(([key,value])=>{
-
-                info += `
-                <div style="margin-bottom:8px">
-                    <b>${key}</b><br>
-                    ${value}
-                </div>
-                `;
-
-            });
-
+        if(!pageItems.length){
+            table.innerHTML=`<tr><td colspan="5">No orders found.</td></tr>`;
+        }else{
+            table.innerHTML=pageItems.map(order=>{
+                let info='';
+                if(order.userInfo){
+                    Object.entries(order.userInfo).forEach(([key,value])=>{
+                        info += `<div style="margin-bottom:8px"><b>${escapeHtmlAdmin(key)}</b><br>${escapeHtmlAdmin(value)}</div>`;
+                    });
+                }
+                const serviceId=resolveServiceId(order);
+                const serviceName=order.serviceName || order.name || 'Service';
+                const orderId=order.docId;
+                return `<tr>
+                    <td>
+                        <span class="admin-order-id-badge">ID: ${escapeHtmlAdmin(serviceId)}</span>
+                        <div class="admin-order-service-name">${escapeHtmlAdmin(serviceName)}</div>
+                    </td>
+                    <td>${info}</td>
+                    <td>৳ ${escapeHtmlAdmin(order.price ?? order.totalPrice ?? 0)}</td>
+                    <td class="admin-order-date-time">${escapeHtmlAdmin(formatDateTime(order))}</td>
+                    <td>${escapeHtmlAdmin(order.status || 'Pending')}</td>
+                    <td>
+                        <button onclick="updateStatus('${orderId}','Approved')">✅</button>
+                        <button onclick="updateStatus('${orderId}','Processing')">⏳</button>
+                        <button onclick="updateStatus('${orderId}','Rejected')">❌</button>
+                        <button onclick="goToUpload('${orderId}')">📤</button>
+                        <button onclick="viewOrder('${orderId}')">👁</button>
+                    </td>
+                </tr>`;
+            }).join('');
         }
-
-        table.innerHTML += `
-        <tr>
-
-            <td>${order.serviceName}</td>
-
-            <td>${info}</td>
-
-            <td>৳ ${order.price}</td>
-
-            <td>${order.status}</td>
-
-            <td>
-
-                <button onclick="updateStatus('${orderDoc.id}','Approved')">
-                    ✅
-                </button>
-
-                <button onclick="updateStatus('${orderDoc.id}','Processing')">
-                    ⏳
-                </button>
-
-                <button onclick="updateStatus('${orderDoc.id}','Rejected')">
-                    ❌
-                </button>
-
-                <button onclick="goToUpload('${orderDoc.id}')">
-                    📤
-                </button>
-
-                <button onclick="viewOrder('${orderDoc.id}')">
-    👁
-</button>
-
-            </td>
-
-        </tr>
-        `;
-
-    });
-
+        renderAdminPagination('orderPagination','orders',filtered.length,loadOrders);
+    }catch(error){
+        console.error('Could not load orders:',error);
+        table.innerHTML=`<tr><td colspan="5">Could not load orders.</td></tr>`;
+    }
 }
 // ===============================
 // LOAD BALANCE REQUESTS
 // ===============================
 
 async function loadBalanceRequests(){
-
-    const table = document.getElementById("balanceRequestTable");
-
+    const table=document.getElementById("balanceRequestTable");
     if(!table) return;
-
-    table.innerHTML = "";
-
-    const snapshot = await getDocs(collection(db,"balanceRequests"));
-
-    snapshot.forEach((requestDoc)=>{
-
-        const request = requestDoc.data();
-
-        table.innerHTML += `
-        <tr>
-
-            <td>${request.email}</td>
-
-            <td>৳ ${request.amount}</td>
-
-            <td>${request.method}</td>
-
-            <td>${request.trxId}</td>
-
-            <td>${request.status}</td>
-
-            <td>
-
-                <button onclick="approveBalance('${requestDoc.id}')">
-                    ✅ Approve
-                </button>
-
-                <button onclick="rejectBalance('${requestDoc.id}')">
-                    ❌ Reject
-                </button>
-
-            </td>
-
-        </tr>
-        `;
-
-    });
-
+    table.innerHTML=`<tr><td colspan="6">Loading transactions...</td></tr>`;
+    try{
+        const snapshot=await getDocs(collection(db,"balanceRequests"));
+        const requests=snapshot.docs.map(d=>({docId:d.id,...(d.data()||{})}));
+        requests.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
+        const totalPages=Math.max(1,Math.ceil(requests.length/ADMIN_PAGE_SIZE));
+        if(adminPageState.balanceRequests>totalPages) adminPageState.balanceRequests=totalPages;
+        const page=adminPageState.balanceRequests;
+        const pageItems=requests.slice((page-1)*ADMIN_PAGE_SIZE,page*ADMIN_PAGE_SIZE);
+        if(!pageItems.length){
+            table.innerHTML=`<tr><td colspan="6">No transactions found.</td></tr>`;
+        }else{
+            table.innerHTML=pageItems.map(request=>`<tr>
+                <td>${escapeHtmlAdmin(request.email||'')}</td>
+                <td>৳ ${escapeHtmlAdmin(request.amount||0)}</td>
+                <td>${escapeHtmlAdmin(request.method||'')}</td>
+                <td><span class="admin-trx-id-badge">${escapeHtmlAdmin(request.trxId||'—')}</span></td>
+                <td>${escapeHtmlAdmin(request.status||'Pending')}</td>
+                <td>
+                    <button onclick="approveBalance('${request.docId}')">✅ Approve</button>
+                    <button onclick="rejectBalance('${request.docId}')">❌ Reject</button>
+                </td>
+            </tr>`).join('');
+        }
+        renderAdminPagination('balancePagination','balanceRequests',requests.length,loadBalanceRequests);
+    }catch(error){
+        console.error('Could not load transactions:',error);
+        table.innerHTML=`<tr><td colspan="6">Could not load transactions.</td></tr>`;
+    }
 }
 // ===============================
 // APPROVE BALANCE
@@ -1990,65 +2061,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 // =========================
 
 async function loadUsers(){
-
-    const table = document.getElementById("usersTable");
-
-    const keyword = document.getElementById("userSearch")?.value.toLowerCase() || "";
-
+    const table=document.getElementById("usersTable");
     if(!table) return;
-
-    table.innerHTML = "";
-
-    const snapshot = await getDocs(collection(db,"users"));
-
-    snapshot.forEach((doc)=>{
-
-        const user = doc.data();
-        
-const searchText = JSON.stringify(user).toLowerCase();
-
-if(keyword && !searchText.includes(keyword)){
-    return;
-}
-
-        table.innerHTML += `
-
-
-        <tr>
-
-            <td>${user.name || "No Name"}</td>
-
-            <td>${user.email}</td>
-
-            <td>৳ ${user.balance || 0}</td>
-
-            <td>🟢 Active</td>
-
-         <td>
-
-    <button class="plus-btn"
-    onclick="addBalance('${doc.id}')">
-        ➕
-    </button>
-
-    <button class="minus-btn"
-    onclick="minusBalance('${doc.id}')">
-        ➖
-    </button>
-
-    <button class="view-btn"
-    onclick="viewUser('${doc.id}')">
-        👁
-    </button>
-
-</td>
-
-        </tr>
-
-        `;
-
-    });
-
+    table.innerHTML=`<tr><td colspan="5">Loading users...</td></tr>`;
+    try{
+        const keyword=document.getElementById("userSearch")?.value.toLowerCase().trim()||"";
+        const snapshot=await getDocs(collection(db,"users"));
+        const users=snapshot.docs.map(d=>({docId:d.id,...(d.data()||{})}));
+        const filtered=keyword ? users.filter(user=>JSON.stringify(user).toLowerCase().includes(keyword)) : users;
+        const totalPages=Math.max(1,Math.ceil(filtered.length/ADMIN_PAGE_SIZE));
+        if(adminPageState.users>totalPages) adminPageState.users=totalPages;
+        const page=adminPageState.users;
+        const pageItems=filtered.slice((page-1)*ADMIN_PAGE_SIZE,page*ADMIN_PAGE_SIZE);
+        if(!pageItems.length){
+            table.innerHTML=`<tr><td colspan="5">No users found.</td></tr>`;
+        }else{
+            table.innerHTML=pageItems.map(user=>`<tr>
+                <td>${escapeHtmlAdmin(user.name||"No Name")}</td>
+                <td>${escapeHtmlAdmin(user.email||"")}</td>
+                <td>৳ ${escapeHtmlAdmin(user.balance||0)}</td>
+                <td>🟢 Active</td>
+                <td>
+                    <button class="plus-btn" onclick="addBalance('${user.docId}')">➕</button>
+                    <button class="minus-btn" onclick="minusBalance('${user.docId}')">➖</button>
+                    <button class="view-btn" onclick="viewUser('${user.docId}')">👁</button>
+                </td>
+            </tr>`).join('');
+        }
+        renderAdminPagination('userPagination','users',filtered.length,loadUsers);
+    }catch(error){
+        console.error('Could not load users:',error);
+        table.innerHTML=`<tr><td colspan="5">Could not load users.</td></tr>`;
+    }
 }
 
 // =========================
@@ -2613,6 +2657,11 @@ document.getElementById("pendingRequests").innerText = pending;
 // USER SEARCH
 // =========================
 
+
+document.getElementById("searchBox")?.addEventListener("input", function(){
+    adminPageState.services = 1;
+    loadServiceList();
+});
 document.getElementById("userSearch")?.addEventListener("input", function(){
 
     loadUsers();

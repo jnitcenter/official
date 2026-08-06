@@ -2035,3 +2035,119 @@ align-items:center;
     font-weight:700;
     word-break:break-all;
 }
+
+
+/* =========================================================
+   PAGINATION — 10 ITEMS PER PAGE
+   Compact on desktop + mobile; never stretch buttons full width.
+========================================================= */
+.admin-pagination{
+    width:100%;
+    margin:16px 0 4px;
+    text-align:center;
+}
+.admin-pagination-controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+.admin-page-btn{
+    width:auto !important;
+    min-width:42px !important;
+    height:38px !important;
+    min-height:38px !important;
+    padding:0 14px !important;
+    margin:0 !important;
+    border:1px solid rgba(148,163,184,.20) !important;
+    border-radius:10px !important;
+    background:#111c2d !important;
+    color:#e5e7eb !important;
+    font-size:14px !important;
+    font-weight:700 !important;
+    line-height:38px !important;
+    cursor:pointer !important;
+    box-shadow:none !important;
+}
+.admin-page-btn:hover:not(:disabled){
+    border-color:#22c55e !important;
+    color:#fff !important;
+}
+.admin-page-btn.active{
+    background:#22c55e !important;
+    border-color:#22c55e !important;
+    color:#07130b !important;
+}
+.admin-page-btn:disabled{
+    opacity:.42 !important;
+    cursor:not-allowed !important;
+}
+.admin-page-ellipsis{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:20px;
+    height:38px;
+    color:#94a3b8;
+    font-weight:800;
+}
+.admin-pagination-summary{
+    margin-top:9px;
+    color:#94a3b8;
+    font-size:14px;
+    text-align:left;
+}
+
+/* Colorful IDs used in the Orders/Transactions lists. */
+.admin-order-id-badge{
+    display:inline-flex;
+    align-items:center;
+    width:max-content;
+    max-width:100%;
+    padding:5px 9px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    color:#fff !important;
+    font-size:12px;
+    font-weight:800;
+    box-shadow:0 2px 9px rgba(37,99,235,.25);
+}
+.admin-order-service-name{
+    margin-top:6px;
+    font-weight:700;
+}
+.admin-order-date-time{
+    white-space:nowrap;
+    color:#cbd5e1;
+    font-size:13px;
+    font-weight:600;
+}
+.admin-order-doc-id{
+    margin-top:3px;
+    color:#94a3b8;
+    font-size:10px;
+    word-break:break-all;
+}
+.admin-trx-id-badge{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:8px;
+    background:linear-gradient(135deg,#0ea5e9,#2563eb);
+    color:#fff;
+    font-weight:700;
+    font-size:12px;
+}
+@media(max-width:600px){
+    .admin-pagination-controls{gap:6px;}
+    .admin-page-btn{
+        min-width:40px !important;
+        height:36px !important;
+        min-height:36px !important;
+        padding:0 10px !important;
+        font-size:13px !important;
+        line-height:36px !important;
+    }
+    .admin-page-ellipsis{height:36px;}
+    .admin-pagination-summary{font-size:13px;}
+}
