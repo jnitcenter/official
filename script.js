@@ -930,6 +930,31 @@ async function loadMyOrders(uid) {
         // Newest order first.
         orders.sort((a, b) => getOrderTime(b) - getOrderTime(a));
 
+        // Status filter for the customer-facing My Orders list.
+        // Keep the original order array intact so switching filters is instant.
+        let activeOrderFilter = "all";
+        const normalizeOrderStatus = value => {
+            const s = String(value || "pending").trim().toLowerCase();
+            if (s === "completed" || s === "complete" || s === "approved" || s === "success" || s === "successful") return "complete";
+            if (s === "cancelled" || s === "canceled" || s === "cancel" || s === "rejected" || s === "failed") return "cancel";
+            if (s === "partial" || s === "partially completed" || s === "partially_completed") return "partial";
+            if (s === "processing" || s === "in progress" || s === "in_progress") return "processing";
+            return "pending";
+        };
+
+        const filterButtons = document.querySelectorAll("#myOrdersFilters .my-orders-filter-btn");
+        filterButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                activeOrderFilter = button.dataset.orderFilter || "all";
+                filterButtons.forEach(btn => {
+                    const active = btn === button;
+                    btn.classList.toggle("active", active);
+                    btn.setAttribute("aria-selected", active ? "true" : "false");
+                });
+                renderPage(1);
+            });
+        });
+
         const escapeCell = value => String(value ?? "")
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -976,10 +1001,20 @@ async function loadMyOrders(uid) {
 
         const renderPage = page => {
             const perPage = 10;
-            const totalPages = Math.max(1, Math.ceil(orders.length / perPage));
+            const filteredOrders = activeOrderFilter === "all"
+                ? orders
+                : orders.filter(order => normalizeOrderStatus(order.status) === activeOrderFilter);
+            const totalPages = Math.max(1, Math.ceil(filteredOrders.length / perPage));
             const currentPage = Math.min(Math.max(1, page), totalPages);
             const startIndex = (currentPage - 1) * perPage;
-            const pageOrders = orders.slice(startIndex, startIndex + perPage);
+            const pageOrders = filteredOrders.slice(startIndex, startIndex + perPage);
+
+            if (!filteredOrders.length) {
+                const label = activeOrderFilter === "all" ? "No Orders Found" : `No ${activeOrderFilter} orders found`;
+                table.innerHTML = `<tr><td colspan="5">${escapeCell(label)}</td></tr>`;
+                if (pagination) pagination.innerHTML = "";
+                return;
+            }
 
             table.innerHTML = pageOrders.map(order => {
                 const serviceId = resolveCustomerServiceId(order);
@@ -1025,11 +1060,11 @@ async function loadMyOrders(uid) {
             }
 
             const firstShown = startIndex + 1;
-            const lastShown = Math.min(startIndex + perPage, orders.length);
+            const lastShown = Math.min(startIndex + perPage, filteredOrders.length);
 
             pagination.innerHTML = `
                 <div class="my-orders-pagination-info">
-                    Showing ${firstShown} to ${lastShown} of ${orders.length}
+                    Showing ${firstShown} to ${lastShown} of ${filteredOrders.length}
                 </div>
                 <div class="my-orders-pagination-controls">
                     <button type="button" class="my-orders-page-btn my-orders-prev" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""}>Previous</button>

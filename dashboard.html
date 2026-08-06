@@ -262,6 +262,15 @@ TRANSACTION STATEMENT
 <section id="myOrdersSection" class="services-section">
     <h2 data-i18n="myOrders">📦 My Orders</h2>
 
+    <div id="myOrdersFilters" class="my-orders-filters" role="tablist" aria-label="Filter orders by status">
+        <button type="button" class="my-orders-filter-btn active" data-order-filter="all" role="tab" aria-selected="true">All</button>
+        <button type="button" class="my-orders-filter-btn" data-order-filter="pending" role="tab" aria-selected="false">Pending</button>
+        <button type="button" class="my-orders-filter-btn" data-order-filter="processing" role="tab" aria-selected="false">Processing</button>
+        <button type="button" class="my-orders-filter-btn" data-order-filter="complete" role="tab" aria-selected="false">Complete</button>
+        <button type="button" class="my-orders-filter-btn" data-order-filter="cancel" role="tab" aria-selected="false">Cancel</button>
+        <button type="button" class="my-orders-filter-btn" data-order-filter="partial" role="tab" aria-selected="false">Partial</button>
+    </div>
+
     <table class="order-table">
 
         <thead>
