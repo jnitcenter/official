@@ -3075,6 +3075,47 @@ body.light-mode .order-table td{
 }
 
 
+
+/* Service list order: ID -> Rate -> Service */
+.smm-service-topline{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:7px;
+    min-width:0;
+}
+.smm-service-topline h3{
+    flex:1 1 220px;
+    min-width:0;
+    margin:0;
+}
+.smm-inline-rate{
+    display:inline-flex;
+    align-items:center;
+    padding:3px 8px;
+    border-radius:999px;
+    background:rgba(34,197,94,.12);
+    color:#22c55e;
+    font-size:11px;
+    font-weight:800;
+    white-space:nowrap;
+}
+.new-order-service-header{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:7px;
+}
+.new-order-service-row-name{
+    flex:1 1 180px;
+    min-width:0;
+}
+@media (max-width:600px){
+    .new-order-service-row-price{
+        display:inline-flex;
+    }
+}
+
 /* =========================================================
    NEW ORDER - CATEGORY / SUB CATEGORY / SERVICE PICKERS
    All three use the same custom picker interaction.
@@ -3282,5 +3323,84 @@ body.light-mode .order-table td{
     }
     .new-order-picker-row{
         padding:8px 9px;
+    }
+}
+
+/* Service ID + My Orders improvements */
+.my-order-service-id {
+    display: inline-block;
+    margin-right: 7px;
+    padding: 3px 8px;
+    border-radius: 7px;
+    background: #2563eb;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+.my-order-service-name {
+    display: inline;
+}
+.my-orders-error {
+    text-align: center;
+    font-weight: 700;
+    padding: 18px !important;
+}
+.order-table th,
+.order-table td {
+    white-space: nowrap;
+}
+
+/* Service ID highlight + My Orders date/time */
+.service-id-badge{
+    display:inline-flex;
+    align-items:center;
+    width:max-content;
+    max-width:100%;
+    padding:3px 8px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    color:#fff !important;
+    font-size:11px;
+    line-height:1.25;
+    font-weight:800;
+    letter-spacing:.2px;
+    box-shadow:0 2px 8px rgba(37,99,235,.25);
+    vertical-align:middle;
+}
+.service-id-badge-selected{
+    flex:0 0 auto;
+    font-size:11px;
+    padding:4px 8px;
+}
+.service-selected-name{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    vertical-align:middle;
+}
+.my-order-service-name{
+    font-weight:700;
+    margin-bottom:6px;
+}
+.my-order-service-id{
+    margin-top:2px;
+}
+.my-order-date-time{
+    display:inline-block;
+    white-space:nowrap;
+    font-size:12px;
+    font-weight:600;
+    color:#cbd5e1;
+}
+@media (max-width:600px){
+    .service-id-badge{
+        font-size:10px;
+        padding:3px 7px;
+    }
+    .my-order-date-time{
+        white-space:normal;
+        line-height:1.35;
     }
 }

@@ -452,7 +452,8 @@ async function placeOrder() {
         await addDoc(collection(db, "orders"), {
             userId: user.uid,
             userEmail: user.email,
-            serviceId: currentService.apiServiceId || currentService.serviceId || serviceId,
+            serviceId: currentService.serviceId || serviceId,
+            apiServiceId: currentService.apiServiceId || "",
             serviceName: currentService.name || "Service",
             price,
             quantity,

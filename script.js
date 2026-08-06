@@ -257,10 +257,11 @@ sourceServices.forEach(service => {
                         ${service.image ? `<img class="smm-service-image" src="${escapeHtml(service.image)}" alt="">` : ""}
                         <div>
                             <div class="smm-category-label">${escapeHtml(category)}</div>
-                            <h3>${escapeHtml(service.name || "Unnamed Service")}</h3>
-                            <div class="smm-service-id">
-    Service ID: ${escapeHtml(service.apiServiceId || service.serviceId || service.id)}
-</div>
+                            <div class="smm-service-topline">
+                                <span class="service-id-badge">ID: ${escapeHtml(service.apiServiceId || service.serviceId || service.id)}</span>
+                                <span class="smm-inline-rate">${escapeHtml(rateText)}</span>
+                                <h3>${escapeHtml(service.name || "Unnamed Service")}</h3>
+                            </div>
                             ${description ? `<p>${escapeHtml(description)}</p>` : ""}
                         </div>
                     </div>
@@ -642,17 +643,17 @@ const priceText = "৳" + displayPrice.toLocaleString();
                                 ${getServiceVisual(service)}
                                 <span class="new-order-service-row-info">
                                     <div class="new-order-service-header">
-    <span class="new-order-service-row-id">
-        ${escapeHtml(service.apiServiceId || service.serviceId || service.id)}
-    </span>
-
-    <span class="new-order-service-row-name">
-        ${escapeHtml(service.name || "Unnamed Service")}
+    <span class="new-order-service-row-id service-id-badge">
+        ID: ${escapeHtml(service.apiServiceId || service.serviceId || service.id)}
     </span>
 
     <span class="new-order-service-row-price">
     ${displayPrice > 0 ? escapeHtml(priceText) : "Contact"}
 </span>
+
+    <span class="new-order-service-row-name">
+        ${escapeHtml(service.name || "Unnamed Service")}
+    </span>
 </div>
                         </button>`;
                 }).join("");
@@ -854,87 +855,151 @@ const priceText = "৳" + displayPrice.toLocaleString();
 // =========================
 // My Orders
 // =========================
-
-async function loadMyOrders(uid){
-
+async function loadMyOrders(uid) {
     const table = document.getElementById("myOrders");
+    if (!table || !uid) return;
 
-    if(!table) return;
+    table.innerHTML = `<tr><td colspan="5">Loading orders...</td></tr>`;
 
-    table.innerHTML = "";
+    try {
+        // Use the same userId field used when orders are created.
+        const q = query(
+            collection(db, "orders"),
+            where("userId", "==", uid)
+        );
 
-    const q = query(
+        const snapshot = await getDocs(q);
 
-        collection(db,"orders"),
+        if (snapshot.empty) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="5">No Orders Found</td>
+                </tr>`;
+            return;
+        }
 
-        where("userId","==",uid)
+        const orders = snapshot.docs.map(orderDoc => ({
+            id: orderDoc.id,
+            ...(orderDoc.data() || {})
+        }));
 
-    );
+        // Always show the Service ID entered in Admin Panel. Older orders may have
+        // stored the Firestore document ID or API provider ID, so resolve them
+        // against the services collection without changing the order itself.
+        let serviceLookup = [];
+        try {
+            const serviceSnap = await getDocs(collection(db, "services"));
+            serviceLookup = serviceSnap.docs.map(serviceDoc => ({
+                docId: serviceDoc.id,
+                ...(serviceDoc.data() || {})
+            }));
+        } catch (lookupError) {
+            console.warn("Service ID lookup skipped:", lookupError);
+        }
 
-    const snapshot = await getDocs(q);
+        const resolveCustomerServiceId = order => {
+            const raw = String(order.serviceId || "").trim();
+            const apiId = String(order.apiServiceId || "").trim();
+            const name = String(order.serviceName || order.name || "").trim();
 
-    if(snapshot.empty){
+            const match = serviceLookup.find(service =>
+                (raw && String(service.serviceId || "").trim() === raw) ||
+                (raw && service.docId === raw) ||
+                (apiId && String(service.apiServiceId || "").trim() === apiId) ||
+                (name && String(service.name || "").trim() === name)
+            );
 
+            return String(match?.serviceId || raw || "—").trim() || "—";
+        };
+
+        // Newest order first. createdAt is stored as milliseconds in new orders.
+        orders.sort((a, b) => {
+            const getTime = order => {
+                const value = order.createdAt || order.created_at || order.timestamp || order.date;
+                if (value && typeof value.toMillis === "function") return value.toMillis();
+                if (value instanceof Date) return value.getTime();
+                if (typeof value === "number") return value;
+                if (typeof value === "string") {
+                    const parsed = Date.parse(value);
+                    return Number.isNaN(parsed) ? 0 : parsed;
+                }
+                return 0;
+            };
+            return getTime(b) - getTime(a);
+        });
+
+        const escapeCell = value => String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+        const formatDateTime = order => {
+            const value = order.createdAt || order.created_at || order.timestamp || order.date;
+            let date = null;
+            if (value && typeof value.toDate === "function") date = value.toDate();
+            else if (value && typeof value.toMillis === "function") date = new Date(value.toMillis());
+            else if (value instanceof Date) date = value;
+            else if (typeof value === "number") date = new Date(value);
+            else if (typeof value === "string") {
+                const parsed = new Date(value);
+                if (!Number.isNaN(parsed.getTime())) date = parsed;
+            }
+
+            if (!date || Number.isNaN(date.getTime())) return "—";
+            return date.toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true
+            });
+        };
+
+        const statusHtml = status => {
+            const s = String(status || "Pending");
+            if (s === "Pending") return "🟡 Pending";
+            if (s === "Processing") return "🔵 Processing";
+            if (s === "Approved") return "🟢 Approved";
+            if (s === "Completed") return "✅ Completed";
+            if (s === "Partial") return "🟠 Partial";
+            if (s === "Canceled" || s === "Rejected") return "🔴 Rejected";
+            return escapeCell(s);
+        };
+
+        table.innerHTML = orders.map(order => {
+            const serviceId = resolveCustomerServiceId(order);
+            const serviceName = order.serviceName || order.name || "Service";
+            const price = order.price ?? order.totalPrice ?? 0;
+            const result = order.resultLink
+                ? `<a href="${escapeCell(order.resultLink)}" target="_blank" rel="noopener">📥 Download</a>`
+                : "—";
+
+            return `
+                <tr>
+                    <td>
+                        <span class="my-order-service-id">ID: ${escapeCell(serviceId)}</span>
+                        <span class="my-order-service-name">${escapeCell(serviceName)}</span>
+                    </td>
+                    <td>৳ ${escapeCell(price)}</td>
+                    <td>${formatDateTime(order)}</td>
+                    <td>${statusHtml(order.status)}</td>
+                    <td>${result}</td>
+                </tr>`;
+        }).join("");
+    } catch (error) {
+        console.error("Could not load orders:", error);
         table.innerHTML = `
-        <tr>
-
-        <td colspan="3">
-
-        No Orders Found
-
-        </td>
-
-        </tr>
-        `;
-
-        return;
-
+            <tr>
+                <td colspan="5" class="my-orders-error">
+                    Could not load orders. Please try again.
+                </td>
+            </tr>`;
     }
-
-    snapshot.forEach((doc)=>{
-
-        const order = doc.data();
-
-  table.innerHTML += `
-
-<tr>
-
-<td>${order.serviceName}</td>
-
-<td>৳ ${order.price}</td>
-
-<td>
-${
-    order.status === "Pending"
-    ? "🟡 Pending"
-
-    : order.status === "Processing"
-    ? "🔵 Processing"
-
-    : order.status === "Approved"
-    ? "🟢 Approved"
-
-    : order.status === "Completed"
-    ? "✅ Completed"
-
-    : "🔴 Rejected"
 }
-</td>
-
-<td>
-${
-    order.resultLink
-        ? `<a href="${order.resultLink}" target="_blank">📥 Download</a>`
-        : "—"
-}
-</td>
-
-</tr>
-`;
-
-    });
-    
-    }
 
     // =========================
 // Normalize the configured Worker/Proxy URL for order/status calls.

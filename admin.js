@@ -277,7 +277,9 @@ const apiKey =
 
 const data = {
 
-    serviceId: apiServiceId || serviceId,
+    serviceId: serviceId,
+     // Keep the provider/API service ID separate. The customer-facing Service ID is the admin-entered serviceId.
+     apiServiceId,
     name,
     price: Number(price || 0),
     ratePer1000,
