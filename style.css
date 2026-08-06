@@ -1998,3 +1998,87 @@ RESET PASSWORD MODAL
         line-height:1.55;
     }
 }
+.new-order-service-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    width:100%;
+}
+
+.new-order-service-row-id{
+    background:#2563eb;
+    color:#fff;
+    padding:4px 10px;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.new-order-service-row-name{
+    flex:1;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.new-order-service-row-price{
+    flex-shrink:0;
+    background:#16a34a;
+    color:#fff;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+@media (max-width:768px){
+
+    .new-order-service-header{
+        display:grid;
+        grid-template-columns:55px 1fr 70px;
+        align-items:center;
+        gap:8px;
+        width:100%;
+    }
+
+    .new-order-service-row-name{
+        white-space:normal;
+        overflow:visible;
+        text-overflow:unset;
+        font-size:13px;
+    }
+
+    .new-order-service-row-price{
+        font-size:11px;
+        padding:5px 8px;
+    }
+}
+
+.new-order-service-row{
+    display:flex;
+    align-items:center;
+    width:100%;
+}
+
+.new-order-service-row-left{
+    display:flex;
+    align-items:center;
+    width:100%;
+}
+
+.new-order-service-row-info{
+    flex:1;
+    width:100%;
+}
+
+.new-order-service-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    width:100%;
+}

@@ -80,7 +80,10 @@ async function loadService() {
 
         setText("serviceTitle", currentService.name || "Service");
         setText("serviceNameText", currentService.name || "Service");
-        setText("serviceIdDisplay", `Service ID: ${currentService.id || "N/A"}`);
+        setText(
+  "serviceIdDisplay",
+  `Service ID: ${currentService.apiServiceId || currentService.serviceId || currentService.id || "N/A"}`
+);
 
         const serviceCategory = String(currentService.category || "Other").trim() || "Other";
         const serviceSubCategory = String(
@@ -122,11 +125,9 @@ async function loadService() {
         const legacyPrice = Number(currentService.price || 0);
 
         setText(
-            "rateDisplay",
-            ratePer1000 > 0
-                ? "৳ " + ratePer1000.toLocaleString() + " / 1000"
-                : "৳ " + legacyPrice.toLocaleString()
-        );
+    "rateDisplay",
+    "Price: ৳" + (ratePer1000 > 0 ? ratePer1000 : legacyPrice).toLocaleString()
+);
 
         // Delivery is always shown as Automatic as requested.
         setText("deliveryDisplay", "Automatic");
@@ -451,7 +452,7 @@ async function placeOrder() {
         await addDoc(collection(db, "orders"), {
             userId: user.uid,
             userEmail: user.email,
-            serviceId,
+            serviceId: currentService.apiServiceId || currentService.serviceId || serviceId,
             serviceName: currentService.name || "Service",
             price,
             quantity,

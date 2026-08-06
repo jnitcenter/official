@@ -277,7 +277,7 @@ const apiKey =
 
 const data = {
 
-    serviceId,
+    serviceId: apiServiceId || serviceId,
     name,
     price: Number(price || 0),
     ratePer1000,

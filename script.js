@@ -243,9 +243,7 @@ sourceServices.forEach(service => {
             serviceList.innerHTML = services.map(service => {
                 const rate = Number(service.ratePer1000 || 0);
                 const legacyPrice = Number(service.price || 0);
-                const rateText = rate > 0
-                    ? `৳ ${rate.toLocaleString()} / 1000`
-                    : `৳ ${legacyPrice.toLocaleString()}`;
+                const rateText = `৳ ${Number(rate > 0 ? rate : legacyPrice).toLocaleString()}`;
 
                 const min = Number(service.minimumQuantity || 1);
                 const max = Number(service.maximumQuantity || 999999);
@@ -260,6 +258,9 @@ sourceServices.forEach(service => {
                         <div>
                             <div class="smm-category-label">${escapeHtml(category)}</div>
                             <h3>${escapeHtml(service.name || "Unnamed Service")}</h3>
+                            <div class="smm-service-id">
+    Service ID: ${escapeHtml(service.apiServiceId || service.serviceId || service.id)}
+</div>
                             ${description ? `<p>${escapeHtml(description)}</p>` : ""}
                         </div>
                     </div>
@@ -464,7 +465,7 @@ sourceServices.forEach(service => {
                 continueBtn.disabled = false;
 
                 if (serviceSelectedText) {
-                    serviceSelectedText.textContent = `ID: ${service.serviceId || service.id} — ${service.name || "Service"}`;
+                   serviceSelectedText.textContent = `ID: ${service.apiServiceId || service.serviceId || service.id} — ${service.name || "Service"}`;
                 }
                 if (serviceSelectedIcon) {
                     serviceSelectedIcon.innerHTML = getServiceVisual(service);
@@ -629,9 +630,9 @@ sourceServices.forEach(service => {
                     const category = String(service.category || "Other").trim() || "Other";
                     const rate = Number(service.ratePer1000 || 0);
                     const price = Number(service.price || 0);
-                    const priceText = rate > 0
-                        ? `৳${rate.toLocaleString()} / 1000`
-                        : `৳${price.toLocaleString()}`;
+                    const displayPrice = Number(service.ratePer1000 || service.rate || service.price || 0);
+
+const priceText = "৳" + displayPrice.toLocaleString();
 
                     return `
                         <button type="button"
@@ -640,14 +641,19 @@ sourceServices.forEach(service => {
                             <span class="new-order-service-row-left">
                                 ${getServiceVisual(service)}
                                 <span class="new-order-service-row-info">
-                                    <span class="new-order-service-row-name">${escapeHtml(service.name || "Unnamed Service")}</span>
-                                    <span class="new-order-service-row-id">ID: ${escapeHtml(service.serviceId || service.id)}</span>
-                                    ${sub
-                                        ? `<span class="new-order-service-row-sub">${escapeHtml(category)} → ${escapeHtml(sub)}</span>`
-                                        : `<span class="new-order-service-row-sub">${escapeHtml(category)}</span>`}
-                                </span>
-                            </span>
-                            <span class="new-order-service-row-price">${escapeHtml(priceText)}</span>
+                                    <div class="new-order-service-header">
+    <span class="new-order-service-row-id">
+        ${escapeHtml(service.apiServiceId || service.serviceId || service.id)}
+    </span>
+
+    <span class="new-order-service-row-name">
+        ${escapeHtml(service.name || "Unnamed Service")}
+    </span>
+
+    <span class="new-order-service-row-price">
+    ${displayPrice > 0 ? escapeHtml(priceText) : "Contact"}
+</span>
+</div>
                         </button>`;
                 }).join("");
 
