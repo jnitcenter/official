@@ -45,6 +45,19 @@
 </header>
 
 <!-- =========================
+DASHBOARD MOVING SLIDE
+========================= -->
+<section class="dashboard-slide" id="dashboardSlide" aria-label="Dashboard announcement">
+    <div class="dashboard-slide-icon" id="dashboardSlideIcon">📢</div>
+    <div class="dashboard-slide-datetime" id="dashboardSlideDateTime" aria-label="Date and time"></div>
+    <div class="dashboard-slide-viewport">
+        <div class="dashboard-slide-track" id="dashboardSlideTrack">
+            <span id="dashboardSlideText">Welcome to JN IT CENTER.</span>
+        </div>
+    </div>
+</section>
+
+<!-- =========================
 SPECIAL MENU
 ========================= -->
 
@@ -132,6 +145,19 @@ NEW ORDER / SERVICE PICKER
 ========================= -->
 <section class="services-section new-order-section" id="newOrderSection">
 
+    <!-- =========================
+    QUICK CATEGORIES
+    ========================= -->
+    <div class="dashboard-categories">
+        <div class="dashboard-categories-heading">
+            <h3>Categories</h3>
+            <button type="button" id="dashboardCategoryViewAll" class="dashboard-categories-view-all">View All →</button>
+        </div>
+        <div id="categoryFilter" class="dashboard-category-strip" data-expanded="false">
+            <div class="category-pick-loading">Loading categories...</div>
+        </div>
+    </div>
+
     <div class="new-order-actions">
         <button type="button" class="new-order-main-btn" id="newOrderBtn">🛒 New Order</button>
         <button type="button" class="new-order-balance-btn" id="newOrderBalanceBtn">▣ Addfunds</button>
@@ -211,7 +237,7 @@ NEW ORDER / SERVICE PICKER
          Firebase/service code and old data remain compatible. -->
     <div id="legacyServiceArea" style="display:none;">
         <input type="text" id="serviceSearch">
-        <div id="categoryFilter"><button type="button" class="category-btn active" data-category="all">All</button></div>
+        <!-- Category filter is rendered in the visible Categories section above. -->
         <div id="subCategoryBox">
             <select id="subCategoryFilter"><option value="">Select Sub Category</option></select>
         </div>
@@ -493,7 +519,7 @@ LIVE SUPPORT CHAT
   </div>
 </div>
 
-<script type="module" src="script.js?v=service-id-fix-2"></script>
+<script type="module" src="script.js?v=slide-category-final-1"></script>
 <script type="module" src="notification.js"></script>
 <link rel="stylesheet" href="popup.css">
 <script src="popup.js"></script>

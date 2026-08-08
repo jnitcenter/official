@@ -22,6 +22,8 @@ HEADER
 
 <header class="admin-header">
 
+    <button type="button" class="admin-mobile-menu-btn" id="adminMobileMenuBtn" aria-label="Open admin menu">☰</button>
+
     <div class="admin-logo">
 
         <img src="https://i.postimg.cc/jqfFRkWQ/preview.png" alt="Logo">
@@ -32,6 +34,22 @@ HEADER
         </div>
 
     </div>
+
+
+<nav class="admin-sidebar-nav" id="adminSidebarNav" aria-label="Admin navigation">
+  <button type="button" class="admin-nav-item active" data-target="adminDashboard"><span>⌂</span><b>Dashboard</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminUsers"><span>♟</span><b>Users</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminOrders"><span>🛒</span><b>Orders</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminServices"><span>⚙</span><b>Services</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminCategories"><span>▦</span><b>Categories</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminSubCategories"><span>📁</span><b>Sub Categories</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminSpecialServices"><span>♥</span><b>Special Services</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminSlide"><span>▣</span><b>Slider / Notice</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminBalance"><span>◈</span><b>Balance Requests</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminPayments"><span>▣</span><b>Payments</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminTransactions"><span>↔</span><b>Transactions</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminSettings"><span>⚙</span><b>Settings</b></button>
+</nav>
 
     <div class="admin-header-right">
 <button
@@ -50,7 +68,75 @@ class="notification-btn"><span class="notification-bell" aria-label="Notificatio
 STATS
 ========================= -->
 
-<section class="admin-stats">
+<section class="admin-dashboard-home" id="adminDashboard">
+  <div class="admin-home-hero">
+    <div>
+      <span class="admin-home-kicker">JN IT CENTER</span>
+      <h1>Admin Dashboard</h1>
+      <p>Everything is organized in the menu. Open any section from the ☰ menu to manage your panel.</p>
+    </div>
+    <div class="admin-home-live">● LIVE</div>
+  </div>
+
+  <div class="admin-home-stats">
+    <button class="admin-home-card" type="button" data-dashboard-target="adminUsers">
+      <span class="admin-home-icon">👥</span><span><b>Users</b><small id="homeTotalUsers">0 registered</small></span>
+    </button>
+    <button class="admin-home-card" type="button" data-dashboard-target="adminOrders">
+      <span class="admin-home-icon">🛒</span><span><b>Orders</b><small id="homeTotalOrders">0 orders</small></span>
+    </button>
+    <button class="admin-home-card" type="button" data-dashboard-target="adminServices">
+      <span class="admin-home-icon">🛠️</span><span><b>Services</b><small id="homeTotalServices">0 active services</small></span>
+    </button>
+    <button class="admin-home-card" type="button" data-dashboard-target="adminBalance">
+      <span class="admin-home-icon">💰</span><span><b>Balance Requests</b><small>Open requests</small></span>
+    </button>
+
+    <div class="admin-home-card stat-card-home-user-balance">
+      <span class="admin-home-icon">💳</span><span><b>User Balance</b><small id="homeUserBalance">৳0.00</small></span>
+    </div>
+
+    <div class="admin-home-card stat-card-home-revenue">
+      <span class="admin-home-icon">💵</span><span><b>Revenue</b><small id="homeRevenue">৳0</small></span>
+    </div>
+
+    <div class="admin-home-card stat-card-home-today">
+      <span class="admin-home-icon">📅</span><span><b>Today</b><small id="homeTodayRevenue">৳0</small></span>
+    </div>
+
+    <div class="admin-home-card stat-card-home-month">
+      <span class="admin-home-icon">🗓</span><span><b>This Month</b><small id="homeMonthRevenue">৳0</small></span>
+    </div>
+  </div>
+
+  <div class="admin-home-grid">
+    <div class="admin-home-panel">
+      <div class="admin-home-panel-head"><h2>⚡ Quick Actions</h2><span>Menu shortcuts</span></div>
+      <div class="admin-quick-actions">
+        <button type="button" data-dashboard-target="adminServices"><b>＋ Add Service</b><small>Add New Service</small></button>
+        <button type="button" data-dashboard-target="adminCategories"><b>＋ Add Category</b><small>Add New Category</small></button>
+        <button type="button" data-dashboard-target="adminSubCategories"><b>📁 Sub Category</b><small>Manage Sub Categories</small></button>
+        <button type="button" data-dashboard-target="adminOrders"><b>▤ Manage Orders</b><small>View All Orders</small></button>
+        <button type="button" data-dashboard-target="adminUsers"><b>👥 Users</b><small>Manage Users</small></button>
+        <button type="button" data-dashboard-target="adminSettings"><b>⚙ Settings</b><small>Panel Settings</small></button>
+      </div>
+    </div>
+
+    <div class="admin-home-panel admin-home-info">
+      <div class="admin-home-panel-head"><h2>📌 Admin Menu</h2><span>All tools are here</span></div>
+      <div class="admin-menu-summary">
+        <div><b>📦 Orders</b><span>Orders, status &amp; details</span></div>
+        <div><b>🛠 Services</b><span>Service ID, rate &amp; API</span></div>
+        <div><b>▦ Categories</b><span>Category &amp; sub category</span></div>
+        <div><b>📢 Slider / Notice</b><span>Dashboard notice settings</span></div>
+        <div><b>💳 Payments</b><span>Payment configuration</span></div>
+        <div><b>⚙ Settings</b><span>Site configuration</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="admin-stats admin-dashboard-anchor admin-dashboard-extra" id="adminDashboardStats">
 
     <div class="stat-card stat-card-users">
         <div class="stat-icon">👥</div>
@@ -126,7 +212,7 @@ STATS
 
 </section>
 
-<section class="chart-section">
+<section class="chart-section admin-dashboard-chart admin-dashboard-extra" id="adminRevenueChart">
 
     <div class="chart-card">
 
@@ -138,7 +224,7 @@ STATS
 
 </section>
 
-<section class="chart-section">
+<section class="chart-section admin-dashboard-extra" id="adminMonthlyChart">
 
     <div class="chart-card">
 
@@ -154,7 +240,7 @@ STATS
 ORDERS
 ========================= -->
 
-<section class="admin-orders">
+<section class="admin-orders" id="adminOrders">
 
 <h2>📦 Orders</h2>
 
@@ -199,7 +285,7 @@ ORDERS
 BALANCE REQUESTS
 ========================= -->
 
-<section class="admin-orders">
+<section class="admin-orders" id="adminBalance">
 
     <h2>💰 Balance Requests</h2>
 
@@ -236,7 +322,7 @@ USERS MANAGEMENT
 MAIN CONTENT
 ========================= -->
 
-<section class="admin-users">
+<section class="admin-users" id="adminUsers">
 
     <h2>👥 Users Management</h2>
 
@@ -276,7 +362,7 @@ MAIN CONTENT
 SERVICE MANAGEMENT
 ========================= -->
 
-<section class="service-management">
+<section class="service-management" id="adminServices">
 
 <h2>🛠 Service Management</h2>
 
@@ -433,6 +519,8 @@ placeholder="🔍 Search Service...">
 
 <th>Price</th>
 
+<th>API</th>
+
 <th>Status</th>
 
 <th>Action</th>
@@ -454,11 +542,14 @@ placeholder="🔍 Search Service...">
 SPECIAL SERVICES MANAGEMENT
 ========================= -->
 
-<section class="service-management special-service-management">
+<section class="service-management special-service-management" id="adminSpecialServices">
 
 <h2>⭐ Special Services</h2>
 
 <div class="service-form">
+
+<label>Service ID</label>
+<input type="text" id="specialServiceId" placeholder="e.g. SP001" autocomplete="off">
 
 <label>Special Service Name</label>
 <input type="text" id="specialServiceName" placeholder="e.g. Premium Custom Service">
@@ -474,6 +565,27 @@ SPECIAL SERVICES MANAGEMENT
 
 <label>Service Image URL</label>
 <input type="text" id="specialServiceImage" placeholder="https://example.com/image.png">
+
+<label>
+    <input type="checkbox" id="specialApiEnabled">
+    Enable API
+</label>
+
+<div id="specialApiSettings" style="display:none;">
+
+<label>Provider API URL</label>
+<input type="text" id="specialApiUrl" placeholder="https://provider.example.com/api/v2">
+
+<label>API Service ID (Provider)</label>
+<input type="text" id="specialApiServiceId" placeholder="e.g. 1234">
+
+<label>API Key</label>
+<input type="password" id="specialApiKey" placeholder="Enter provider API key" autocomplete="new-password">
+
+<div style="font-size:12px;opacity:.8;margin-top:8px;line-height:1.5;">
+    API is independent of Quantity. You can enable API even when Enable Quantity is OFF.
+</div>
+</div>
 
 <label>
     <input type="checkbox" id="specialServiceActive" checked>
@@ -516,25 +628,46 @@ SPECIAL SERVICES MANAGEMENT
 
 <h3>⭐ Your Special Services</h3>
 
-<table>
+<div class="special-service-table-wrap">
+<table class="special-service-table">
 <thead>
 <tr>
+<th>Service ID</th>
 <th>Name</th>
 <th>Price</th>
+<th>API</th>
 <th>Status</th>
 <th>Action</th>
 </tr>
 </thead>
 <tbody id="specialServiceList"></tbody>
 </table>
+</div>
 
+</section>
+
+<!-- =========================
+TRANSACTIONS MANAGEMENT
+========================= -->
+<section class="admin-section" id="adminTransactions">
+  <div class="notice-box">
+    <h2>↔ Transactions</h2>
+    <p style="color:#94a3b8;margin-top:-6px;">Balance/payment transactions are managed from this menu.</p>
+    <div class="table-responsive">
+      <table>
+        <thead><tr><th>Email</th><th>Amount</th><th>Method</th><th>TRX ID</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="transactionTable"><tr><td colspan="6">Open Transactions to load data.</td></tr></tbody>
+      </table>
+    </div>
+    <div id="transactionPagination" class="admin-pagination"></div>
+  </div>
 </section>
 
 <!-- =========================
 CATEGORY MANAGEMENT
 ========================= -->
 
-<section class="admin-section">
+<section class="admin-section" id="adminCategories">
 
     <div class="notice-box">
 
@@ -585,7 +718,7 @@ CATEGORY MANAGEMENT
 <!-- =========================
 SUB CATEGORY MANAGEMENT
 ========================= -->
-<section class="admin-section">
+<section class="admin-section admin-subcategory-section" id="adminSubCategories">
     <div class="notice-box">
         <h2>📁 Sub Category Management</h2>
         <label>Main Category</label>
@@ -608,7 +741,7 @@ SUB CATEGORY MANAGEMENT
     </div>
 </section>
 
-<section class="admin-section">
+<section class="admin-section" id="adminPayments">
 
     <div class="notice-box">
 
@@ -662,14 +795,68 @@ SUB CATEGORY MANAGEMENT
 </section>
 
 <!-- =========================
+DASHBOARD MOVING SLIDE
+========================= -->
+<section class="admin-section dashboard-slide-admin-section" id="adminSlide">
+    <div class="notice-box dashboard-slide-admin-box">
+        <h2>📢 Dashboard Moving Slide</h2>
+        <label for="dashboardSlideTextInput">Slide Text (Scrolling)</label>
+        <textarea id="dashboardSlideTextInput" maxlength="300" rows="3" placeholder="Write one-line dashboard slide text..." autocomplete="off"></textarea>
+        <small class="dashboard-slide-admin-help">The message will move in one line on the User Dashboard.</small>
+
+        <div class="dashboard-slide-settings-grid">
+            <div>
+                <label for="dashboardSlideIconInput">Icon</label>
+                <select id="dashboardSlideIconInput">
+                    <option value="📢">📢 Megaphone</option>
+                    <option value="📣">📣 Loudspeaker</option>
+                    <option value="🔔">🔔 Bell</option>
+                    <option value="📌">📌 Pin</option>
+                    <option value="⚡">⚡ Alert</option>
+                </select>
+            </div>
+            <label class="dashboard-slide-toggle">
+                <input type="checkbox" id="dashboardSlideShowDateTime" checked>
+                <span>Show Date &amp; Time</span>
+            </label>
+            <div>
+                <label for="dashboardSlideTextColor">Text Color</label>
+                <input type="color" id="dashboardSlideTextColor" value="#f8fafc">
+            </div>
+            <div>
+                <label for="dashboardSlideBackgroundColor">Background Color</label>
+                <input type="color" id="dashboardSlideBackgroundColor" value="#081b2f">
+            </div>
+            <div>
+                <label for="dashboardSlideStatus">Slide Status</label>
+                <select id="dashboardSlideStatus">
+                    <option value="enabled">Enabled</option>
+                    <option value="disabled">Disabled</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="green-btn" id="saveDashboardSlideBtn" type="button">💾 Save Changes</button>
+        <div class="notice-preview">
+            <h3>Preview</h3>
+            <div class="dashboard-slide-admin-preview">
+                <span class="dashboard-slide-admin-preview-icon" id="dashboardSlideAdminPreviewIcon">📢</span>
+                <span class="dashboard-slide-admin-preview-datetime" id="dashboardSlideAdminPreviewDateTime"></span>
+                <span id="dashboardSlideAdminPreview">No slide text saved.</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =========================
 ADMIN NOTICE
 ========================= -->
 
-<section class="admin-section">
+<section class="admin-section admin-settings-section" id="adminSettings">
 
 <div class="notice-box">
 
-<h2>📢 Admin Notice</h2>
+<h2>📢 Admin Notice</h2
 
 <textarea
 id="noticeText"
@@ -799,30 +986,7 @@ MAIN ADMIN JS
 ========================= -->
 
 
-<!-- =========================
-LIVE SUPPORT CENTER
-========================= -->
-<section class="admin-orders support-admin-section">
-  <h2>🎧 Live Support</h2>
-  <div class="support-admin-layout">
-    <div id="supportChatList" class="support-chat-list">
-      <div class="support-admin-empty">No support conversations yet.</div>
-    </div>
-    <div class="support-admin-conversation">
-      <div class="support-admin-header">
-        <span id="supportAdminHeaderText">Select a customer</span>
-        <button id="closeAdminSupportBtn" class="support-admin-close" type="button" aria-label="Close support chat" title="Hide chat">✕</button>
-      </div>
-      <div id="supportAdminMessages" class="support-admin-messages">
-        <div class="support-admin-empty">Select a conversation to reply.</div>
-      </div>
-      <div class="support-admin-input-row">
-        <textarea id="supportAdminInput" rows="2" placeholder="Reply to customer..."></textarea>
-        <button class="green-btn" type="button" onclick="sendAdminSupportMessage()">Reply</button>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- Live Support is intentionally managed from the admin menu; not shown on Dashboard. -->
 
 <!-- =========================
 ORDER DETAILS MODAL

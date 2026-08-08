@@ -3562,3 +3562,203 @@ body.light-mode .order-table td{
         font-size:11px;
     }
 }
+
+
+/* =========================================================
+   DASHBOARD MOVING SLIDE
+========================================================= */
+.dashboard-slide{
+    width:calc(100% - 32px);
+    max-width:1200px;
+    margin:14px auto 0;
+    min-height:46px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    box-sizing:border-box;
+    padding:0 14px;
+    border:1px solid rgba(34,197,94,.35);
+    border-radius:12px;
+    background:linear-gradient(90deg,rgba(7,27,47,.98),rgba(11,37,48,.96));
+    box-shadow:0 8px 22px rgba(0,0,0,.16);
+    overflow:hidden;
+}
+.dashboard-slide-icon{
+    flex:0 0 auto;
+    font-size:20px;
+}
+.dashboard-slide-viewport{
+    flex:1 1 auto;
+    min-width:0;
+    overflow:hidden;
+    white-space:nowrap;
+}
+.dashboard-slide-track{
+    display:inline-flex;
+    min-width:max-content;
+    white-space:nowrap;
+    will-change:transform;
+    animation:dashboardSlideMove 16s linear infinite;
+}
+.dashboard-slide-track span{
+    display:inline-block;
+    white-space:nowrap;
+    color:#f8fafc;
+    font-size:14px;
+    font-weight:700;
+    line-height:46px;
+    padding-right:80px;
+}
+@keyframes dashboardSlideMove{
+    from{transform:translateX(100%)}
+    to{transform:translateX(-100%)}
+}
+.dashboard-slide:hover .dashboard-slide-track{animation-play-state:paused}
+@media(max-width:600px){
+    .dashboard-slide{
+        width:calc(100% - 20px);
+        min-height:42px;
+        margin-top:10px;
+        padding:0 10px;
+        border-radius:10px;
+    }
+    .dashboard-slide-icon{font-size:17px}
+    .dashboard-slide-track span{font-size:12px;line-height:42px;padding-right:65px}
+}
+
+
+/* =========================================================
+   DASHBOARD CATEGORY STRIP + SLIDE DATE/TIME
+   Final responsive presentation
+========================================================= */
+.dashboard-slide-datetime{
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    min-height:28px;
+    padding-right:10px;
+    margin-right:2px;
+    border-right:1px solid rgba(148,163,184,.28);
+    color:#cbd5e1;
+    font-size:11px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.dashboard-categories{
+    width:100%;
+    margin:0 0 16px;
+    padding:0;
+}
+.dashboard-categories-heading{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin:0 0 10px;
+    padding:0 4px;
+}
+.dashboard-categories-heading h3{
+    margin:0;
+    color:#f8fafc;
+    font-size:18px;
+    font-weight:800;
+}
+.dashboard-categories-view-all{
+    border:0;
+    background:transparent;
+    color:#22c55e;
+    font-size:14px;
+    font-weight:800;
+    cursor:pointer;
+    padding:4px 0;
+}
+.dashboard-category-strip{
+    display:grid !important;
+    grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+    gap:8px !important;
+    width:100%;
+    margin:0 !important;
+}
+.dashboard-category-strip .category-btn{
+    min-width:0 !important;
+    min-height:92px !important;
+    padding:9px 5px !important;
+    border:1px solid #19314a !important;
+    border-radius:14px !important;
+    background:#0a1d31 !important;
+    color:#fff !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:6px !important;
+    overflow:hidden !important;
+    box-shadow:0 6px 16px rgba(0,0,0,.16);
+}
+.dashboard-category-strip .category-btn:hover,
+.dashboard-category-strip .category-btn.active{
+    border-color:#22c55e !important;
+    background:#10283d !important;
+}
+.dashboard-category-strip .category-pick-image,
+.dashboard-category-strip .category-pick-icon{
+    width:46px !important;
+    height:46px !important;
+    flex:0 0 46px !important;
+    border-radius:12px !important;
+}
+.dashboard-category-strip .category-pick-name{
+    width:100% !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+    text-align:center !important;
+    font-size:10px !important;
+    font-weight:800 !important;
+}
+.dashboard-category-strip .category-view-all-btn{
+    display:none !important;
+}
+.category-pick-loading,
+.dashboard-category-strip .new-order-picker-empty{
+    grid-column:1 / -1;
+    padding:16px;
+    text-align:center;
+    color:#94a3b8;
+    border:1px dashed #19314a;
+    border-radius:12px;
+}
+@media(max-width:768px){
+    .dashboard-slide-datetime{
+        font-size:9px;
+        padding-right:7px;
+    }
+    .dashboard-category-strip{
+        grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+        gap:6px !important;
+    }
+    .dashboard-category-strip .category-btn{
+        min-height:82px !important;
+        border-radius:12px !important;
+        padding:7px 3px !important;
+    }
+    .dashboard-category-strip .category-pick-image,
+    .dashboard-category-strip .category-pick-icon{
+        width:38px !important;
+        height:38px !important;
+        flex-basis:38px !important;
+        border-radius:10px !important;
+    }
+    .dashboard-category-strip .category-pick-name{
+        font-size:8.5px !important;
+    }
+}
+@media(max-width:480px){
+    .dashboard-slide-datetime{
+        font-size:8px;
+        max-width:102px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+}

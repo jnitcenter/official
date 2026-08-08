@@ -174,7 +174,7 @@ async function loadServiceList(){
     const table = document.getElementById("serviceList");
     if(!table) return;
 
-    table.innerHTML = `<tr><td colspan="5">Loading services...</td></tr>`;
+    table.innerHTML = `<tr><td colspan="6">Loading services...</td></tr>`;
 
     try{
         const snapshot = await getDocs(collection(db,"services"));
@@ -194,30 +194,44 @@ async function loadServiceList(){
         const pageItems = filtered.slice(start, start + ADMIN_PAGE_SIZE);
 
         if(!pageItems.length){
-            table.innerHTML = `<tr><td colspan="5">No services found.</td></tr>`;
+            table.innerHTML = `<tr><td colspan="6">No services found.</td></tr>`;
         }else{
-            table.innerHTML = pageItems.map(service => `
+            table.innerHTML = pageItems.map(service => {
+                const serviceImage = service.image || "images/no-image.png";
+                const serviceName = service.name || "";
+                const price = service.price ?? service.ratePer1000 ?? 0;
+                const apiBadge = service.apiEnabled
+                    ? '<span class="api-status-badge">API ON</span>'
+                    : '<span class="api-off-badge">OFF</span>';
+
+                return `
                 <tr>
-                    <td><code class="service-id-cell">${escapeHtmlAdmin(service.serviceId || service.docId)}</code></td>
+                    <td><span class="service-id-badge">${escapeHtmlAdmin(service.apiServiceId || service.serviceId || service.docId || "—")}</span></td>
                     <td>
-                        <img src="${escapeHtmlAdmin(service.image || 'images/no-image.png')}"
-                             style="width:60px;height:60px;object-fit:cover;border-radius:8px;display:block;margin:0 auto 5px;"
-                             onerror="this.style.display='none'">
-                        ${escapeHtmlAdmin(service.name || "")}
+                        <img
+                            src="${escapeHtmlAdmin(serviceImage)}"
+                            alt="${escapeHtmlAdmin(serviceName)}"
+                            class="admin-service-list-image"
+                            onerror="this.onerror=null;this.src='images/no-image.png';">
+                        <span class="admin-service-list-name">${escapeHtmlAdmin(serviceName)}</span>
                     </td>
-                    <td>৳ ${escapeHtmlAdmin(service.price || service.ratePer1000 || 0)}</td>
+                    <td>৳ ${escapeHtmlAdmin(price)}</td>
+                    <td>${apiBadge}</td>
                     <td>${service.active ? "Active" : "Inactive"}</td>
                     <td class="action-cell">
-                        <button class="action-btn" onclick="editService('${service.docId}')">✏️</button>
-                        <button class="action-btn" onclick="deleteService('${service.docId}')">🗑️</button>
+                        <div class="action-buttons">
+                            <button type="button" class="action-btn" onclick="editService('${service.docId}')" aria-label="Edit Service">✏️</button>
+                            <button type="button" class="action-btn" onclick="deleteService('${service.docId}')" aria-label="Delete Service">🗑️</button>
+                        </div>
                     </td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
         }
 
         renderAdminPagination('servicePagination','services',filtered.length,loadServiceList);
     }catch(error){
         console.error('Could not load services:', error);
-        table.innerHTML = `<tr><td colspan="5">Could not load services.</td></tr>`;
+        table.innerHTML = `<tr><td colspan="6">Could not load services.</td></tr>`;
     }
 }
 
@@ -527,6 +541,7 @@ async function loadSpecialServiceList(){
 
         table.innerHTML += `
         <tr>
+            <td><span class="service-id-badge">${service.serviceId || "—"}</span></td>
             <td>
                 <img
                     src="${service.image || 'images/no-image.png'}"
@@ -534,22 +549,34 @@ async function loadSpecialServiceList(){
                 ${service.name || ""}
             </td>
             <td>৳ ${service.price || 0}</td>
+            <td>${service.apiEnabled ? '<span class="api-status-badge">API ON</span>' : '<span class="api-off-badge">OFF</span>'}</td>
             <td>${service.active ? "Active" : "Inactive"}</td>
             <td class="action-cell">
-                <button class="action-btn" onclick="editSpecialService('${serviceDoc.id}')">✏️</button>
-                <button class="action-btn" onclick="deleteSpecialService('${serviceDoc.id}')">🗑️</button>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="editSpecialService('${serviceDoc.id}')">✏️</button>
+                    <button class="action-btn" onclick="deleteSpecialService('${serviceDoc.id}')">🗑️</button>
+                </div>
             </td>
         </tr>`;
     });
+
+    // Keep the Special Services table at the left edge after it is rendered.
+    const specialTableWrap = document.querySelector(".special-service-table-wrap");
+    if (specialTableWrap) specialTableWrap.scrollLeft = 0;
 }
 
 window.saveSpecialService = async function(){
 
+    const serviceId = document.getElementById("specialServiceId").value.trim();
     const name = document.getElementById("specialServiceName").value.trim();
     const price = Number(document.getElementById("specialServicePrice").value || 0);
     const requiredInfo = document.getElementById("specialRequiredInfo").value.trim();
     const description = document.getElementById("specialServiceDescription").value.trim();
     const image = document.getElementById("specialServiceImage").value.trim();
+    const apiEnabled = document.getElementById("specialApiEnabled").checked;
+    const apiUrl = document.getElementById("specialApiUrl").value.trim();
+    const apiServiceId = document.getElementById("specialApiServiceId").value.trim();
+    const apiKey = document.getElementById("specialApiKey").value.trim();
     const active = document.getElementById("specialServiceActive").checked;
     const enableQuantity = document.getElementById("specialEnableQuantity").checked;
     const minimumQuantity = Number(document.getElementById("specialMinimumQuantity").value || 1);
@@ -561,12 +588,22 @@ window.saveSpecialService = async function(){
         return;
     }
 
+    if(apiEnabled && (!apiUrl || !apiServiceId || !apiKey)){
+        showPopup("warning","Missing API Information","Please enter API URL, API Service ID and API Key.");
+        return;
+    }
+
     const data = {
+        serviceId: serviceId || "",
         name,
         price,
         requiredInfo,
         description,
         image,
+        apiEnabled,
+        apiUrl,
+        apiServiceId,
+        apiKey,
         active,
         enableQuantity,
         minimumQuantity,
@@ -619,11 +656,17 @@ window.editSpecialService = async function(id){
 
         specialEditId = id;
 
+        document.getElementById("specialServiceId").value = service.serviceId || "";
         document.getElementById("specialServiceName").value = service.name || "";
         document.getElementById("specialServicePrice").value = service.price || "";
         document.getElementById("specialRequiredInfo").value = service.requiredInfo || "";
         document.getElementById("specialServiceDescription").value = service.description || "";
         document.getElementById("specialServiceImage").value = service.image || "";
+        document.getElementById("specialApiEnabled").checked = service.apiEnabled === true;
+        document.getElementById("specialApiUrl").value = service.apiUrl || "";
+        document.getElementById("specialApiServiceId").value = service.apiServiceId || "";
+        document.getElementById("specialApiKey").value = service.apiKey || "";
+        document.getElementById("specialApiSettings").style.display = service.apiEnabled ? "block" : "none";
         document.getElementById("specialServiceActive").checked = service.active !== false;
         document.getElementById("specialEnableQuantity").checked = service.enableQuantity || false;
         document.getElementById("specialMinimumQuantity").value = service.minimumQuantity || "";
@@ -673,11 +716,17 @@ window.deleteSpecialService = async function(id){
 
 function clearSpecialServiceForm(){
 
+    document.getElementById("specialServiceId").value = "";
     document.getElementById("specialServiceName").value = "";
     document.getElementById("specialServicePrice").value = "";
     document.getElementById("specialRequiredInfo").value = "";
     document.getElementById("specialServiceDescription").value = "";
     document.getElementById("specialServiceImage").value = "";
+    document.getElementById("specialApiEnabled").checked = false;
+    document.getElementById("specialApiUrl").value = "";
+    document.getElementById("specialApiServiceId").value = "";
+    document.getElementById("specialApiKey").value = "";
+    document.getElementById("specialApiSettings").style.display = "none";
     document.getElementById("specialServiceActive").checked = true;
     document.getElementById("specialEnableQuantity").checked = false;
     document.getElementById("specialMinimumQuantity").value = "";
@@ -694,6 +743,11 @@ document.getElementById("specialEnableQuantity")?.addEventListener("change", fun
         box.style.display = this.checked ? "block" : "none";
     }
 
+});
+
+document.getElementById("specialApiEnabled")?.addEventListener("change", function(){
+    const box = document.getElementById("specialApiSettings");
+    if(box) box.style.display = this.checked ? "block" : "none";
 });
 
 document.getElementById("specialSearchBox")?.addEventListener("input", loadSpecialServiceList);
@@ -891,6 +945,34 @@ async function loadBalanceRequests(){
         table.innerHTML=`<tr><td colspan="6">Could not load transactions.</td></tr>`;
     }
 }
+// ===============================
+// LOAD TRANSACTIONS (menu view)
+// ===============================
+async function loadAdminTransactions(){
+    const table=document.getElementById("transactionTable");
+    if(!table) return;
+    table.innerHTML='<tr><td colspan="6">Loading transactions...</td></tr>';
+    try{
+        const snapshot=await getDocs(collection(db,"balanceRequests"));
+        const requests=snapshot.docs.map(d=>({docId:d.id,...(d.data()||{})})).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
+        const page=Math.max(1, adminPageState.balanceRequests || 1);
+        const items=requests.slice((page-1)*ADMIN_PAGE_SIZE,page*ADMIN_PAGE_SIZE);
+        if(!items.length){table.innerHTML='<tr><td colspan="6">No transactions found.</td></tr>';return;}
+        table.innerHTML=items.map(r=>`<tr>
+          <td>${escapeHtmlAdmin(r.email||'')}</td>
+          <td>৳ ${escapeHtmlAdmin(r.amount||0)}</td>
+          <td>${escapeHtmlAdmin(r.method||'')}</td>
+          <td><span class="admin-trx-id-badge">${escapeHtmlAdmin(r.trxId||'—')}</span></td>
+          <td>${escapeHtmlAdmin(r.status||'Pending')}</td>
+          <td><button onclick="approveBalance('${r.docId}')">✅ Approve</button> <button onclick="rejectBalance('${r.docId}')">❌ Reject</button></td>
+        </tr>`).join('');
+        renderAdminPagination('transactionPagination','balanceRequests',requests.length,loadAdminTransactions);
+    }catch(error){
+        console.error('Could not load admin transactions:',error);
+        table.innerHTML='<tr><td colspan="6">Could not load transactions.</td></tr>';
+    }
+}
+
 // ===============================
 // APPROVE BALANCE
 // ===============================
@@ -2834,6 +2916,95 @@ if (logoutBtn) {
 
 }
 // =========================
+// DASHBOARD MOVING SLIDE
+// =========================
+function getDashboardSlideSettings(){
+    return {
+        text: String(document.getElementById("dashboardSlideTextInput")?.value || "").trim(),
+        icon: String(document.getElementById("dashboardSlideIconInput")?.value || "📢"),
+        showDateTime: !!document.getElementById("dashboardSlideShowDateTime")?.checked,
+        textColor: String(document.getElementById("dashboardSlideTextColor")?.value || "#f8fafc"),
+        backgroundColor: String(document.getElementById("dashboardSlideBackgroundColor")?.value || "#081b2f"),
+        status: String(document.getElementById("dashboardSlideStatus")?.value || "enabled")
+    };
+}
+
+function updateDashboardSlideAdminPreview(){
+    const settings = getDashboardSlideSettings();
+    const preview = document.getElementById("dashboardSlideAdminPreview");
+    const icon = document.getElementById("dashboardSlideAdminPreviewIcon");
+    const date = document.getElementById("dashboardSlideAdminPreviewDateTime");
+    if(preview) {
+        preview.textContent = settings.text || "No slide text saved.";
+        preview.style.color = settings.textColor;
+    }
+    if(icon) icon.textContent = settings.icon;
+    if(date){
+        date.textContent = settings.showDateTime
+            ? new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}) + " | " +
+              new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})
+            : "";
+        date.style.display = settings.showDateTime ? "inline-block" : "none";
+    }
+}
+
+async function loadDashboardSlideAdmin(){
+    const input = document.getElementById("dashboardSlideTextInput");
+    if(!input) return;
+    try{
+        const snap = await getDoc(doc(db,"settings","dashboardSlide"));
+        const data = snap.exists() ? (snap.data() || {}) : {};
+        input.value = String(data.text || "");
+        const icon = document.getElementById("dashboardSlideIconInput");
+        const showDate = document.getElementById("dashboardSlideShowDateTime");
+        const textColor = document.getElementById("dashboardSlideTextColor");
+        const bgColor = document.getElementById("dashboardSlideBackgroundColor");
+        const status = document.getElementById("dashboardSlideStatus");
+        if(icon) icon.value = data.icon || "📢";
+        if(showDate) showDate.checked = data.showDateTime !== false;
+        if(textColor) textColor.value = data.textColor || "#f8fafc";
+        if(bgColor) bgColor.value = data.backgroundColor || "#081b2f";
+        if(status) status.value = data.status || "enabled";
+        updateDashboardSlideAdminPreview();
+    }catch(error){
+        console.warn("Dashboard slide settings load failed:", error);
+    }
+}
+
+window.saveDashboardSlide = async function(){
+    const settings = getDashboardSlideSettings();
+    if(!settings.text){
+        showPopup("warning","Warning","Please write slide text.");
+        return;
+    }
+    try{
+        await setDoc(doc(db,"settings","dashboardSlide"),{
+            ...settings,
+            updatedAt: Date.now()
+        });
+        updateDashboardSlideAdminPreview();
+        showPopup("success","Success","Dashboard slide updated successfully.");
+    }catch(error){
+        console.error("Dashboard slide save failed:", error);
+        showPopup("error","Error",error?.message || "Could not save dashboard slide.");
+    }
+};
+
+document.getElementById("saveDashboardSlideBtn")?.addEventListener("click", window.saveDashboardSlide);
+[
+    "dashboardSlideTextInput",
+    "dashboardSlideIconInput",
+    "dashboardSlideShowDateTime",
+    "dashboardSlideTextColor",
+    "dashboardSlideBackgroundColor",
+    "dashboardSlideStatus"
+].forEach(id => {
+    document.getElementById(id)?.addEventListener("input", updateDashboardSlideAdminPreview);
+    document.getElementById(id)?.addEventListener("change", updateDashboardSlideAdminPreview);
+});
+loadDashboardSlideAdmin();
+
+// =========================
 // ADMIN NOTICE
 // =========================
 
@@ -3048,4 +3219,85 @@ window.addEventListener('DOMContentLoaded',()=>{
         if(e.key==='Enter' && !e.shiftKey){e.preventDefault();window.sendAdminSupportMessage();}
     });
     document.getElementById('closeAdminSupportBtn')?.addEventListener('click', window.closeAdminSupportChat);
+});
+
+
+/* =========================================================
+   ADMIN SIDEBAR NAVIGATION
+========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+    const header = document.querySelector(".admin-header");
+    const mobileBtn = document.getElementById("adminMobileMenuBtn");
+    const navItems = document.querySelectorAll(".admin-nav-item");
+
+    // Admin home stays clean. Every management area opens from the sidebar/menu.
+    const viewIds = [
+        "adminDashboard", "adminRevenueChart", "adminMonthlyChart", "adminUsers",
+        "adminOrders", "adminServices", "adminCategories", "adminSubCategories",
+        "adminSpecialServices", "adminSlide", "adminBalance", "adminPayments",
+        "adminTransactions", "adminSettings"
+    ];
+
+    function showAdminView(targetId){
+        viewIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle("admin-view-hidden", id !== targetId && !(targetId === "adminDashboard" && ["adminRevenueChart","adminMonthlyChart"].includes(id)));
+        });
+        // Dashboard only shows dashboard cards/charts; no other management boxes.
+        if (targetId === "adminDashboard") {
+            const d=document.getElementById("adminDashboard");
+            if(d) d.classList.remove("admin-view-hidden");
+        }
+        const target=document.getElementById(targetId);
+        if(target) window.scrollTo({top:0,behavior:"smooth"});
+        if(targetId === "adminTransactions") loadAdminTransactions();
+        if(targetId === "adminSubCategories" && typeof loadSubCategories === "function") loadSubCategories();
+    }
+
+    showAdminView("adminDashboard");
+
+    // Dashboard shortcut buttons use the same menu navigation, so there are no
+    // duplicate management forms on the home page.
+    document.querySelectorAll("[data-dashboard-target]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const targetId = btn.getAttribute("data-dashboard-target");
+            showAdminView(targetId);
+            navItems.forEach(x => x.classList.toggle("active", x.getAttribute("data-target") === targetId));
+            if (header) header.classList.remove("admin-menu-open");
+        });
+    });
+
+    const syncHomeCounts = () => {
+        const pairs = [
+            ["totalUsers", "homeTotalUsers", v => `${v} registered`],
+            ["totalOrders", "homeTotalOrders", v => `${v} orders`],
+            ["totalServices", "homeTotalServices", v => `${v} active services`],
+            ["pendingBalance", "homeUserBalance", v => v || "৳0.00"],
+            ["totalRevenue", "homeRevenue", v => v || "৳0"],
+            ["todayRevenue", "homeTodayRevenue", v => v || "৳0"],
+            ["monthRevenue", "homeMonthRevenue", v => v || "৳0"]
+        ];
+        pairs.forEach(([source, target, fmt]) => {
+            const a=document.getElementById(source), b=document.getElementById(target);
+            if(a && b) b.textContent=fmt(a.textContent.trim() || "0");
+        });
+    };
+    syncHomeCounts();
+    const homeCountTimer=setInterval(syncHomeCounts, 1200);
+
+    navItems.forEach(item => {
+        item.addEventListener("click", () => {
+            const targetId = item.getAttribute("data-target");
+            showAdminView(targetId);
+            navItems.forEach(x => x.classList.remove("active"));
+            item.classList.add("active");
+            if (header) header.classList.remove("admin-menu-open");
+        });
+    });
+
+    if (mobileBtn && header) {
+        mobileBtn.addEventListener("click", () => {
+            header.classList.toggle("admin-menu-open");
+        });
+    }
 });

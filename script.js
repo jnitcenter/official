@@ -42,9 +42,87 @@ window.goToOrder = function (id) {
 };
 
 // =========================
+// DASHBOARD MOVING SLIDE
+// =========================
+function loadDashboardSlide(){
+    const textNode = document.getElementById("dashboardSlideText");
+    const track = document.getElementById("dashboardSlideTrack");
+    const dateNode = document.getElementById("dashboardSlideDateTime");
+    const iconNode = document.getElementById("dashboardSlideIcon");
+    if(!textNode || !track) return;
+
+    let slideSettings = {
+        showDateTime: true,
+        icon: "📢",
+        textColor: "#f8fafc",
+        backgroundColor: ""
+    };
+
+    const formatDateTime = () => {
+        if(!dateNode) return;
+        if(slideSettings.showDateTime === false){
+            dateNode.textContent = "";
+            dateNode.style.display = "none";
+            return;
+        }
+        const now = new Date();
+        const date = now.toLocaleDateString("en-GB", {
+            day:"2-digit", month:"short", year:"numeric"
+        });
+        const time = now.toLocaleTimeString("en-US", {
+            hour:"2-digit", minute:"2-digit"
+        });
+        dateNode.textContent = `${date} | ${time}`;
+        dateNode.style.display = "inline-flex";
+    };
+
+    const applySlideSettings = (data) => {
+        slideSettings = {
+            ...slideSettings,
+            ...(data || {})
+        };
+        if(iconNode) iconNode.textContent = String(slideSettings.icon || "📢");
+        if(textNode){
+            textNode.style.color = String(slideSettings.textColor || "#f8fafc");
+        }
+        const slide = document.getElementById("dashboardSlide");
+        if(slide && slideSettings.backgroundColor){
+            slide.style.background = slideSettings.backgroundColor;
+        }
+        formatDateTime();
+    };
+
+    const applySlideText = (value) => {
+        const text = String(value || "Welcome to JN IT CENTER.").trim() || "Welcome to JN IT CENTER.";
+        textNode.textContent = text;
+        track.style.animation = "none";
+        void track.offsetWidth;
+        track.style.animation = "dashboardSlideMove 16s linear infinite";
+    };
+
+    try{
+        onSnapshot(doc(db,"settings","dashboardSlide"), (snap) => {
+            const data = snap.exists() ? (snap.data() || {}) : {};
+            applySlideSettings(data);
+            applySlideText(data.text);
+        }, (error) => {
+            console.warn("Dashboard slide load failed:", error);
+            formatDateTime();
+        });
+    }catch(error){
+        console.warn("Dashboard slide setup failed:", error);
+    }
+
+    formatDateTime();
+    setInterval(formatDateTime, 1000);
+}
+
+// =========================
 // Load Dashboard
 // =========================
 window.addEventListener("DOMContentLoaded", async () => {
+
+    loadDashboardSlide();
 
     async function loadServices() {
 
@@ -197,6 +275,15 @@ sourceServices.forEach(service => {
                     btn.addEventListener("click", async () => {
                         filter.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
                         btn.classList.add("active");
+
+                        // Quick category cards also feed the New Order picker,
+                        // so the dashboard category strip is functional.
+                        const newOrderCategory = document.getElementById("newOrderCategory");
+                        if(newOrderCategory){
+                            newOrderCategory.value = btn.dataset.category || "";
+                            newOrderCategory.dispatchEvent(new Event("change", {bubbles:true}));
+                        }
+
                         const sub = document.getElementById("subCategoryFilter");
                         if (sub) sub.value = "";
                         await loadServices();
@@ -213,6 +300,14 @@ sourceServices.forEach(service => {
                         await loadServices();
                         document.getElementById("serviceList")?.scrollIntoView({ behavior: "smooth", block: "start" });
                     });
+                }
+
+                const dashboardViewAll = document.getElementById("dashboardCategoryViewAll");
+                if (dashboardViewAll) {
+                    dashboardViewAll.onclick = async () => {
+                        filter.dataset.expanded = "true";
+                        await loadServices();
+                    };
                 }
             }
 
