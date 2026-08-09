@@ -445,59 +445,6 @@ Active
             API is independent of Quantity. You can enable API even when Enable Quantity is OFF.
             When Quantity is OFF, the API order quantity will automatically be 1.
         </div>
-
-        <details class="api-advanced-settings" style="margin-top:12px;">
-            <summary style="cursor:pointer;font-weight:700;">⚙️ Advanced API Mapping (optional)</summary>
-            <div style="padding-top:10px;">
-                <label>API Type</label>
-                <select id="apiType">
-                    <option value="smm_v2">SMM Panel v2 (default)</option>
-                    <option value="custom">Custom API</option>
-                </select>
-
-                <div id="apiCustomSettings" style="display:none;margin-top:10px;">
-                    <label>HTTP Method</label>
-                    <select id="apiMethod">
-                        <option value="POST">POST</option>
-                        <option value="GET">GET</option>
-                    </select>
-
-                    <label>Request Format</label>
-                    <select id="apiFormat">
-                        <option value="form">Form URL Encoded</option>
-                        <option value="json">JSON</option>
-                        <option value="query">Query String</option>
-                    </select>
-
-                    <label>API Key Parameter</label>
-                    <input type="text" id="apiKeyParam" value="key" placeholder="e.g. key">
-
-                    <label>Action Parameter <small>(optional)</small></label>
-                    <input type="text" id="apiActionParam" value="action" placeholder="e.g. action">
-
-                    <label>Action Value <small>(optional)</small></label>
-                    <input type="text" id="apiActionValue" value="add" placeholder="e.g. add">
-
-                    <label>Service ID Parameter</label>
-                    <input type="text" id="apiServiceParam" value="service" placeholder="e.g. service">
-
-                    <label>Target/Link Parameter</label>
-                    <input type="text" id="apiLinkParam" value="link" placeholder="e.g. link">
-
-                    <label>Quantity Parameter</label>
-                    <input type="text" id="apiQuantityParam" value="quantity" placeholder="e.g. quantity">
-
-                    <label>Comments Parameter <small>(optional)</small></label>
-                    <input type="text" id="apiCommentsParam" value="comments" placeholder="e.g. comments">
-
-                    <label>Order ID Response Path</label>
-                    <input type="text" id="apiOrderResponsePath" value="order" placeholder="e.g. order or data.order">
-                    <div style="font-size:12px;opacity:.8;margin-top:6px;line-height:1.5;">
-                        Use Custom API when the provider is not a standard SMM v2 server. The mapping tells the gateway which parameter names to send and where the returned order ID is located.
-                    </div>
-                </div>
-            </div>
-        </details>
     </div>
 
     <br><br>
@@ -638,59 +585,6 @@ SPECIAL SERVICES MANAGEMENT
 <div style="font-size:12px;opacity:.8;margin-top:8px;line-height:1.5;">
     API is independent of Quantity. You can enable API even when Enable Quantity is OFF.
 </div>
-
-<details class="api-advanced-settings" style="margin-top:12px;">
-    <summary style="cursor:pointer;font-weight:700;">⚙️ Advanced API Mapping (optional)</summary>
-    <div style="padding-top:10px;">
-        <label>API Type</label>
-        <select id="specialApiType">
-            <option value="smm_v2">SMM Panel v2 (default)</option>
-            <option value="custom">Custom API</option>
-        </select>
-
-        <div id="specialApiCustomSettings" style="display:none;margin-top:10px;">
-            <label>HTTP Method</label>
-            <select id="specialApiMethod">
-                <option value="POST">POST</option>
-                <option value="GET">GET</option>
-            </select>
-
-            <label>Request Format</label>
-            <select id="specialApiFormat">
-                <option value="form">Form URL Encoded</option>
-                <option value="json">JSON</option>
-                <option value="query">Query String</option>
-            </select>
-
-            <label>API Key Parameter</label>
-            <input type="text" id="specialApiKeyParam" value="key" placeholder="e.g. key">
-
-            <label>Action Parameter <small>(optional)</small></label>
-            <input type="text" id="specialApiActionParam" value="action" placeholder="e.g. action">
-
-            <label>Action Value <small>(optional)</small></label>
-            <input type="text" id="specialApiActionValue" value="add" placeholder="e.g. add">
-
-            <label>Service ID Parameter</label>
-            <input type="text" id="specialApiServiceParam" value="service" placeholder="e.g. service">
-
-            <label>Target/Link Parameter</label>
-            <input type="text" id="specialApiLinkParam" value="link" placeholder="e.g. link">
-
-            <label>Quantity Parameter</label>
-            <input type="text" id="specialApiQuantityParam" value="quantity" placeholder="e.g. quantity">
-
-            <label>Comments Parameter <small>(optional)</small></label>
-            <input type="text" id="specialApiCommentsParam" value="comments" placeholder="e.g. comments">
-
-            <label>Order ID Response Path</label>
-            <input type="text" id="specialApiOrderResponsePath" value="order" placeholder="e.g. order or data.order">
-            <div style="font-size:12px;opacity:.8;margin-top:6px;line-height:1.5;">
-                Use Custom API when the provider is not a standard SMM v2 server.
-            </div>
-        </div>
-    </div>
-</details>
 </div>
 
 <label>
@@ -718,11 +612,11 @@ SPECIAL SERVICES MANAGEMENT
 
 <br>
 
-<button id="saveSpecialServiceBtn" onclick="saveSpecialService()">
+<button type="button" id="saveSpecialServiceBtn" onclick="saveSpecialService()">
     ⭐ Add Special Service
 </button>
 
-<button id="updateSpecialServiceBtn" onclick="saveSpecialService()" style="display:none">
+<button type="button" id="updateSpecialServiceBtn" onclick="saveSpecialService()" style="display:none">
     ✏️ Update Special Service
 </button>
 

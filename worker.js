@@ -45,204 +45,55 @@ export default {
 
     try {
       const body = await request.json();
-
       const providerUrl = String(body.providerUrl || "").trim();
       const apiKey = String(body.apiKey || "").trim();
-      const apiType = String(body.apiType || "smm_v2").toLowerCase();
-      const apiMethod = String(body.apiMethod || "POST").toUpperCase();
-      const apiFormat = String(body.apiFormat || "form").toLowerCase();
+      const smmAction = String(body.action || (body.order ? "status" : "add")).toLowerCase();
 
       if (!providerUrl) return json({ error: "Provider API URL is missing" }, 400, cors);
       if (!apiKey) return json({ error: "API key is missing" }, 400, cors);
-      if (!/^https?:\/\//i.test(providerUrl)) {
-        return json({ error: "Provider API URL must start with http:// or https://" }, 400, cors);
-      }
-      if (!["GET", "POST"].includes(apiMethod)) {
-        return json({ error: "Only GET and POST are supported." }, 400, cors);
-      }
-      if (!["form", "json", "query"].includes(apiFormat)) {
-        return json({ error: "Unsupported API request format." }, 400, cors);
-      }
+      if (!/^https?:\/\//i.test(providerUrl)) return json({ error: "Provider API URL must start with http:// or https://" }, 400, cors);
 
       const target = new URL(providerUrl);
+      if (!/^https?:$/i.test(target.protocol)) return json({ error: "Invalid provider URL" }, 400, cors);
 
-      // Common SMM Panel v2 contract remains the default.
-      if (apiType !== "custom") {
-        const form = new URLSearchParams();
-        form.set("key", apiKey);
+      const form = new URLSearchParams();
+      form.set("key", apiKey);
 
-        const smmAction = String(body.action || "add").toLowerCase();
-
-        if (smmAction === "add" || smmAction === "order") {
-          const service = String(body.service || "").trim();
-          const link = String(body.link || "").trim();
-          const quantity = String(body.quantity || "1").trim() || "1";
-
-          if (!service || !link) {
-            return json({ error: "service and link are required" }, 400, cors);
-          }
-
-          form.set("action", "add");
-          form.set("service", service);
-          form.set("link", link);
-          form.set("quantity", quantity);
-
-          if (body.comments) form.set("comments", String(body.comments));
-        } else if (smmAction === "status") {
-          const order = String(body.order || "").trim();
-          if (!order) return json({ error: "order is required" }, 400, cors);
-          form.set("action", "status");
-          form.set("order", order);
-        } else {
-          return json({ error: "Unsupported action" }, 400, cors);
-        }
-
-        const response = await fetch(target.toString(), {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: form
-        });
-
-        return await proxyProviderResponse(response, cors);
-      }
-
-      // Custom API mode.
-      // Admin can map the provider's parameter names without changing this Worker.
-      const keyParam = safeParamName(body.apiKeyParam, "key");
-      const actionParam = safeParamName(body.apiActionParam, "action");
-      const actionValue = String(body.apiActionValue ?? "add");
-      const serviceParam = safeParamName(body.apiServiceParam, "service");
-      const linkParam = safeParamName(body.apiLinkParam, "link");
-      const quantityParam = safeParamName(body.apiQuantityParam, "quantity");
-      const commentsParam = safeParamName(body.apiCommentsParam, "comments");
-
-      const params = {};
-      if (keyParam) params[keyParam] = apiKey;
-      if (actionParam && actionValue) params[actionParam] = actionValue;
-
-      const service = String(body.service || "").trim();
-      const link = String(body.link || "").trim();
-      const quantity = String(body.quantity || "1").trim() || "1";
-      const comments = String(body.comments || "");
-
-      if (serviceParam && service) params[serviceParam] = service;
-      if (linkParam && link) params[linkParam] = link;
-      if (quantityParam) params[quantityParam] = quantity;
-      if (commentsParam && comments) params[commentsParam] = comments;
-
-      let response;
-
-      if (apiMethod === "GET" || apiFormat === "query") {
-        for (const [key, value] of Object.entries(params)) {
-          target.searchParams.set(key, value);
-        }
-
-        response = await fetch(target.toString(), {
-          method: "GET",
-          headers: { "Accept": "application/json,text/plain,*/*" }
-        });
-      } else if (apiFormat === "json") {
-        response = await fetch(target.toString(), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json,text/plain,*/*"
-          },
-          body: JSON.stringify(params)
-        });
+      if (smmAction === "add" || smmAction === "order") {
+        const service = String(body.service || "").trim();
+        const link = String(body.link || "").trim();
+        const quantity = String(body.quantity || "1").trim() || "1";
+        if (!service || !link) return json({ error: "service and link are required" }, 400, cors);
+        form.set("action", "add");
+        form.set("service", service);
+        form.set("link", link);
+        form.set("quantity", quantity);
+        if (body.comments) form.set("comments", String(body.comments));
+      } else if (smmAction === "status") {
+        const order = String(body.order || "").trim();
+        if (!order) return json({ error: "order is required" }, 400, cors);
+        form.set("action", "status");
+        form.set("order", order);
       } else {
-        const form = new URLSearchParams();
-        for (const [key, value] of Object.entries(params)) form.set(key, value);
-
-        response = await fetch(target.toString(), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Accept": "application/json,text/plain,*/*"
-          },
-          body: form
-        });
+        return json({ error: "Unsupported action" }, 400, cors);
       }
 
-      const rawText = await response.text();
-      let data = null;
-      try { data = JSON.parse(rawText); } catch {}
+      const response = await fetch(target.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: form
+      });
 
-      if (!response.ok) {
-        return json({
-          error: `Provider returned HTTP ${response.status}`,
-          provider: data ?? rawText.slice(0, 1000)
-        }, response.status, cors);
-      }
-
-      const responsePath = String(body.apiOrderResponsePath || "order").trim();
-      const order = getPath(data, responsePath);
-
-      if (order === undefined || order === null || String(order).trim() === "") {
-        return json({
-          error: "Provider response did not contain an order ID at the configured response path.",
-          responsePath,
-          provider: data ?? rawText.slice(0, 2000)
-        }, 502, cors);
-      }
-
-      return json({
-        order: String(order),
-        provider: data ?? rawText
-      }, 200, cors);
-
+      const text = await response.text();
+      return new Response(text, {
+        status: response.status,
+        headers: { ...cors, "Content-Type": response.headers.get("content-type") || "application/json" }
+      });
     } catch (error) {
       return json({ error: error?.message || "Universal API gateway error" }, 500, cors);
     }
   }
 };
-
-async function proxyProviderResponse(response, cors) {
-  const text = await response.text();
-  let data = null;
-  try { data = JSON.parse(text); } catch {}
-
-  if (!response.ok) {
-    return json({
-      error: `Provider returned HTTP ${response.status}`,
-      provider: data ?? text.slice(0, 1000)
-    }, response.status, cors);
-  }
-
-  // Standard SMM v2 providers normally return {order:"123"}.
-  // Preserve that response and normalize common alternate nesting.
-  const order =
-    getPath(data, "order") ??
-    getPath(data, "data.order") ??
-    getPath(data, "result.order");
-
-  if (order !== undefined && order !== null && String(order).trim() !== "") {
-    return json({ order: String(order), provider: data }, 200, cors);
-  }
-
-  return new Response(text, {
-    status: response.status,
-    headers: {
-      ...cors,
-      "Content-Type": response.headers.get("content-type") || "application/json"
-    }
-  });
-}
-
-function safeParamName(value, fallback) {
-  const s = String(value ?? "").trim();
-  if (!s) return "";
-  return /^[A-Za-z0-9_.-]+$/.test(s) ? s : fallback;
-}
-
-function getPath(obj, path) {
-  if (!obj || !path) return undefined;
-  return String(path).split(".").reduce((value, key) => {
-    if (value === null || value === undefined) return undefined;
-    return value[key];
-  }, obj);
-}
-
 
 async function handleWaitmarkWebhook(request, env, url) {
   if (request.method !== "POST") {

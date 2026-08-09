@@ -2760,3 +2760,14 @@ body{
         padding:12px 10px;
     }
 }
+
+
+/* Special Service custom confirmation popup */
+.special-delete-confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;}
+.special-delete-confirm-box{width:min(420px,94vw);background:var(--card-bg,#111827);color:var(--text-color,#fff);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.45);}
+.special-delete-confirm-title{font-size:19px;font-weight:700;margin-bottom:8px;}
+.special-delete-confirm-text{font-size:14px;opacity:.82;line-height:1.5;margin-bottom:20px;}
+.special-delete-confirm-actions{display:flex;justify-content:flex-end;gap:10px;}
+.special-delete-confirm-actions button{border:0;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;}
+.special-delete-cancel{background:rgba(255,255,255,.1);color:inherit;}
+.special-delete-ok{background:#dc2626;color:#fff;}

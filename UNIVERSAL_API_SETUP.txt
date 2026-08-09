@@ -29,11 +29,3 @@ If a provider uses a completely different request/response format, URL + key + s
 
 SECURITY:
 The current admin/service model stores the API key in Firestore and sends it through the browser to the gateway. This is convenient but not the most secure option. For production, a stronger design is to store provider credentials server-side in Cloudflare/another backend.
-
-
-UPDATED UNIVERSAL API MAPPING:
-- The Service Management API section now supports SMM Panel v2 by default plus Custom API mode.
-- Custom API mode supports GET/POST, form-urlencoded, JSON, or query-string requests.
-- Admin can map key/action/service/link/quantity/comments parameter names and the returned order-ID JSON path.
-- Example response paths: order, data.order, result.order.
-- This does not mean every API on the internet is automatically compatible: providers with unusual authentication, signatures, multi-step workflows, or non-order responses still need a custom adapter.
