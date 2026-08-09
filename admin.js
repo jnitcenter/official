@@ -285,6 +285,56 @@ async function loadServiceCategories() {
 // SAVE SERVICE
 // ===============================
 
+
+// ===============================
+// UNIVERSAL API MAPPING HELPERS
+// ===============================
+
+function readApiMapping(prefix = "") {
+    const id = name => document.getElementById(
+        prefix ? prefix + name.charAt(0).toUpperCase() + name.slice(1) : name
+    );
+    const type = id("apiType")?.value || "smm_v2";
+    return {
+        apiType: type,
+        apiMethod: (id("apiMethod")?.value || "POST").toUpperCase(),
+        apiFormat: id("apiFormat")?.value || "form",
+        apiKeyParam: (id("apiKeyParam")?.value || "key").trim(),
+        apiActionParam: (id("apiActionParam")?.value || "action").trim(),
+        apiActionValue: (id("apiActionValue")?.value || "add").trim(),
+        apiServiceParam: (id("apiServiceParam")?.value || "service").trim(),
+        apiLinkParam: (id("apiLinkParam")?.value || "link").trim(),
+        apiQuantityParam: (id("apiQuantityParam")?.value || "quantity").trim(),
+        apiCommentsParam: (id("apiCommentsParam")?.value || "comments").trim(),
+        apiOrderResponsePath: (id("apiOrderResponsePath")?.value || "order").trim()
+    };
+}
+
+function setApiMapping(service, prefix = "") {
+    const id = name => document.getElementById(
+        prefix ? prefix + name.charAt(0).toUpperCase() + name.slice(1) : name
+    );
+    const s = service || {};
+    if (id("apiType")) id("apiType").value = s.apiType || "smm_v2";
+    if (id("apiMethod")) id("apiMethod").value = s.apiMethod || "POST";
+    if (id("apiFormat")) id("apiFormat").value = s.apiFormat || "form";
+    if (id("apiKeyParam")) id("apiKeyParam").value = s.apiKeyParam || "key";
+    if (id("apiActionParam")) id("apiActionParam").value = s.apiActionParam || "action";
+    if (id("apiActionValue")) id("apiActionValue").value = s.apiActionValue || "add";
+    if (id("apiServiceParam")) id("apiServiceParam").value = s.apiServiceParam || "service";
+    if (id("apiLinkParam")) id("apiLinkParam").value = s.apiLinkParam || "link";
+    if (id("apiQuantityParam")) id("apiQuantityParam").value = s.apiQuantityParam || "quantity";
+    if (id("apiCommentsParam")) id("apiCommentsParam").value = s.apiCommentsParam || "comments";
+    if (id("apiOrderResponsePath")) id("apiOrderResponsePath").value = s.apiOrderResponsePath || "order";
+    updateApiCustomVisibility(prefix);
+}
+
+function updateApiCustomVisibility(prefix = "") {
+    const type = document.getElementById(prefix + "apiType")?.value || "smm_v2";
+    const box = document.getElementById(prefix + "apiCustomSettings");
+    if (box) box.style.display = type === "custom" ? "block" : "none";
+}
+
 window.saveService = async function(){
 
     const serviceId = document.getElementById("serviceId")?.value.trim() || "";
@@ -366,7 +416,8 @@ const data = {
     apiEnabled,
     apiUrl,
     apiServiceId,
-    apiKey
+    apiKey,
+    ...apiMapping
 
 };
 
@@ -450,6 +501,9 @@ for (const userDoc of users.docs) {
     document.getElementById("serviceActive").checked=true;
     document.getElementById("enableQuantity").checked=false;
     document.getElementById("quantitySettings").style.display="none";
+    document.getElementById("apiEnabled").checked=false;
+    document.getElementById("apiSettings").style.display="none";
+    setApiMapping({});
 
     loadServiceList();
 
@@ -503,6 +557,7 @@ document.getElementById("apiKey").value =
 
 document.getElementById("apiSettings").style.display =
     service.apiEnabled ? "block" : "none";
+    setApiMapping(service);
 
     editId = id;
     
@@ -577,6 +632,7 @@ window.saveSpecialService = async function(){
     const apiUrl = document.getElementById("specialApiUrl").value.trim();
     const apiServiceId = document.getElementById("specialApiServiceId").value.trim();
     const apiKey = document.getElementById("specialApiKey").value.trim();
+    const apiMapping = readApiMapping("special");
     const active = document.getElementById("specialServiceActive").checked;
     const enableQuantity = document.getElementById("specialEnableQuantity").checked;
     const minimumQuantity = Number(document.getElementById("specialMinimumQuantity").value || 1);
@@ -604,6 +660,7 @@ window.saveSpecialService = async function(){
         apiUrl,
         apiServiceId,
         apiKey,
+        ...apiMapping,
         active,
         enableQuantity,
         minimumQuantity,
@@ -667,6 +724,7 @@ window.editSpecialService = async function(id){
         document.getElementById("specialApiServiceId").value = service.apiServiceId || "";
         document.getElementById("specialApiKey").value = service.apiKey || "";
         document.getElementById("specialApiSettings").style.display = service.apiEnabled ? "block" : "none";
+        setApiMapping(service, "special");
         document.getElementById("specialServiceActive").checked = service.active !== false;
         document.getElementById("specialEnableQuantity").checked = service.enableQuantity || false;
         document.getElementById("specialMinimumQuantity").value = service.minimumQuantity || "";
@@ -694,24 +752,20 @@ window.editSpecialService = async function(id){
 
 window.deleteSpecialService = async function(id){
 
-    const ok = confirm("Delete this special service?");
-
-    if(!ok) return;
-
-    try{
-
-        await deleteDoc(doc(db,"services",id));
-
-        showPopup("success","Deleted","Special service deleted successfully.");
-
-        await loadSpecialServiceList();
-
-    }catch(err){
-
-        console.error(err);
-        showPopup("error","Error",err.message);
-
-    }
+    showConfirmPopup(
+        "Delete Special Service",
+        "Are you sure you want to delete this special service?",
+        async () => {
+            try{
+                await deleteDoc(doc(db,"services",id));
+                showPopup("success","Deleted","Special service deleted successfully.");
+                await loadSpecialServiceList();
+            }catch(err){
+                console.error(err);
+                showPopup("error","Error",err.message);
+            }
+        }
+    );
 };
 
 function clearSpecialServiceForm(){
@@ -727,6 +781,7 @@ function clearSpecialServiceForm(){
     document.getElementById("specialApiServiceId").value = "";
     document.getElementById("specialApiKey").value = "";
     document.getElementById("specialApiSettings").style.display = "none";
+    setApiMapping({}, "special");
     document.getElementById("specialServiceActive").checked = true;
     document.getElementById("specialEnableQuantity").checked = false;
     document.getElementById("specialMinimumQuantity").value = "";
@@ -749,6 +804,11 @@ document.getElementById("specialApiEnabled")?.addEventListener("change", functio
     const box = document.getElementById("specialApiSettings");
     if(box) box.style.display = this.checked ? "block" : "none";
 });
+
+document.getElementById("apiType")?.addEventListener("change", () => updateApiCustomVisibility(""));
+document.getElementById("specialApiType")?.addEventListener("change", () => updateApiCustomVisibility("special"));
+updateApiCustomVisibility("");
+updateApiCustomVisibility("special");
 
 document.getElementById("specialSearchBox")?.addEventListener("input", loadSpecialServiceList);
 

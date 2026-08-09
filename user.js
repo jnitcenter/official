@@ -418,7 +418,18 @@ async function placeOrder() {
                         service: apiServiceId,
                         link,
                         quantity,
-                        comments: comments || ""
+                        comments: comments || "",
+                        apiType: currentService.apiType || "smm_v2",
+                        apiMethod: currentService.apiMethod || "POST",
+                        apiFormat: currentService.apiFormat || "form",
+                        apiKeyParam: currentService.apiKeyParam || "key",
+                        apiActionParam: currentService.apiActionParam || "action",
+                        apiActionValue: currentService.apiActionValue || "add",
+                        apiServiceParam: currentService.apiServiceParam || "service",
+                        apiLinkParam: currentService.apiLinkParam || "link",
+                        apiQuantityParam: currentService.apiQuantityParam || "quantity",
+                        apiCommentsParam: currentService.apiCommentsParam || "comments",
+                        apiOrderResponsePath: currentService.apiOrderResponsePath || "order"
                     })
                 });
 
