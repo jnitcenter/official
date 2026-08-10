@@ -1,3 +1,4 @@
+// FIXED: service price display is always rate per 1000.
 import { auth, db, UNIVERSAL_API_PROXY_URL } from "./firebase-config.js";
 import { sendNotification } from "./notification.js";
 import {
@@ -336,12 +337,12 @@ sourceServices.forEach(service => {
             }
 
             serviceList.innerHTML = services.map(service => {
-                const rate = Number(service.ratePer1000 || 0);
-                const legacyPrice = Number(service.price || 0);
-                const rateText = `৳ ${Number(rate > 0 ? rate : legacyPrice).toLocaleString()}`;
+                const rate = Number(service.ratePer1000 || service.price || 0);
+                const rateText = rate > 0 ? `৳ ${rate.toFixed(2)} / 1000` : `Contact`;
 
-                const min = Number(service.minimumQuantity || 1);
-                const max = Number(service.maximumQuantity || 999999);
+                const isYouTube = String(service.category || "").trim().toLowerCase() === "youtube";
+                const min = isYouTube ? 100 : Number(service.minimumQuantity || 1);
+                const max = isYouTube ? 100000 : Number(service.maximumQuantity || 999999);
                 const delivery = "Automatic";
                 const description = String(service.description || "").trim();
                 const category = String(service.category || "Other");
@@ -724,11 +725,10 @@ sourceServices.forEach(service => {
                         service.subCategory ?? service.subcategory ?? service.sub_category ?? ""
                     ).trim();
                     const category = String(service.category || "Other").trim() || "Other";
-                    const rate = Number(service.ratePer1000 || 0);
-                    const price = Number(service.price || 0);
-                    const displayPrice = Number(service.ratePer1000 || service.rate || service.price || 0);
+                    const rate = Number(service.ratePer1000 || service.price || 0);
+                    const displayPrice = rate;
 
-const priceText = "৳" + displayPrice.toLocaleString();
+const priceText = rate > 0 ? ("৳" + rate.toFixed(2) + " / 1000") : ("৳" + displayPrice.toFixed(2));
 
                     return `
                         <button type="button"

@@ -1,0 +1,1 @@
+Facebook bulk catalog added. On admin login, missing service IDs are imported into Firestore automatically. Existing services are preserved. Rate per 1000 = USD source rate × 130 × 1.15. Legacy price remains 0/unused. Required information = Link. API service ID equals customer-facing service ID.

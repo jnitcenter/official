@@ -1,6 +1,8 @@
+// FIXED: legacy price field is never used; old price values migrate to ratePer1000.
 import { auth, db } from "./firebase-config.js";
 
 import { sendNotification } from "./notification.js";
+import { syncBundledFacebookServices } from "./facebook-services-sync.js";
 
 import {
     collection,
@@ -50,6 +52,17 @@ onAuthStateChanged(auth, async (user) => {
 return;
         window.location.href = "dashboard.html";
         return;
+    }
+
+    // Automatically import every bundled social service that is missing.
+    // Existing services (including government/PDF services) are never deleted or modified.
+    try {
+        const result = await syncBundledFacebookServices();
+        if (result.added > 0) {
+            console.log(`Social-service catalog sync: added ${result.added}, skipped ${result.skipped}.`);
+        }
+    } catch (e) {
+        console.error("Social-service catalog sync failed:", e);
     }
 
 });
@@ -166,6 +179,29 @@ window.adminGoToPage = function(stateKey, page){
     };
     if(loaders[stateKey]) loaders[stateKey]();
 };
+
+async function enforceYouTubeQuantityRules(){
+    try {
+        const snapshot = await getDocs(collection(db, "services"));
+        const updates = [];
+        for (const serviceDoc of snapshot.docs) {
+            const service = serviceDoc.data() || {};
+            if (String(service.category || "").trim().toLowerCase() !== "youtube") continue;
+            if (Number(service.minimumQuantity) !== 100 || Number(service.maximumQuantity) !== 100000 || service.enableQuantity !== true) {
+                updates.push(updateDoc(doc(db, "services", serviceDoc.id), {
+                    enableQuantity: true,
+                    minimumQuantity: 100,
+                    maximumQuantity: 100000
+                }));
+            }
+        }
+        if (updates.length) await Promise.all(updates);
+    } catch (error) {
+        console.error("YouTube quantity migration error:", error);
+    }
+}
+
+enforceYouTubeQuantityRules();
 
 // ===============================
 // LOAD SERVICES
@@ -290,9 +326,9 @@ window.saveService = async function(){
 
     const serviceId = document.getElementById("serviceId")?.value.trim() || "";
     const name = document.getElementById("serviceName").value.trim();
-    const price = document.getElementById("servicePrice").value.trim();
+    const price = ""; // Legacy per-unit price intentionally unused.
     const ratePer1000 = Number(document.getElementById("serviceRatePer1000")?.value || 0);
-    const requiredInfo = document.getElementById("requiredInfo").value.trim();
+    const requiredInfo = document.getElementById("requiredInfo").value.trim() || "Link";
     const description = document.getElementById("serviceDescription").value.trim();
     const active = document.getElementById("serviceActive").checked;
 const category = document.getElementById("serviceCategory").value;
@@ -325,12 +361,12 @@ const apiServiceId =
 const apiKey =
     document.getElementById("apiKey").value.trim();
     
-    if(!serviceId || !name || (!price && ratePer1000 <= 0)){
+    if(!serviceId || !name || ratePer1000 <= 0){
 
         showPopup(
     "warning",
     "Warning",
-    "Please fill Service Name and at least one pricing field (Price or Rate per 1000)."
+    "Please fill Service Name and Rate per 1000."
 );
 
         return;
@@ -470,11 +506,15 @@ window.editService = async function(id){
 
     document.getElementById("serviceId").value = service.serviceId || id;
     document.getElementById("serviceName").value = service.name;
-    document.getElementById("servicePrice").value = service.price;
-    if (document.getElementById("serviceRatePer1000")) document.getElementById("serviceRatePer1000").value = service.ratePer1000 || "";
+    document.getElementById("servicePrice").value = "";
+    if (document.getElementById("serviceRatePer1000")) {
+        // Older services stored the per-1000 rate in `price`; migrate it into the correct field.
+        const legacyRate = Number(service.ratePer1000 || service.price || 0);
+        document.getElementById("serviceRatePer1000").value = legacyRate > 0 ? legacyRate : "";
+    }
     document.getElementById("serviceCategory").value = service.category || "";
     if (document.getElementById("serviceSubCategory")) document.getElementById("serviceSubCategory").value = service.subCategory || service.subcategory || service.sub_category || "";
-    document.getElementById("requiredInfo").value = service.requiredInfo || "";
+    document.getElementById("requiredInfo").value = service.requiredInfo || "Link";
     document.getElementById("serviceDescription").value = service.description || "";
     document.getElementById("serviceImage").value = service.image || "";
     document.getElementById("serviceActive").checked = service.active;

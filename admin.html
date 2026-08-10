@@ -374,11 +374,11 @@ SERVICE MANAGEMENT
 <label>Service Name</label>
 <input type="text" id="serviceName">
 
-<label>Price (legacy per unit) <small>(optional)</small></label>
-<input type="number" id="servicePrice">
+<label>Price (legacy per unit) <small>(unused)</small></label>
+<input type="number" id="servicePrice" value="" readonly placeholder="Leave blank">
 
 <label>Rate per 1000 (SMM) <small>(optional)</small></label>
-<input type="number" id="serviceRatePer1000" min="0" step="0.01" placeholder="e.g. 50">
+<input type="number" id="serviceRatePer1000" min="0" step="0.01" placeholder="e.g. 3.93" required>
 
 <label>Category</label>
 
@@ -1009,7 +1009,7 @@ ORDER DETAILS MODAL
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script type="module" src="admin.js"></script>
+<script type="module" src="admin.js?v=20260810-price-fix-v3"></script>
 <link rel="stylesheet" href="popup.css">
 
 <link rel="stylesheet" href="popup.css">

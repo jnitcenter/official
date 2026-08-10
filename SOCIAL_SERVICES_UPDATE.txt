@@ -1,0 +1,8 @@
+Added the latest requested Facebook, LinkedIn, and Discord services.
+- Existing services are preserved.
+- Missing service IDs are added idempotently from the bundled catalog.
+- Customer-facing service ID and API service ID are the supplied service ID.
+- Legacy/unit price is not used; ratePer1000 = USD * 130 * 1.15.
+- Required information is Link.
+- Category-specific images are used for the new services.
+- API URL/key use the configured universal SMM API.

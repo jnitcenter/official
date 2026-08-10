@@ -1,3 +1,4 @@
+// FIXED: legacy price is treated as rate-per-1000; required info defaults to Link.
 import { auth, db, UNIVERSAL_API_PROXY_URL } from "./firebase-config.js";
 import { sendNotification } from "./notification.js";
 import {
@@ -121,12 +122,14 @@ async function loadService() {
             };
         }
 
-        const ratePer1000 = Number(currentService.ratePer1000 || 0);
-        const legacyPrice = Number(currentService.price || 0);
+        const ratePer1000 = Number(currentService.ratePer1000 || currentService.price || 0);
+        const legacyPrice = 0;
 
         setText(
     "rateDisplay",
-    "Price: ৳" + (ratePer1000 > 0 ? ratePer1000 : legacyPrice).toLocaleString()
+    ratePer1000 > 0
+        ? "Price: ৳" + ratePer1000.toFixed(2) + " / 1000"
+        : "Price: ৳" + legacyPrice.toFixed(2)
 );
 
         // Delivery is always shown as Automatic as requested.
@@ -189,12 +192,13 @@ function configureQuantity() {
         return;
     }
 
-    const min = Math.max(1, Number(currentService.minimumQuantity || 1));
-    const max = Math.max(min, Number(currentService.maximumQuantity || 999999));
+    const isYouTube = String(currentService?.category || "").trim().toLowerCase() === "youtube";
+    const min = isYouTube ? 100 : Math.max(1, Number(currentService.minimumQuantity || 1));
+    const max = isYouTube ? 100000 : Math.max(min, Number(currentService.maximumQuantity || 999999));
 
     quantityInput.min = String(min);
     quantityInput.max = String(max);
-    quantityInput.value = String(min);
+    quantityInput.value = "";
 
     setText("quantityLimitText", `${min.toLocaleString()} / ${max.toLocaleString()}`);
 
@@ -217,8 +221,8 @@ function loadRequiredFields(requiredInfo) {
 
     container.innerHTML = "";
 
-    // Admin enters one required field per line.
-    const raw = String(requiredInfo || "").trim();
+    // For normal SMM services, Link is the default required field.
+    const raw = String(requiredInfo || "").trim() || "Link";
 
     if (!raw) {
         if (section) section.style.display = "none";
@@ -281,7 +285,12 @@ async function placeOrder() {
     });
 
     if (empty) {
-        showPopup("warning", "Warning", "Please fill all required fields.");
+        // Required fields remain mandatory without a warning popup.
+        const firstEmpty = Array.from(inputs).find(input => !input.value.trim());
+        if (firstEmpty) {
+            firstEmpty.focus();
+            firstEmpty.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
         return;
     }
 
@@ -339,22 +348,20 @@ async function placeOrder() {
             }
         }
 
-        const ratePer1000 = Number(currentService.ratePer1000 || 0);
-        const basePrice = Number(currentService.price || 0);
+        const ratePer1000 = Number(currentService.ratePer1000 || currentService.price || 0);
+        // Backward compatibility: older imported services stored the per-1000 rate in `price`.
+        // Always interpret that fallback as a rate per 1000, never as a per-unit price.
+        const basePrice = 0;
 
         let price;
 
-        if (quantityEnabled) {
-            if (ratePer1000 > 0) {
-                price = (ratePer1000 * quantity) / 1000;
-            } else if (basePrice > 0) {
-                price = basePrice * quantity;
-            } else {
-                price = 0;
-            }
+        if (ratePer1000 > 0) {
+            // Rate per 1000 => total = rate × quantity / 1000.
+            price = (ratePer1000 * quantity) / 1000;
+        } else if (basePrice > 0) {
+            price = quantityEnabled ? basePrice * quantity : basePrice;
         } else {
-            // Either pricing field may be used for a non-quantity service.
-            price = basePrice > 0 ? basePrice : ratePer1000;
+            price = 0;
         }
 
         if (!Number.isFinite(price) || price < 0) {
@@ -591,29 +598,31 @@ function findApiComments(userInfo) {
 function updateTotalPrice() {
     if (!currentService) return;
 
+    const ratePer1000 = Number(currentService.ratePer1000 || currentService.price || 0);
+    // Legacy `price` values from older imports are also rates per 1000.
+    const basePrice = 0;
     const quantityEnabled = currentService.enableQuantity === true;
-    const qty = quantityEnabled
-        ? Number(el("quantity")?.value || currentService.minimumQuantity || 1)
-        : 1;
+    const quantityInput = el("quantity");
+    const rawQty = quantityEnabled ? String(quantityInput?.value ?? "").trim() : "1";
 
-    const ratePer1000 = Number(currentService.ratePer1000 || 0);
-    const basePrice = Number(currentService.price || 0);
+    // Do not calculate a full minimum-quantity charge before the user enters a quantity.
+    if (quantityEnabled && rawQty === "") {
+        const totalInput = el("totalPrice");
+        if (totalInput) totalInput.value = "৳0.00";
+        return;
+    }
 
-    let total;
-    if (quantityEnabled) {
+    let qty = Number(rawQty);
+    if (!Number.isFinite(qty) || qty < 1) qty = 0;
+
+    let total = 0;
+    if (qty > 0) {
         if (ratePer1000 > 0) {
+            // Rate is for 1000 units: total = rate × quantity ÷ 1000.
             total = (ratePer1000 * qty) / 1000;
-        } else if (basePrice > 0) {
-            total = basePrice * qty;
-        } else {
-            total = 0;
         }
-    } else {
-        total = basePrice > 0 ? basePrice : ratePer1000;
     }
 
     const totalInput = el("totalPrice");
-    if (totalInput) {
-        totalInput.value = "৳" + Number(total || 0).toFixed(2);
-    }
+    if (totalInput) totalInput.value = "৳" + Number(total || 0).toFixed(2);
 }
