@@ -1,9 +1,6 @@
-// FIXED: legacy price field is never used; old price values migrate to ratePer1000.
 import { auth, db } from "./firebase-config.js";
 
 import { sendNotification } from "./notification.js";
-import { syncBundledFacebookServices } from "./facebook-services-sync.js";
-import { syncFourCategoryServices } from "./four-category-services-sync.js";
 
 import {
     collection,
@@ -53,26 +50,6 @@ onAuthStateChanged(auth, async (user) => {
 return;
         window.location.href = "dashboard.html";
         return;
-    }
-
-    // Automatically import every bundled social service that is missing.
-    // Existing services (including government/PDF services) are never deleted or modified.
-    try {
-        const result = await syncBundledFacebookServices();
-        if (result.added > 0) {
-            console.log(`Social-service catalog sync: added ${result.added}, skipped ${result.skipped}.`);
-        }
-    } catch (e) {
-        console.error("Social-service catalog sync failed:", e);
-    }
-
-    // Import/update Spotify, TikTok, Twitter and Instagram only.
-    // YouTube is intentionally untouched because it is already configured.
-    try {
-        const result = await syncFourCategoryServices();
-        console.log(`Four-category sync: added ${result.added}, updated ${result.updated}, removed duplicates ${result.removedDuplicates}.`);
-    } catch (e) {
-        console.error("Four-category catalog sync failed:", e);
     }
 
 });
@@ -190,29 +167,6 @@ window.adminGoToPage = function(stateKey, page){
     if(loaders[stateKey]) loaders[stateKey]();
 };
 
-async function enforceYouTubeQuantityRules(){
-    try {
-        const snapshot = await getDocs(collection(db, "services"));
-        const updates = [];
-        for (const serviceDoc of snapshot.docs) {
-            const service = serviceDoc.data() || {};
-            if (String(service.category || "").trim().toLowerCase() !== "youtube") continue;
-            if (Number(service.minimumQuantity) !== 100 || Number(service.maximumQuantity) !== 100000 || service.enableQuantity !== true) {
-                updates.push(updateDoc(doc(db, "services", serviceDoc.id), {
-                    enableQuantity: true,
-                    minimumQuantity: 100,
-                    maximumQuantity: 100000
-                }));
-            }
-        }
-        if (updates.length) await Promise.all(updates);
-    } catch (error) {
-        console.error("YouTube quantity migration error:", error);
-    }
-}
-
-enforceYouTubeQuantityRules();
-
 // ===============================
 // LOAD SERVICES
 // ===============================
@@ -329,6 +283,29 @@ async function loadServiceCategories() {
 }
 
 // ===============================
+// PRICING MODE
+// ===============================
+function syncServicePricingFields(){
+    const quantity = document.getElementById("enableQuantity");
+    const priceInput = document.getElementById("servicePrice");
+    const rateInput = document.getElementById("serviceRatePer1000");
+    const hint = document.getElementById("pricingModeHint");
+    if(!quantity || !priceInput || !rateInput) return;
+
+    const isSmm = quantity.checked;
+    priceInput.disabled = isSmm;
+    rateInput.disabled = !isSmm;
+
+    if(isSmm){
+        priceInput.value = "";
+        if(hint) hint.textContent = "Quantity ON → SMM service → enter Rate per 1000 only.";
+    }else{
+        rateInput.value = "";
+        if(hint) hint.textContent = "Quantity OFF → non-SMM service → enter Price per unit only.";
+    }
+}
+
+// ===============================
 // SAVE SERVICE
 // ===============================
 
@@ -336,9 +313,9 @@ window.saveService = async function(){
 
     const serviceId = document.getElementById("serviceId")?.value.trim() || "";
     const name = document.getElementById("serviceName").value.trim();
-    const price = ""; // Legacy per-unit price intentionally unused.
+    const price = document.getElementById("servicePrice").value.trim();
     const ratePer1000 = Number(document.getElementById("serviceRatePer1000")?.value || 0);
-    const requiredInfo = document.getElementById("requiredInfo").value.trim() || "Link";
+    const requiredInfo = document.getElementById("requiredInfo").value.trim();
     const description = document.getElementById("serviceDescription").value.trim();
     const active = document.getElementById("serviceActive").checked;
 const category = document.getElementById("serviceCategory").value;
@@ -347,6 +324,10 @@ const subCategory = document.getElementById("serviceSubCategory")?.value || "";
 const image = document.getElementById("serviceImage").value.trim();
 
 const enableQuantity = document.getElementById("enableQuantity").checked;
+
+    // SMM/Quantity services use Rate per 1000; non-SMM services use legacy per-unit Price.
+    const finalPrice = enableQuantity ? 0 : Number(price || 0);
+    const finalRatePer1000 = enableQuantity ? Number(ratePer1000 || 0) : 0;
 
 const minimumQuantity = Number(
     document.getElementById("minimumQuantity").value || 1
@@ -371,16 +352,9 @@ const apiServiceId =
 const apiKey =
     document.getElementById("apiKey").value.trim();
     
-    if(!serviceId || !name || ratePer1000 <= 0){
-
-        showPopup(
-    "warning",
-    "Warning",
-    "Please fill Service Name and Rate per 1000."
-);
-
+    if(!serviceId || !name){
+        showPopup("warning", "Warning", "Please fill Service ID and Service Name.");
         return;
-
     }
 
 // Custom Service ID must be unique.
@@ -398,8 +372,8 @@ const data = {
      // Keep the provider/API service ID separate. The customer-facing Service ID is the admin-entered serviceId.
      apiServiceId,
     name,
-    price: Number(price || 0),
-    ratePer1000,
+    price: finalPrice,
+    ratePer1000: finalRatePer1000,
     category,
     subCategory,
     requiredInfo,
@@ -516,20 +490,17 @@ window.editService = async function(id){
 
     document.getElementById("serviceId").value = service.serviceId || id;
     document.getElementById("serviceName").value = service.name;
-    document.getElementById("servicePrice").value = "";
-    if (document.getElementById("serviceRatePer1000")) {
-        // Older services stored the per-1000 rate in `price`; migrate it into the correct field.
-        const legacyRate = Number(service.ratePer1000 || service.price || 0);
-        document.getElementById("serviceRatePer1000").value = legacyRate > 0 ? legacyRate : "";
-    }
+    document.getElementById("servicePrice").value = service.price;
+    if (document.getElementById("serviceRatePer1000")) document.getElementById("serviceRatePer1000").value = service.ratePer1000 || "";
     document.getElementById("serviceCategory").value = service.category || "";
     if (document.getElementById("serviceSubCategory")) document.getElementById("serviceSubCategory").value = service.subCategory || service.subcategory || service.sub_category || "";
-    document.getElementById("requiredInfo").value = service.requiredInfo || "Link";
+    document.getElementById("requiredInfo").value = service.requiredInfo || "";
     document.getElementById("serviceDescription").value = service.description || "";
     document.getElementById("serviceImage").value = service.image || "";
     document.getElementById("serviceActive").checked = service.active;
     document.getElementById("enableQuantity").checked = service.enableQuantity || false;
     document.getElementById("quantitySettings").style.display = service.enableQuantity ? "block" : "none";
+    syncServicePricingFields();
     
     document.getElementById("minimumQuantity").value =
     service.minimumQuantity || "";
@@ -3139,6 +3110,10 @@ async function loadNotice() {
 }
 
 loadNotice();
+
+document.getElementById("enableQuantity")?.addEventListener("change", syncServicePricingFields);
+
+syncServicePricingFields();
 
 document.getElementById("enableQuantity")?.addEventListener("change", function () {
 
