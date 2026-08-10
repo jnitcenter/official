@@ -3,6 +3,7 @@ import { auth, db } from "./firebase-config.js";
 
 import { sendNotification } from "./notification.js";
 import { syncBundledFacebookServices } from "./facebook-services-sync.js";
+import { syncFourCategoryServices } from "./four-category-services-sync.js";
 
 import {
     collection,
@@ -63,6 +64,15 @@ return;
         }
     } catch (e) {
         console.error("Social-service catalog sync failed:", e);
+    }
+
+    // Import/update Spotify, TikTok, Twitter and Instagram only.
+    // YouTube is intentionally untouched because it is already configured.
+    try {
+        const result = await syncFourCategoryServices();
+        console.log(`Four-category sync: added ${result.added}, updated ${result.updated}, removed duplicates ${result.removedDuplicates}.`);
+    } catch (e) {
+        console.error("Four-category catalog sync failed:", e);
     }
 
 });

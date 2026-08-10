@@ -1,0 +1,20 @@
+FOUR CATEGORY IMPORT REPORT
+===========================
+YouTube was not changed.
+Spotify, TikTok, Twitter and Instagram are imported/updated.
+Duplicate IDs: first occurrence is kept; later duplicates are removed.
+Missing-price services are included with ratePer1000 left blank/null.
+
+DUPLICATES REMOVED FROM THE PROVIDED LIST:
+- Spotify: None
+- TikTok: None
+- Twitter: None
+- Instagram: 1574, 2028
+
+MISSING PRICE SERVICE IDs:
+- Spotify: None
+- TikTok: 2269
+- Twitter: 1877, 1308, 9368, 1000, 999, 980, 1609
+- Instagram: 936, 693, 1572, 662, 1575, 2004, 2071, 480, 1922, 2017
+
+Services in the Instagram list that had no Service ID were not invented/added because a Service ID/API Service ID was required.
