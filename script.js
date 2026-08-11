@@ -1728,6 +1728,10 @@ if (profileBtn) {
 // DASHBOARD MENU + SPECIAL SERVICES
 // =========================================
 
+function norm(value){
+    return String(value ?? "").trim().toLowerCase();
+}
+
 async function loadSpecialServiceMenu(){
 
     const categoryList = document.getElementById("specialCategoryMenuList");
@@ -1798,7 +1802,10 @@ async function loadSpecialServiceMenu(){
             }
         });
 
+        // Keep the existing Admin data untouched, but do not expose the
+        // legacy/test category "Jjjj" in the customer menu.
         const categories = Array.from(categoryMap.values())
+            .filter(category => norm(category.name) !== "jjjj")
             .sort((a,b)=>String(a.name).localeCompare(String(b.name)));
 
         const escape = (value) => String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -1806,17 +1813,26 @@ async function loadSpecialServiceMenu(){
         }[ch]));
 
         // Category items are links to a dedicated Special Category page.
-        // Special Services without a category remain directly below them.
-        categoryList.innerHTML = categories.map(category => `
+        // Keep the existing layout/order; only the requested category icon
+        // is changed from the generic star to the ID-card icon.
+        categoryList.innerHTML = categories.map(category => {
+            const categoryName = String(category.name || "").trim();
+            const isNameAddressNid = /নাম\s*ঠিকানা\s*দিয়ে\s*nid/i.test(categoryName) ||
+                /name\s*address.*nid/i.test(categoryName);
+            const icon = isNameAddressNid
+                ? `<img class="special-category-menu-icon" src="images/id-card-icon.svg" alt="" aria-hidden="true">`
+                : `<span class="special-category-menu-icon special-category-menu-star">🪪</span>`;
+
+            return `
             <button type="button"
                     class="special-category-menu-item"
                     data-special-category-id="${escape(category.id)}"
-                    title="${escape(category.name)}">
-                <span>⭐</span>
-                <span class="special-category-menu-name">${escape(category.name)}</span>
+                    title="${escape(categoryName)}">
+                ${icon}
+                <span class="special-category-menu-name">${escape(categoryName)}</span>
                 <span class="special-category-arrow">›</span>
-            </button>
-        `).join("");
+            </button>`;
+        }).join("");
 
         categoryList.querySelectorAll(".special-category-menu-item").forEach(button => {
             button.addEventListener("click", () => {

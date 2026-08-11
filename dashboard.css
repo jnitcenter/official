@@ -3795,6 +3795,16 @@ body.light-mode .order-table td{
 .special-category-menu-item .special-category-arrow{
     margin-left:auto; opacity:.75; transition:transform .2s ease;
 }
+.special-category-menu-icon{
+    width:34px;
+    height:34px;
+    flex:0 0 34px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    object-fit:contain;
+}
+.special-category-menu-star{font-size:28px;line-height:1}
 .special-category-menu-item.is-open .special-category-arrow{transform:rotate(90deg);}
 .special-category-services{display:none; background:rgba(15,23,42,.32);}
 .special-category-services.is-open{display:block;}
