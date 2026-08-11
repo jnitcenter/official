@@ -316,6 +316,7 @@ window.saveService = async function(){
     const price = document.getElementById("servicePrice").value.trim();
     const ratePer1000 = Number(document.getElementById("serviceRatePer1000")?.value || 0);
     const requiredInfo = document.getElementById("requiredInfo").value.trim();
+    const requiredInfoSingleBox = document.getElementById("requiredInfoMode")?.value === "single";
     const description = document.getElementById("serviceDescription").value.trim();
     const active = document.getElementById("serviceActive").checked;
 const category = document.getElementById("serviceCategory").value;
@@ -377,6 +378,7 @@ const data = {
     category,
     subCategory,
     requiredInfo,
+    requiredInfoSingleBox,
     description,
     active,
     image: image,
@@ -467,6 +469,7 @@ for (const userDoc of users.docs) {
     document.getElementById("serviceCategory").value = "";
     if (document.getElementById("serviceSubCategory")) document.getElementById("serviceSubCategory").value = "";
     document.getElementById("requiredInfo").value="";
+    if (document.getElementById("requiredInfoMode")) document.getElementById("requiredInfoMode").value="fields";
     document.getElementById("serviceDescription").value="";
     document.getElementById("serviceActive").checked=true;
     document.getElementById("enableQuantity").checked=false;
@@ -495,6 +498,7 @@ window.editService = async function(id){
     document.getElementById("serviceCategory").value = service.category || "";
     if (document.getElementById("serviceSubCategory")) document.getElementById("serviceSubCategory").value = service.subCategory || service.subcategory || service.sub_category || "";
     document.getElementById("requiredInfo").value = service.requiredInfo || "";
+    if (document.getElementById("requiredInfoMode")) document.getElementById("requiredInfoMode").value = service.requiredInfoSingleBox === true ? "single" : "fields";
     document.getElementById("serviceDescription").value = service.description || "";
     document.getElementById("serviceImage").value = service.image || "";
     document.getElementById("serviceActive").checked = service.active;
@@ -593,6 +597,7 @@ window.saveSpecialService = async function(){
     const name = document.getElementById("specialServiceName").value.trim();
     const price = Number(document.getElementById("specialServicePrice").value || 0);
     const requiredInfo = document.getElementById("specialRequiredInfo").value.trim();
+    const requiredInfoSingleBox = document.getElementById("specialRequiredInfoMode")?.value === "single";
     const description = document.getElementById("specialServiceDescription").value.trim();
     const image = document.getElementById("specialServiceImage").value.trim();
     const apiEnabled = document.getElementById("specialApiEnabled").checked;
@@ -620,6 +625,7 @@ window.saveSpecialService = async function(){
         name,
         price,
         requiredInfo,
+        requiredInfoSingleBox,
         description,
         image,
         apiEnabled,
@@ -685,6 +691,7 @@ window.editSpecialService = async function(id){
         document.getElementById("specialServiceName").value = service.name || "";
         document.getElementById("specialServicePrice").value = service.price || "";
         document.getElementById("specialRequiredInfo").value = service.requiredInfo || "";
+        if (document.getElementById("specialRequiredInfoMode")) document.getElementById("specialRequiredInfoMode").value = service.requiredInfoSingleBox === true ? "single" : "fields";
         document.getElementById("specialServiceDescription").value = service.description || "";
         document.getElementById("specialServiceImage").value = service.image || "";
         document.getElementById("specialApiEnabled").checked = service.apiEnabled === true;
@@ -757,6 +764,7 @@ function clearSpecialServiceForm(){
     document.getElementById("specialServiceName").value = "";
     document.getElementById("specialServicePrice").value = "";
     document.getElementById("specialRequiredInfo").value = "";
+    if (document.getElementById("specialRequiredInfoMode")) document.getElementById("specialRequiredInfoMode").value="fields";
     document.getElementById("specialServiceDescription").value = "";
     document.getElementById("specialServiceImage").value = "";
     document.getElementById("specialApiEnabled").checked = false;

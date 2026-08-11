@@ -2082,3 +2082,4 @@ RESET PASSWORD MODAL
     gap:8px;
     width:100%;
 }
+.dynamicTextarea{width:100%;min-height:180px;resize:vertical;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #29405f;background:#0d1828;color:#fff;font-family:inherit;line-height:1.6;}

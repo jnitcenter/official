@@ -44,10 +44,20 @@ textarea{min-height:100px;resize:vertical}
 #quantitySection{display:none}
 #quantityMeta{display:none}
 #requiredInfoSection{display:none}
+.required-mode-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 14px}
+.required-mode-option{display:flex;align-items:center;gap:9px;padding:12px 13px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(255,255,255,.04);cursor:pointer;font-size:14px;line-height:1.4}
+.required-mode-option input{accent-color:#2563eb;margin:0}
+.required-mode-option:has(input:checked){border-color:#2563eb;background:rgba(37,99,235,.12)}
+@media(max-width:600px){.required-mode-picker{grid-template-columns:1fr}}
 .dynamicField{margin-top:14px}
 .dynamicField label{margin-top:0}
 .required-title{color:#22c55e;font-size:18px;margin:20px 0 4px}
 .required-note{font-size:12px;opacity:.65;margin:0 0 8px}
+.required-box{margin-top:18px;padding:15px;border:1px solid #29405f;border-radius:14px;background:#111e31}
+.required-box .required-title{margin:0 0 4px}
+.dynamicField{margin-top:12px}
+.dynamicField label{color:#e5e7eb;font-size:14px}
+.dynamicInput{min-height:46px;font-size:15px}.dynamicTextarea{min-height:180px;line-height:1.6}.required-prompt{margin:8px 0 10px;padding:11px 12px;border-radius:10px;background:#172235;border:1px dashed #334155;color:#cbd5e1;line-height:1.7;font-size:14px;white-space:normal}.required-single-form{padding:12px 14px;border:1px solid #22c55e;border-radius:14px;background:#172235;overflow:hidden}.required-single-textarea{width:100%;min-height:420px;box-sizing:border-box;resize:vertical;background:#172235;border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:16px;color:#fff;line-height:1.65;font-size:16px;outline:none}.required-single-textarea:focus{border-color:#22c55e;box-shadow:0 0 0 1px rgba(34,197,94,.18)}.required-single-row{display:grid;grid-template-columns:minmax(125px,42%) minmax(0,1fr);gap:8px;align-items:center;padding:5px 0}.required-single-row label{margin:0;line-height:1.45;color:#f1f5f9}.required-single-row .dynamicInput{width:100%;min-width:0;box-sizing:border-box;background:transparent;border:0;border-radius:0;box-shadow:none;padding:7px 2px;color:#fff;outline:none;font-size:15px;min-height:38px}.required-single-row .dynamicInput::placeholder{color:#94a3b8;opacity:.7}.required-single-row .dynamicInput:focus{border:0;background:transparent;box-shadow:none}.required-single-row .dynamicInput:focus::placeholder{opacity:.45}@media(max-width:600px){.required-single-row{grid-template-columns:minmax(105px,40%) minmax(0,1fr);gap:6px}.required-single-row label{font-size:14px}.required-single-row .dynamicInput{font-size:14px;min-height:40px;padding:6px 1px}}
 @media(max-width:560px){
   .service-summary{grid-template-columns:1fr}
   .service-summary img{width:80px;height:80px}
@@ -97,8 +107,9 @@ textarea{min-height:100px;resize:vertical}
 <label for="totalPrice">Total Price</label>
 <input class="total" type="text" id="totalPrice" readonly>
 
-<div id="requiredInfoSection">
-
+<div id="requiredInfoSection" class="required-box">
+<h3 class="required-title">📋 প্রয়োজনীয় তথ্য</h3>
+<p class="required-note">নিচের তথ্যগুলো পূরণ করে অর্ডার Submit করুন।</p>
 <div id="dynamicFields"></div>
 </div>
 

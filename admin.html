@@ -395,8 +395,19 @@ SERVICE MANAGEMENT
 </select>
 
 <label>Required Information</label>
-<textarea id="requiredInfo"></textarea>
-
+<small style="display:block;margin:-2px 0 7px;opacity:.72;line-height:1.5;">এক বক্সেই প্রয়োজনীয় তথ্যের নাম লিখুন। নিচের অপশন থেকে Customer-এর জন্য কীভাবে দেখাবে তা নির্বাচন করুন।</small>
+<select id="requiredInfoMode">
+    <option value="fields">প্রতিটি তথ্যের পাশে আলাদা পূরণের ঘর</option>
+    <option value="single">একটি বড় বক্সে সব তথ্য লেখার ব্যবস্থা</option>
+</select>
+<textarea id="requiredInfo" rows="7" placeholder="নামঃ
+পিতার নামঃ
+মাতার নামঃ
+গ্রামঃ
+ওয়ার্ডঃ
+ইউনিয়নঃ
+উপজেলাঃ
+জেলাঃ"></textarea>
 <label>Description</label>
 <textarea id="serviceDescription"></textarea>
 
@@ -559,8 +570,19 @@ SPECIAL SERVICES MANAGEMENT
 <input type="number" id="specialServicePrice" placeholder="0">
 
 <label>Required Information</label>
-<textarea id="specialRequiredInfo" placeholder="One field per line"></textarea>
-
+<small style="display:block;margin:-2px 0 7px;opacity:.72;line-height:1.5;">এক বক্সেই প্রয়োজনীয় তথ্যের নাম লিখুন। Customer-এর জন্য আলাদা ঘর অথবা একটি বড় বক্স—যেকোনো একটি বেছে নিন।</small>
+<select id="specialRequiredInfoMode">
+    <option value="fields">প্রতিটি তথ্যের পাশে আলাদা পূরণের ঘর</option>
+    <option value="single">একটি বড় বক্সে সব তথ্য লেখার ব্যবস্থা</option>
+</select>
+<textarea id="specialRequiredInfo" rows="7" placeholder="নামঃ
+পিতার নামঃ
+মাতার নামঃ
+গ্রামঃ
+ওয়ার্ডঃ
+ইউনিয়নঃ
+উপজেলাঃ
+জেলাঃ"></textarea>
 <label>Description</label>
 <textarea id="specialServiceDescription" placeholder="Describe this special service"></textarea>
 

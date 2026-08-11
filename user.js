@@ -133,7 +133,7 @@ async function loadService() {
         setText("deliveryDisplay", "Automatic");
 
         configureQuantity();
-        loadRequiredFields(currentService.requiredInfo);
+        loadRequiredFields(currentService.requiredInfo, currentService.requiredInfoSingleBox);
         updateTotalPrice();
 
         const quantityInput = el("quantity");
@@ -209,51 +209,65 @@ function configureQuantity() {
 // REQUIRED INFORMATION
 // =====================================
 
-function loadRequiredFields(requiredInfo) {
+function loadRequiredFields(requiredInfo, singleBox = false) {
     const container = el("dynamicFields");
     const section = el("requiredInfoSection");
 
     if (!container) return;
-
     container.innerHTML = "";
 
-    // Admin enters one required field per line.
     const raw = String(requiredInfo || "").trim();
-
     if (!raw) {
         if (section) section.style.display = "none";
         return;
     }
 
-    const fields = raw
-        .split(/\r?\n/)
-        .map(field => field.trim())
-        .filter(Boolean);
+    // Admin chooses the display mode. Customer never has to choose a mode.
+    // In single-box mode, keep all customer-fillable fields inside ONE outer
+    // information box. In separate-fields mode, keep the existing layout.
+    if (singleBox === true) {
+        // Single-box mode: show exactly ONE editable box containing the text
+        // entered by Admin. The customer can freely edit, delete, replace,
+        // or add information anywhere in this same box. Nothing is required.
+        const safeRaw = escapeHtml(raw);
+
+        container.innerHTML = `
+            <div class="required-single-form">
+                <textarea
+                    id="required_single_box"
+                    class="dynamicInput required-single-textarea"
+                    data-label="Required Information"
+                    autocomplete="off">${safeRaw}</textarea>
+            </div>
+        `;
+        if (section) section.style.display = "block";
+        return;
+    }
+
+    // Default/current mode: each line entered by Admin becomes a separate
+    // customer-fillable input next to that information label.
+    const fields = raw.split(/\r?\n/).map(field => field.trim()).filter(Boolean);
 
     if (!fields.length) {
         if (section) section.style.display = "none";
         return;
     }
 
-    fields.forEach((field, index) => {
+    container.innerHTML = fields.map((field, index) => {
         const safeField = escapeHtml(field);
-
-        container.insertAdjacentHTML(
-            "beforeend",
-            `
+        const placeholder = escapeHtml(field.replace(/:$/, "").trim() + " লিখুন");
+        return `
             <div class="dynamicField">
                 <label for="required_${index}">${safeField}</label>
-                <input
-                    type="text"
+                <input type="text"
                     id="required_${index}"
                     class="dynamicInput"
                     data-label="${safeField}"
-                    placeholder="${safeField}"
+                    placeholder="${placeholder}"
                     autocomplete="off">
             </div>
-            `
-        );
-    });
+        `;
+    }).join("");
 
     if (section) section.style.display = "block";
 }
@@ -270,20 +284,15 @@ async function placeOrder() {
 
     const inputs = document.querySelectorAll(".dynamicInput");
     const userInfo = {};
-    let empty = false;
 
+    // Required-information fields are intentionally optional.
+    // Empty fields are saved as empty strings so the customer can still place
+    // the order even when one or more pieces of information are missing.
     inputs.forEach(input => {
         const value = input.value.trim();
         const label = input.dataset.label || "Required Information";
-
-        if (!value) empty = true;
         userInfo[label] = value;
     });
-
-    if (empty) {
-        showPopup("warning", "Warning", "Please fill all required fields.");
-        return;
-    }
 
     const user = auth.currentUser;
 
