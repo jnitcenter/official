@@ -79,7 +79,8 @@ document.getElementById("successPopup").classList.add("show");
 
 setTimeout(() => {
 
-    window.location.href = "admin.html";
+    // Return to the Admin Orders section instead of the Admin homepage.
+    window.location.href = "admin.html?view=orders";
 
 }, 2000);
 

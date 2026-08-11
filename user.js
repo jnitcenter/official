@@ -498,9 +498,9 @@ async function placeOrder() {
             "Your order has been submitted successfully."
         );
 
-        setTimeout(() => {
-            window.location.href = "dashboard.html";
-        }, 1500);
+        // Keep the user on the same service/order page after submitting.
+        // Do not redirect to the homepage/dashboard.
+        return;
 
     } catch (err) {
         console.error("placeOrder error:", err);

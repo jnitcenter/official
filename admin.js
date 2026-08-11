@@ -3295,7 +3295,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if(targetId === "adminSubCategories" && typeof loadSubCategories === "function") loadSubCategories();
     }
 
-    showAdminView("adminDashboard");
+    const initialView = new URLSearchParams(window.location.search).get("view");
+    const initialTarget = initialView === "orders" ? "adminOrders" : "adminDashboard";
+    showAdminView(initialTarget);
+    if (initialTarget !== "adminDashboard") {
+        navItems.forEach(x => x.classList.toggle("active", x.getAttribute("data-target") === initialTarget));
+    }
 
     // Dashboard shortcut buttons use the same menu navigation, so there are no
     // duplicate management forms on the home page.
