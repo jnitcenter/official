@@ -3475,11 +3475,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Admin home stays clean. Every management area opens from the sidebar/menu.
     const viewIds = [
-        "adminDashboard", "adminRevenueChart", "adminMonthlyChart", "adminUsers",
-        "adminOrders", "adminServices", "adminCategories", "adminSubCategories",
-        "adminSpecialServices", "adminSlide", "adminBalance", "adminPayments",
-        "adminTransactions", "adminSettings"
-    ];
+    "adminDashboard", "adminRevenueChart", "adminMonthlyChart", "adminUsers",
+    "adminOrders", "adminServices", "adminCategories", "adminSpecialCategories",
+    "adminSubCategories", "adminSpecialServices", "adminSlide", "adminBalance",
+    "adminPayments", "adminTransactions", "adminSettings"
+];
 
     function showAdminView(targetId){
         viewIds.forEach(id => {
