@@ -42,6 +42,7 @@ HEADER
   <button type="button" class="admin-nav-item" data-target="adminOrders"><span>🛒</span><b>Orders</b></button>
   <button type="button" class="admin-nav-item" data-target="adminServices"><span>⚙</span><b>Services</b></button>
   <button type="button" class="admin-nav-item" data-target="adminCategories"><span>▦</span><b>Categories</b></button>
+  <button type="button" class="admin-nav-item" data-target="adminSpecialCategories"><span>⭐</span><b>Special Categories</b></button>
   <button type="button" class="admin-nav-item" data-target="adminSubCategories"><span>📁</span><b>Sub Categories</b></button>
   <button type="button" class="admin-nav-item" data-target="adminSpecialServices"><span>♥</span><b>Special Services</b></button>
   <button type="button" class="admin-nav-item" data-target="adminSlide"><span>▣</span><b>Slider / Notice</b></button>
@@ -551,6 +552,56 @@ placeholder="🔍 Search Service...">
 </section>
 
 <!-- =========================
+SPECIAL CATEGORY MANAGEMENT
+========================= -->
+
+<section class="admin-section special-category-management" id="adminSpecialCategories">
+
+    <div class="notice-box">
+
+        <h2>⭐ Special Category</h2>
+        <p style="color:#94a3b8;margin-top:-6px;">
+            These categories are completely separate from normal Dashboard Categories.
+            They appear in the User Menu under My Profile.
+        </p>
+
+        <label>Special Category Name</label>
+        <input type="text" id="specialCategoryName" placeholder="e.g. NID Services">
+
+        <label>Category Picture URL</label>
+        <input type="url" id="specialCategoryImage"
+               placeholder="https://example.com/special-category.jpg"
+               autocomplete="off">
+
+        <label style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="specialCategoryActive" checked>
+            Active
+        </label>
+
+        <br>
+
+        <button type="button" class="green-btn" id="saveSpecialCategoryBtn"
+                onclick="saveSpecialCategory()">
+            ⭐ Add Special Category
+        </button>
+
+        <button type="button" class="green-btn" id="updateSpecialCategoryBtn"
+                onclick="saveSpecialCategory()" style="display:none">
+            ✏️ Update Special Category
+        </button>
+
+        <hr>
+
+        <h3>📋 Existing Special Categories</h3>
+        <div id="specialCategoryList">
+            <p>Loading special categories...</p>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================
 SPECIAL SERVICES MANAGEMENT
 ========================= -->
 
@@ -565,6 +616,14 @@ SPECIAL SERVICES MANAGEMENT
 
 <label>Special Service Name</label>
 <input type="text" id="specialServiceName" placeholder="e.g. Premium Custom Service">
+
+<label>Special Category</label>
+<select id="specialServiceCategory">
+    <option value="">No Special Category (show as standalone Special Service)</option>
+</select>
+<small style="display:block;color:#94a3b8;margin:-4px 0 12px;">
+    Select a Special Category if this service should appear inside that category.
+</small>
 
 <label>Price</label>
 <input type="number" id="specialServicePrice" placeholder="0">

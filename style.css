@@ -2083,3 +2083,12 @@ RESET PASSWORD MODAL
     width:100%;
 }
 .dynamicTextarea{width:100%;min-height:180px;resize:vertical;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #29405f;background:#0d1828;color:#fff;font-family:inherit;line-height:1.6;}
+
+/* Required order field validation */
+.dynamicInput.required-input-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239,68,68,.15);
+}
+.dynamicInput:invalid {
+    box-shadow: none;
+}

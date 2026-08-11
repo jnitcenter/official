@@ -3762,3 +3762,57 @@ body.light-mode .order-table td{
         text-overflow:ellipsis;
     }
 }
+
+
+/* =========================
+   SPECIAL CATEGORY / SERVICE MENU
+   ========================= */
+.special-category-menu-list,
+.special-service-menu-list{
+    width:100%;
+}
+.special-category-menu-list:empty,
+.special-service-menu-list:empty{
+    display:none;
+}
+.special-category-menu-item{
+    width:100%;
+    min-height:62px;
+    border:0;
+    border-top:1px solid rgba(148,163,184,.16);
+    background:transparent;
+    color:#f8fafc;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:15px 24px 15px 48px;
+    font-size:20px;
+    font-weight:700;
+    text-align:left;
+    cursor:pointer;
+}
+.special-category-menu-item:hover{background:rgba(34,197,94,.08);}
+.special-category-menu-item .special-category-arrow{
+    margin-left:auto; opacity:.75; transition:transform .2s ease;
+}
+.special-category-menu-item.is-open .special-category-arrow{transform:rotate(90deg);}
+.special-category-services{display:none; background:rgba(15,23,42,.32);}
+.special-category-services.is-open{display:block;}
+.special-category-services .special-service-menu-item{padding-left:76px;}
+.special-service-menu-item{
+    width:100%;
+    min-height:58px;
+    border:0;
+    border-top:1px solid rgba(148,163,184,.12);
+    background:transparent;
+    color:#f8fafc;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:13px 24px 13px 48px;
+    font-size:18px;
+    font-weight:600;
+    text-align:left;
+    cursor:pointer;
+}
+.special-service-menu-item:hover{background:rgba(34,197,94,.08);}

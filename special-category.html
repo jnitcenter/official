@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Special Category | JN IT CENTER</title>
+<link rel="stylesheet" href="special-category.css">
+</head>
+<body>
+<div class="special-order-wrap">
+    <div class="special-topbar">
+        <button type="button" class="back-btn" onclick="history.back()">← Back</button>
+        <div>
+            <h1>🛡️ <span id="categoryTitle">Special Category</span></h1>
+            <p>Choose a service and place your order.</p>
+        </div>
+    </div>
+
+    <div class="special-panel">
+        <div class="panel-title">
+            <h2 id="categoryHeading">Services</h2>
+            <p id="categoryDescription">Select any one service below.</p>
+        </div>
+
+        <div id="serviceGrid" class="service-grid">
+            <div class="loading-card">Loading services...</div>
+        </div>
+
+        <div id="selectedServiceArea" class="selected-service-area" hidden>
+            <div class="selected-service-head">
+                <div>
+                    <span class="selected-label">Selected Service</span>
+                    <h2 id="selectedServiceName">—</h2>
+                </div>
+                <button type="button" class="change-service-btn" id="changeServiceBtn">Change</button>
+            </div>
+
+            <div class="selected-summary">
+                <img id="selectedServiceImage" src="" alt="">
+                <div>
+                    <p id="selectedServiceDescription"></p>
+                    <div class="selected-meta">
+                        <span id="selectedServicePrice">৳0.00</span>
+                        <span id="selectedServiceDelivery">Automatic</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-form">
+                <div id="quantitySection" class="form-section" hidden>
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" min="1" value="1" inputmode="numeric">
+                    <small id="quantityLimit"></small>
+                </div>
+
+                <div class="form-section">
+                    <label>Total Price</label>
+                    <input class="total-price" type="text" id="totalPrice" readonly value="৳0.00">
+                </div>
+
+                <div id="requiredInfoSection" class="required-box" hidden>
+                    <h3>📋 প্রয়োজনীয় তথ্য</h3>
+                    <p>নিচের তথ্যগুলো পূরণ করে অর্ডার করুন।</p>
+                    <div id="dynamicFields"></div>
+                </div>
+
+                <button type="button" class="order-btn" id="placeOrderBtn">
+                    🛒 অর্ডার করুন
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="popup.css">
+<script src="popup.js"></script>
+<script type="module" src="special-category.js"></script>
+</body>
+</html>

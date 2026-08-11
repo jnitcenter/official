@@ -2771,3 +2771,54 @@ body{
 .special-delete-confirm-actions button{border:0;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;}
 .special-delete-cancel{background:rgba(255,255,255,.1);color:inherit;}
 .special-delete-ok{background:#dc2626;color:#fff;}
+
+
+/* =========================
+SPECIAL CATEGORY ADMIN
+========================= */
+.special-category-admin-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:12px 14px;
+    margin:10px 0;
+    background:#111827;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;
+}
+.special-category-admin-info{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+}
+.special-category-admin-info img,
+.special-category-admin-placeholder{
+    width:54px;
+    height:54px;
+    flex:0 0 54px;
+    border-radius:10px;
+    object-fit:cover;
+    display:grid;
+    place-items:center;
+    background:#172235;
+}
+.special-category-admin-info strong{
+    display:block;
+    color:#fff;
+    font-size:16px;
+    word-break:break-word;
+}
+.special-category-admin-info small{
+    display:block;
+    color:#94a3b8;
+    margin-top:4px;
+}
+.special-category-admin-actions{
+    display:flex;
+    gap:8px;
+}
+@media(max-width:600px){
+    .special-category-admin-row{align-items:flex-start}
+}

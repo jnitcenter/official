@@ -237,6 +237,7 @@ function loadRequiredFields(requiredInfo, singleBox = false) {
                     id="required_single_box"
                     class="dynamicInput required-single-textarea"
                     data-label="Required Information"
+                    required
                     autocomplete="off">${safeRaw}</textarea>
             </div>
         `;
@@ -264,6 +265,7 @@ function loadRequiredFields(requiredInfo, singleBox = false) {
                     class="dynamicInput"
                     data-label="${safeField}"
                     placeholder="${placeholder}"
+                    required
                     autocomplete="off">
             </div>
         `;
@@ -285,14 +287,27 @@ async function placeOrder() {
     const inputs = document.querySelectorAll(".dynamicInput");
     const userInfo = {};
 
-    // Required-information fields are intentionally optional.
-    // Empty fields are saved as empty strings so the customer can still place
-    // the order even when one or more pieces of information are missing.
+    // Every field generated from the service's Required Information is mandatory.
+    // Do not allow an order to be created while any required field is empty.
+    let firstEmptyInput = null;
     inputs.forEach(input => {
         const value = input.value.trim();
         const label = input.dataset.label || "Required Information";
         userInfo[label] = value;
+        if (!value && !firstEmptyInput) firstEmptyInput = input;
     });
+
+    if (firstEmptyInput) {
+        inputs.forEach(input => input.classList.remove("required-input-error"));
+        firstEmptyInput.classList.add("required-input-error");
+        firstEmptyInput.focus();
+        showPopup(
+            "warning",
+            "Required Information Missing",
+            `Please fill in "${firstEmptyInput.dataset.label || "Required Information"}" before submitting the order.`
+        );
+        return;
+    }
 
     const user = auth.currentUser;
 

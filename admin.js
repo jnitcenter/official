@@ -538,6 +538,183 @@ document.getElementById("saveServiceBtn").style.display = "none";
 };
 
 
+
+// ===============================
+// SPECIAL CATEGORY MANAGEMENT
+// ===============================
+
+let specialCategoryEditId = null;
+
+async function loadSpecialCategoryOptions(selectedId = ""){
+    const select = document.getElementById("specialServiceCategory");
+    if(!select) return;
+
+    const previous = String(selectedId || select.value || "").trim();
+    select.innerHTML = `<option value="">No Special Category (show as standalone Special Service)</option>`;
+
+    try{
+        const snap = await getDocs(collection(db, "specialCategories"));
+        const rows = [];
+        snap.forEach(d => {
+            const data = d.data() || {};
+            if(data.active === false) return;
+            const name = String(data.name || data.title || "").trim();
+            if(name) rows.push({id:d.id, name});
+        });
+        rows.sort((a,b)=>a.name.localeCompare(b.name));
+        rows.forEach(row => {
+            const opt = document.createElement("option");
+            opt.value = row.id;
+            opt.textContent = row.name;
+            select.appendChild(opt);
+        });
+        if(previous && rows.some(row => row.id === previous)){
+            select.value = previous;
+        }
+    }catch(err){
+        console.warn("Special category options unavailable:", err);
+    }
+}
+
+async function loadSpecialCategoryList(){
+    const list = document.getElementById("specialCategoryList");
+    if(!list) return;
+
+    try{
+        const snap = await getDocs(collection(db, "specialCategories"));
+        if(snap.empty){
+            list.innerHTML = `<p style="color:#94a3b8;">No special categories added yet.</p>`;
+            return;
+        }
+
+        const rows = [];
+        snap.forEach(d => {
+            rows.push({id:d.id, ...d.data()});
+        });
+        rows.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
+
+        list.innerHTML = rows.map(row => {
+            const name = escapeHtmlAdmin(row.name || "Special Category");
+            const image = escapeHtmlAdmin(row.image || "");
+            const active = row.active !== false;
+            return `
+                <div class="special-category-admin-row">
+                    <div class="special-category-admin-info">
+                        ${image
+                            ? `<img src="${image}" alt="" onerror="this.style.display='none';">`
+                            : `<span class="special-category-admin-placeholder">⭐</span>`}
+                        <div>
+                            <strong>${name}</strong>
+                            <small>${active ? "Active" : "Inactive"}</small>
+                        </div>
+                    </div>
+                    <div class="special-category-admin-actions">
+                        <button type="button" class="action-btn" onclick="editSpecialCategory('${escapeHtmlAdmin(row.id)}')">✏️</button>
+                        <button type="button" class="action-btn" onclick="deleteSpecialCategory('${escapeHtmlAdmin(row.id)}')">🗑️</button>
+                    </div>
+                </div>`;
+        }).join("");
+    }catch(err){
+        console.error("loadSpecialCategoryList:", err);
+        list.innerHTML = `<p style="color:#fca5a5;">Unable to load special categories.</p>`;
+    }
+}
+
+window.saveSpecialCategory = async function(){
+    const name = document.getElementById("specialCategoryName")?.value.trim() || "";
+    const image = document.getElementById("specialCategoryImage")?.value.trim() || "";
+    const active = document.getElementById("specialCategoryActive")?.checked !== false;
+
+    if(!name){
+        showPopup("warning","Missing Information","Please enter a special category name.");
+        return;
+    }
+
+    try{
+        const duplicateSnap = await getDocs(collection(db,"specialCategories"));
+        const duplicate = duplicateSnap.docs.some(d =>
+            d.id !== specialCategoryEditId &&
+            String(d.data()?.name || "").trim().toLowerCase() === name.toLowerCase()
+        );
+        if(duplicate){
+            showPopup("warning","Duplicate","This special category already exists.");
+            return;
+        }
+
+        const data = {name, image, active, updatedAt: serverTimestamp()};
+
+        if(specialCategoryEditId){
+            await updateDoc(doc(db,"specialCategories",specialCategoryEditId), data);
+            showPopup("success","Updated","Special category updated successfully.");
+        }else{
+            await addDoc(collection(db,"specialCategories"), {...data, createdAt: serverTimestamp()});
+            showPopup("success","Added","Special category added successfully.");
+        }
+
+        specialCategoryEditId = null;
+        document.getElementById("specialCategoryName").value = "";
+        document.getElementById("specialCategoryImage").value = "";
+        document.getElementById("specialCategoryActive").checked = true;
+        document.getElementById("saveSpecialCategoryBtn").style.display = "inline-block";
+        document.getElementById("updateSpecialCategoryBtn").style.display = "none";
+
+        await loadSpecialCategoryList();
+        await loadSpecialCategoryOptions();
+    }catch(err){
+        console.error("saveSpecialCategory:", err);
+        showPopup("error","Error",err?.message || "Could not save special category.");
+    }
+};
+
+window.editSpecialCategory = async function(id){
+    try{
+        const snap = await getDoc(doc(db,"specialCategories",id));
+        if(!snap.exists()) return;
+        const data = snap.data() || {};
+        specialCategoryEditId = id;
+
+        document.getElementById("specialCategoryName").value = data.name || "";
+        document.getElementById("specialCategoryImage").value = data.image || "";
+        document.getElementById("specialCategoryActive").checked = data.active !== false;
+        document.getElementById("saveSpecialCategoryBtn").style.display = "none";
+        document.getElementById("updateSpecialCategoryBtn").style.display = "inline-block";
+        document.getElementById("adminSpecialCategories")?.scrollIntoView({behavior:"smooth",block:"start"});
+    }catch(err){
+        console.error("editSpecialCategory:", err);
+        showPopup("error","Error",err?.message || "Could not load special category.");
+    }
+};
+
+window.deleteSpecialCategory = async function(id){
+    if(!confirm("Delete this special category? Services inside it will become standalone Special Services.")) return;
+
+    try{
+        const serviceSnap = await getDocs(collection(db,"services"));
+        for(const serviceDoc of serviceSnap.docs){
+            const s = serviceDoc.data() || {};
+            const sid = String(s.specialCategoryId || s.special_category_id || "").trim();
+            if(s.isSpecial === true && sid === String(id)){
+                await updateDoc(doc(db,"services",serviceDoc.id), {
+                    specialCategoryId: "",
+                    specialCategoryName: "",
+                    special_category_id: "",
+                    special_category_name: "",
+                    updatedAt: serverTimestamp()
+                });
+            }
+        }
+
+        await deleteDoc(doc(db,"specialCategories",id));
+        showPopup("success","Deleted","Special category deleted successfully.");
+        await loadSpecialCategoryList();
+        await loadSpecialCategoryOptions();
+        await loadSpecialServiceList();
+    }catch(err){
+        console.error("deleteSpecialCategory:", err);
+        showPopup("error","Delete Failed",err?.message || "Could not delete special category.");
+    }
+};
+
 // ===============================
 // SPECIAL SERVICES MANAGEMENT
 // ===============================
@@ -595,6 +772,9 @@ window.saveSpecialService = async function(){
 
     const serviceId = document.getElementById("specialServiceId").value.trim();
     const name = document.getElementById("specialServiceName").value.trim();
+    const specialCategoryId = document.getElementById("specialServiceCategory")?.value.trim() || "";
+    const specialCategorySelect = document.getElementById("specialServiceCategory");
+    const specialCategoryName = specialCategorySelect?.selectedOptions?.[0]?.textContent?.trim() || "";
     const price = Number(document.getElementById("specialServicePrice").value || 0);
     const requiredInfo = document.getElementById("specialRequiredInfo").value.trim();
     const requiredInfoSingleBox = document.getElementById("specialRequiredInfoMode")?.value === "single";
@@ -637,6 +817,10 @@ window.saveSpecialService = async function(){
         minimumQuantity,
         maximumQuantity,
         estimatedDelivery,
+        specialCategoryId,
+        specialCategoryName: specialCategoryId ? specialCategoryName : "",
+        special_category_id: specialCategoryId,
+        special_category_name: specialCategoryId ? specialCategoryName : "",
         isSpecial: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
@@ -689,6 +873,11 @@ window.editSpecialService = async function(id){
 
         document.getElementById("specialServiceId").value = service.serviceId || "";
         document.getElementById("specialServiceName").value = service.name || "";
+        await loadSpecialCategoryOptions(service.specialCategoryId || service.special_category_id || "");
+        if (document.getElementById("specialServiceCategory")) {
+            document.getElementById("specialServiceCategory").value =
+                service.specialCategoryId || service.special_category_id || "";
+        }
         document.getElementById("specialServicePrice").value = service.price || "";
         document.getElementById("specialRequiredInfo").value = service.requiredInfo || "";
         if (document.getElementById("specialRequiredInfoMode")) document.getElementById("specialRequiredInfoMode").value = service.requiredInfoSingleBox === true ? "single" : "fields";
@@ -762,6 +951,9 @@ function clearSpecialServiceForm(){
 
     document.getElementById("specialServiceId").value = "";
     document.getElementById("specialServiceName").value = "";
+    if (document.getElementById("specialServiceCategory")) {
+        document.getElementById("specialServiceCategory").value = "";
+    }
     document.getElementById("specialServicePrice").value = "";
     document.getElementById("specialRequiredInfo").value = "";
     if (document.getElementById("specialRequiredInfoMode")) document.getElementById("specialRequiredInfoMode").value="fields";
@@ -797,7 +989,9 @@ document.getElementById("specialApiEnabled")?.addEventListener("change", functio
 
 document.getElementById("specialSearchBox")?.addEventListener("input", loadSpecialServiceList);
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadSpecialCategoryList();
+    await loadSpecialCategoryOptions();
     loadSpecialServiceList();
 });
 

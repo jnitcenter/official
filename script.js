@@ -1730,48 +1730,119 @@ if (profileBtn) {
 
 async function loadSpecialServiceMenu(){
 
-    const list = document.getElementById("specialServiceMenuList");
-    if(!list) return;
+    const categoryList = document.getElementById("specialCategoryMenuList");
+    const serviceList = document.getElementById("specialServiceMenuList");
+    if(!categoryList || !serviceList) return;
 
-    list.innerHTML = "";
+    categoryList.innerHTML = "";
+    serviceList.innerHTML = "";
 
     try{
-        const snapshot = await getDocs(collection(db,"services"));
+        const serviceSnapshot = await getDocs(collection(db,"services"));
         const services = [];
-
-        snapshot.forEach(docSnap => {
+        serviceSnapshot.forEach(docSnap => {
             const service = { id: docSnap.id, ...docSnap.data() };
-
-            // Keep the original working condition.
             if(service.isSpecial === true && service.active !== false){
                 services.push(service);
             }
         });
 
-        list.innerHTML = services.map(service => {
-            const image = String(service.image || "").trim();
+        // Special Categories are independent from normal Dashboard Categories.
+        const categoryCollectionNames = [
+            "specialCategories",
+            "special_categories",
+            "specialServiceCategories"
+        ];
+        const categoryMap = new Map();
 
-            return `
-            <button
-                type="button"
-                class="special-service-menu-item"
-                data-service-id="${service.id}"
-                title="${service.name || "Special Service"}">
-                ${
-                    image
-                        ? `<img
-                            class="special-service-menu-icon"
-                            src="${image}"
-                            alt=""
-                            loading="lazy"
-                            onerror="this.style.display='none';">`
-                        : `<span class="special-service-menu-icon">⭐</span>`
-                }
-                <span class="special-service-menu-name">${service.name || "Special Service"}</span>
-            </button>`;
-        }).join("");
+        for(const collectionName of categoryCollectionNames){
+            try{
+                const snap = await getDocs(collection(db, collectionName));
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    if(data.active === false || data.isActive === false) return;
 
-        list.querySelectorAll(".special-service-menu-item").forEach(button => {
+                    const name = String(
+                        data.name || data.title || data.categoryName || data.label || ""
+                    ).trim();
+                    if(!name) return;
+
+                    const id = String(docSnap.id || name).trim();
+                    const key = id.toLowerCase();
+                    if(!categoryMap.has(key)){
+                        categoryMap.set(key, {id, name, ...data});
+                    }
+                });
+            }catch(e){
+                // Optional legacy collection; ignore if it does not exist.
+            }
+        }
+
+        // Keep legacy special-category data visible if an older service already
+        // contains a category name but no category document exists.
+        services.forEach(service => {
+            const id = String(service.specialCategoryId || service.special_category_id || "").trim();
+            const name = String(
+                service.specialCategoryName ||
+                service.special_category_name ||
+                service.specialCategory ||
+                service.special_category ||
+                ""
+            ).trim();
+
+            if(!name) return;
+
+            const key = (id || name).toLowerCase();
+            if(!categoryMap.has(key)){
+                categoryMap.set(key, {id: id || name, name});
+            }
+        });
+
+        const categories = Array.from(categoryMap.values())
+            .sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+
+        const escape = (value) => String(value ?? "").replace(/[&<>"']/g, ch => ({
+            "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
+        }[ch]));
+
+        // Category items are links to a dedicated Special Category page.
+        // Special Services without a category remain directly below them.
+        categoryList.innerHTML = categories.map(category => `
+            <button type="button"
+                    class="special-category-menu-item"
+                    data-special-category-id="${escape(category.id)}"
+                    title="${escape(category.name)}">
+                <span>⭐</span>
+                <span class="special-category-menu-name">${escape(category.name)}</span>
+                <span class="special-category-arrow">›</span>
+            </button>
+        `).join("");
+
+        categoryList.querySelectorAll(".special-category-menu-item").forEach(button => {
+            button.addEventListener("click", () => {
+                const id = button.dataset.specialCategoryId || "";
+                closeSpecialMenu();
+                window.location.href = `special-category.html?id=${encodeURIComponent(id)}`;
+            });
+        });
+
+        const uncategorized = services.filter(service => {
+            const id = String(service.specialCategoryId || service.special_category_id || "").trim();
+            const name = String(
+                service.specialCategoryName ||
+                service.special_category_name ||
+                service.specialCategory ||
+                service.special_category ||
+                ""
+            ).trim();
+            return !id && !name;
+        });
+
+        serviceList.innerHTML = uncategorized
+            .map(service => renderSpecialServiceButton(service, escape))
+            .join("");
+
+        serviceList.querySelectorAll(".special-service-menu-item").forEach(button => {
             button.addEventListener("click", () => {
                 const id = button.dataset.serviceId;
                 closeSpecialMenu();
@@ -1780,10 +1851,25 @@ async function loadSpecialServiceMenu(){
         });
 
     }catch(err){
-        console.error("Special service menu error:", err);
-        list.innerHTML = "";
+        console.error("Special category/service menu error:", err);
+        categoryList.innerHTML = "";
+        serviceList.innerHTML = "";
     }
 }
+
+function renderSpecialServiceButton(service, escapeHtmlFn){
+    const image = String(service.image || "").trim();
+    const name = escapeHtmlFn(service.name || "Special Service");
+    const id = escapeHtmlFn(service.id || "");
+    return `
+        <button type="button" class="special-service-menu-item" data-service-id="${id}" title="${name}">
+            ${image
+                ? `<img class="special-service-menu-icon" src="${escapeHtmlFn(image)}" alt="" loading="lazy" onerror="this.style.display='none';">`
+                : `<span class="special-service-menu-icon">⭐</span>`}
+            <span class="special-service-menu-name">${name}</span>
+        </button>`;
+}
+
 function openSpecialMenu(){
     loadSpecialServiceMenu();
     document.getElementById("specialMenu")?.classList.add("show");
