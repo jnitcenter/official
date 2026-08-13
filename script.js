@@ -1752,38 +1752,22 @@ async function loadSpecialServiceMenu(){
         });
 
         // Special Categories are independent from normal Dashboard Categories.
-        const categoryCollectionNames = [
-            "specialCategories",
-            "special_categories",
-            "specialServiceCategories"
-        ];
         const categoryMap = new Map();
-
-        for(const collectionName of categoryCollectionNames){
-            try{
-                const snap = await getDocs(collection(db, collectionName));
-                snap.forEach(docSnap => {
-                    const data = docSnap.data() || {};
-                    if(data.active === false || data.isActive === false) return;
-
-                    const name = String(
-                        data.name || data.title || data.categoryName || data.label || ""
-                    ).trim();
-                    if(!name) return;
-
-                    const id = String(docSnap.id || name).trim();
-                    const key = id.toLowerCase();
-                    if(!categoryMap.has(key)){
-                        categoryMap.set(key, {id, name, ...data});
-                    }
-                });
-            }catch(e){
-                // Optional legacy collection; ignore if it does not exist.
-            }
+        const categoryMeta = new Map();
+        try {
+            const metaSnap = await getDocs(collection(db,"specialCategories"));
+            metaSnap.forEach(d => {
+                const x=d.data()||{};
+                const id=String(x.id||d.id||"").trim().toLowerCase();
+                if(/^special-category-(0[1-9]|1[0-9]|20)$/.test(id)) categoryMeta.set(id,x);
+            });
+        } catch(metaErr){
+            console.warn("Special category metadata unavailable:",metaErr);
         }
 
-        // Keep legacy special-category data visible if an older service already
-        // contains a category name but no category document exists.
+        // Category documents are metadata only. Customer visibility is driven by
+        // active services assigned to one of the 20 fixed Special Category slots.
+
         services.forEach(service => {
             const id = String(service.specialCategoryId || service.special_category_id || "").trim();
             const name = String(
@@ -1796,9 +1780,13 @@ async function loadSpecialServiceMenu(){
 
             if(!name) return;
 
-            const key = (id || name).toLowerCase();
-            if(!categoryMap.has(key)){
-                categoryMap.set(key, {id: id || name, name});
+            const fixedMatch = /^special-category-(0[1-9]|1[0-9]|20)$/i.exec(id);
+            const fixedNumber = fixedMatch ? Number(fixedMatch[1]) : 0;
+            const key = fixedNumber ? id.toLowerCase() : (name ? name.toLowerCase() : "");
+            if(fixedNumber){
+                const icons = ["⭐","⚡","👑","💎","🚀","🎁","🔥","❤️","🎵","📷","🎯","💰","🏆","✨","🌟","🎨","🛡️","📱","🌐","💠"];
+                const meta=categoryMeta.get(id.toLowerCase())||{};
+                categoryMap.set(key, {id, name:String(meta.name||`Special Category ${fixedNumber}`).trim(), icon:String(meta.icon||icons[fixedNumber-1]), active:meta.active!==false});
             }
         });
 
@@ -1806,7 +1794,11 @@ async function loadSpecialServiceMenu(){
         // legacy/test category "Jjjj" in the customer menu.
         const categories = Array.from(categoryMap.values())
             .filter(category => norm(category.name) !== "jjjj")
-            .sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+            .sort((a,b)=>{
+                const an = Number((String(a.id||"").match(/special-category-(\d{2})$/i)||[])[1]||999);
+                const bn = Number((String(b.id||"").match(/special-category-(\d{2})$/i)||[])[1]||999);
+                return an-bn || String(a.name).localeCompare(String(b.name));
+            });
 
         const escape = (value) => String(value ?? "").replace(/[&<>"']/g, ch => ({
             "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
@@ -1819,9 +1811,10 @@ async function loadSpecialServiceMenu(){
             const categoryName = String(category.name || "").trim();
             const isNameAddressNid = /নাম\s*ঠিকানা\s*দিয়ে\s*nid/i.test(categoryName) ||
                 /name\s*address.*nid/i.test(categoryName);
+            const iconValue = String(category.icon || "").trim();
             const icon = isNameAddressNid
                 ? `<img class="special-category-menu-icon" src="images/id-card-icon.svg" alt="" aria-hidden="true">`
-                : `<span class="special-category-menu-icon special-category-menu-star">🪪</span>`;
+                : `<span class="special-category-menu-icon special-category-menu-star">${escape(iconValue || "⭐")}</span>`;
 
             return `
             <button type="button"
@@ -1881,7 +1874,7 @@ function renderSpecialServiceButton(service, escapeHtmlFn){
         <button type="button" class="special-service-menu-item" data-service-id="${id}" title="${name}">
             ${image
                 ? `<img class="special-service-menu-icon" src="${escapeHtmlFn(image)}" alt="" loading="lazy" onerror="this.style.display='none';">`
-                : `<span class="special-service-menu-icon">🪪</span>`}
+                : `<span class="special-service-menu-icon">⭐</span>`}
             <span class="special-service-menu-name">${name}</span>
         </button>`;
 }

@@ -597,6 +597,19 @@ SPECIAL CATEGORY MANAGEMENT
         <hr>
 
         <h3>📋 Special Category 1–20</h3>
+        <p style="color:#94a3b8;line-height:1.6;">প্রথমে নিচের তালিকা থেকে একটি Special Category নির্বাচন করে নাম/আইকন Save করুন। তারপর <b>Add Service</b> চাপলে সেই category-র জন্য Special Service যোগ করার ফর্ম খুলবে। Category-তে active service না থাকলে User-এর কাছে সেটি দেখাবে না।</p>
+
+        <div class="special-category-editor" id="specialCategoryEditor">
+            <label>Category</label>
+            <select id="specialCategorySlotSelect"></select>
+            <label>Category Name</label>
+            <input type="text" id="specialCategoryNameInput" placeholder="Special Category 1">
+            <label>Icon / Emoji</label>
+            <input type="text" id="specialCategoryIconInput" maxlength="8" placeholder="⭐">
+            <label class="special-category-active-label"><input type="checkbox" id="specialCategoryActiveInput" checked> Active</label>
+            <button type="button" class="admin-primary-btn" id="saveSpecialCategoryBtn">💾 Save Category</button>
+        </div>
+
         <div id="specialCategoryList">
             <p>Loading special categories...</p>
         </div>

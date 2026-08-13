@@ -2830,3 +2830,14 @@ SPECIAL CATEGORY ADMIN
 @media(max-width:600px){
     .special-category-admin-row{align-items:flex-start}
 }
+
+.special-category-editor{margin:14px 0 18px;padding:16px;border:1px solid rgba(34,197,94,.28);border-radius:14px;background:rgba(15,23,42,.55);}
+.special-category-editor label{display:block;margin:10px 0 6px;color:#cbd5e1;font-weight:700;}
+.special-category-editor select,.special-category-editor input[type="text"]{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #334155;background:#172235;color:#fff;font-size:15px;outline:none;}
+.special-category-editor select:focus,.special-category-editor input[type="text"]:focus{border-color:#22c55e;}
+.special-category-active-label{display:flex!important;align-items:center;gap:8px;}
+.special-category-active-label input{width:18px;height:18px;accent-color:#22c55e;}
+.admin-primary-btn{margin-top:12px;width:100%;padding:12px 14px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:800;font-size:15px;cursor:pointer;}
+.admin-primary-btn:hover{background:#15803d;}
+.special-category-slot-row{width:100%;border:1px solid rgba(255,255,255,.08);cursor:pointer;color:inherit;}
+.special-category-admin-actions .action-btn{cursor:pointer;}

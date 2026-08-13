@@ -544,64 +544,167 @@ document.getElementById("saveServiceBtn").style.display = "none";
 // ===============================
 
 let specialCategoryEditId = null;
+const SPECIAL_CATEGORY_ICONS = ["⭐","⚡","👑","💎","🚀","🎁","🔥","❤️","🎵","📷","🎯","💰","🏆","✨","🌟","🎨","🛡️","📱","🌐","💠"];
+const SPECIAL_CATEGORY_DEFAULTS = Array.from({length:20}, (_,i) => ({
+    id:`special-category-${String(i+1).padStart(2,"0")}`,
+    slot:i+1,
+    name:`Special Category ${i+1}`,
+    icon:SPECIAL_CATEGORY_ICONS[i],
+    active:true
+}));
+let specialCategoryMeta = new Map();
+
+async function loadSpecialCategoryMeta(){
+    specialCategoryMeta = new Map(SPECIAL_CATEGORY_DEFAULTS.map(x => [x.id, {...x}]));
+    try{
+        const snap = await getDocs(collection(db,"specialCategories"));
+        snap.forEach(d=>{
+            const x=d.data()||{};
+            const id=String(x.id || d.id || "").trim();
+            if(!/^special-category-(0[1-9]|1[0-9]|20)$/i.test(id)) return;
+            const n=Number(id.match(/(\d{2})$/)[1]);
+            const base=specialCategoryMeta.get(id)||SPECIAL_CATEGORY_DEFAULTS[n-1];
+            specialCategoryMeta.set(id,{
+                ...base,
+                id,
+                slot:n,
+                name:String(x.name || x.title || base.name).trim() || base.name,
+                icon:String(x.icon || base.icon).trim() || base.icon,
+                active:x.active !== false
+            });
+        });
+    }catch(err){
+        console.error("loadSpecialCategoryMeta:",err);
+    }
+}
+
+function getSpecialCategoryMeta(id){
+    return specialCategoryMeta.get(String(id||"").trim().toLowerCase()) || null;
+}
+
+function fillSpecialCategoryEditor(id){
+    const meta=getSpecialCategoryMeta(id) || SPECIAL_CATEGORY_DEFAULTS[0];
+    const slot=document.getElementById("specialCategorySlotSelect");
+    if(slot) slot.value=meta.id;
+    const name=document.getElementById("specialCategoryNameInput");
+    const icon=document.getElementById("specialCategoryIconInput");
+    const active=document.getElementById("specialCategoryActiveInput");
+    if(name) name.value=meta.name;
+    if(icon) icon.value=meta.icon;
+    if(active) active.checked=meta.active !== false;
+    specialCategoryEditId=meta.id;
+}
 
 async function loadSpecialCategoryOptions(selectedId = ""){
     const select = document.getElementById("specialServiceCategory");
     if(!select) return;
-    const previous = String(selectedId || select.value || "").trim();
-    const icons = ["🪪","⚡","👑","💎","🚀","🎁","🔥","❤️","🎵","📷","🎯","💰","🏆","✨","🌟","🎨","🛡️","📱","🌐","💠"];
+    await loadSpecialCategoryMeta();
+    const previous = String(selectedId || select.value || "").trim().toLowerCase();
     select.innerHTML = `<option value="">No Special Category (show as standalone Special Service)</option>`;
-    for(let i=1;i<=20;i++){
-        const id = `special-category-${String(i).padStart(2,"0")}`;
-        const opt = document.createElement("option");
-        opt.value = id;
-        opt.textContent = `${icons[i-1]} Special Category ${i}`;
+    SPECIAL_CATEGORY_DEFAULTS.forEach(base=>{
+        const meta=getSpecialCategoryMeta(base.id) || base;
+        const opt=document.createElement("option");
+        opt.value=base.id;
+        opt.textContent=`${meta.icon || base.icon} ${meta.name || base.name}`;
         select.appendChild(opt);
-    }
-    if(previous) select.value = previous;
+    });
+    if(previous) select.value=previous;
 }
 
 async function loadSpecialCategoryList(){
     const list = document.getElementById("specialCategoryList");
     if(!list) return;
-    const icons = ["🪪","⚡","👑","💎","🚀","🎁","🔥","❤️","🎵","📷","🎯","💰","🏆","✨","🌟","🎨","🛡️","📱","🌐","💠"];
     try{
+        await loadSpecialCategoryMeta();
         const snap = await getDocs(collection(db,"services"));
         const counts = {};
         snap.forEach(d=>{
             const s=d.data()||{};
             if(s.isSpecial !== true || s.active === false) return;
-            const id=String(s.specialCategoryId || s.special_category_id || "").trim();
+            const id=String(s.specialCategoryId || s.special_category_id || "").trim().toLowerCase();
             if(id) counts[id]=(counts[id]||0)+1;
         });
-        list.innerHTML = Array.from({length:20},(_,idx)=>{
-            const n=idx+1, id=`special-category-${String(n).padStart(2,"0")}`;
-            const count=counts[id]||0;
-            return `<button type="button" class="special-category-admin-row special-category-slot-row" onclick="openSpecialCategorySlot(${n})">
-                <div class="special-category-admin-info"><span class="special-category-admin-placeholder">${icons[idx]}</span><div><strong>Special Category ${n}</strong><small>${count} active service${count===1?'':'s'}</small></div></div>
-                <div class="special-category-admin-actions"><span class="action-btn">${count ? '⚙️' : '➕'}</span></div>
-            </button>`;
+        list.innerHTML = SPECIAL_CATEGORY_DEFAULTS.map((base,idx)=>{
+            const meta=getSpecialCategoryMeta(base.id)||base;
+            const count=counts[base.id]||0;
+            const status=meta.active===false ? "Disabled" : (count ? `${count} active service${count===1?'':'s'}` : "No active service");
+            return `<div class="special-category-admin-row special-category-slot-row" data-special-slot-row="${idx+1}">
+                <div class="special-category-admin-info"><span class="special-category-admin-placeholder">${meta.icon}</span><div><strong>${escapeHtml(meta.name)}</strong><small>Slot ${idx+1} · ${status}</small></div></div>
+                <div class="special-category-admin-actions">
+                    <button type="button" class="action-btn special-cat-edit-btn" data-slot="${idx+1}">✏️ Edit</button>
+                    <button type="button" class="action-btn special-cat-add-btn" data-slot="${idx+1}">➕ Add Service</button>
+                </div>
+            </div>`;
         }).join("");
+
+        list.querySelectorAll(".special-cat-edit-btn").forEach(btn=>btn.addEventListener("click",()=>{
+            fillSpecialCategoryEditor(`special-category-${String(Number(btn.dataset.slot)).padStart(2,"0")}`);
+            document.getElementById("specialCategoryEditor")?.scrollIntoView({behavior:"smooth",block:"center"});
+        }));
+        list.querySelectorAll(".special-cat-add-btn").forEach(btn=>btn.addEventListener("click",()=>openSpecialCategorySlot(Number(btn.dataset.slot))));
     }catch(err){
         console.error("loadSpecialCategoryList:",err);
         list.innerHTML = `<p style="color:#fca5a5;">Unable to load special categories.</p>`;
     }
 }
 
+function escapeHtml(value){
+    return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+}
+
 window.openSpecialCategorySlot = function(number){
-    const id=`special-category-${String(number).padStart(2,"0")}`;
+    const n=Math.min(20,Math.max(1,Number(number)||1));
+    const id=`special-category-${String(n).padStart(2,"0")}`;
     const select=document.getElementById("specialServiceCategory");
-    if(select){ select.value=id; }
-    document.getElementById("adminSpecialServices")?.scrollIntoView({behavior:"smooth",block:"start"});
+    if(select) select.value=id;
+    const services=document.getElementById("adminSpecialServices");
+    services?.scrollIntoView({behavior:"smooth",block:"start"});
     setTimeout(()=>document.getElementById("specialServiceName")?.focus(),350);
 };
 
-// Fixed Special Category slots (1-20) are managed through Special Services.
 window.saveSpecialCategory = async function(){
-    showPopup("info","Fixed Slots","Choose Special Category 1-20 from the Special Services form, then add a service to that slot.");
+    const slot=Number(document.getElementById("specialCategorySlotSelect")?.value?.match(/(\d{2})$/)?.[1] || 0);
+    if(slot<1 || slot>20){ showPopup("warning","Select Category","Please select a Special Category slot."); return; }
+    const id=`special-category-${String(slot).padStart(2,"0")}`;
+    const fallback=SPECIAL_CATEGORY_DEFAULTS[slot-1];
+    const name=String(document.getElementById("specialCategoryNameInput")?.value||"").trim();
+    const icon=String(document.getElementById("specialCategoryIconInput")?.value||"").trim();
+    const active=document.getElementById("specialCategoryActiveInput")?.checked !== false;
+    if(!name){ showPopup("warning","Missing Name","Please enter a category name."); return; }
+    try{
+        await setDoc(doc(db,"specialCategories",id),{
+            id, slot, name, icon:icon||fallback.icon, active,
+            updatedAt:serverTimestamp()
+        },{merge:true});
+        await loadSpecialCategoryMeta();
+        await loadSpecialCategoryOptions(id);
+        await loadSpecialCategoryList();
+        fillSpecialCategoryEditor(id);
+        showPopup("success","Saved","Special Category saved successfully. এখন Add Service দিয়ে service যোগ করুন।");
+    }catch(err){
+        console.error(err);
+        showPopup("error","Save Failed",err?.message||"Unable to save category.");
+    }
 };
-window.editSpecialCategory = function(number){ window.openSpecialCategorySlot(Number(number)||1); };
-window.deleteSpecialCategory = function(){ showPopup("info","Fixed Slots","Special Category slots cannot be deleted. Remove or reassign the services inside them instead."); };
+
+window.editSpecialCategory = function(number){
+    fillSpecialCategoryEditor(`special-category-${String(Number(number)||1).padStart(2,"0")}`);
+};
+window.deleteSpecialCategory = function(){
+    showPopup("info","Fixed Slots","এই ২০টি Special Category slot fixed। চাইলে নাম/আইকন পরিবর্তন বা Active বন্ধ করতে পারবেন।");
+};
+
+function initSpecialCategoryEditor(){
+    const slot=document.getElementById("specialCategorySlotSelect");
+    if(!slot) return;
+    slot.innerHTML=SPECIAL_CATEGORY_DEFAULTS.map(x=>`<option value="${x.id}">${x.icon} ${x.name}</option>`).join("");
+    slot.addEventListener("change",()=>fillSpecialCategoryEditor(slot.value));
+    document.getElementById("saveSpecialCategoryBtn")?.addEventListener("click",window.saveSpecialCategory);
+    loadSpecialCategoryMeta().then(()=>{
+        slot.innerHTML=SPECIAL_CATEGORY_DEFAULTS.map(x=>{const m=getSpecialCategoryMeta(x.id)||x;return `<option value="${x.id}">${m.icon} ${escapeHtml(m.name)}</option>`}).join("");
+        fillSpecialCategoryEditor(slot.value || SPECIAL_CATEGORY_DEFAULTS[0].id);
+    });
+}
 
 // ===============================
 // SPECIAL SERVICES MANAGEMENT
@@ -878,6 +981,7 @@ document.getElementById("specialApiEnabled")?.addEventListener("change", functio
 document.getElementById("specialSearchBox")?.addEventListener("input", loadSpecialServiceList);
 
 document.addEventListener("DOMContentLoaded", async () => {
+    initSpecialCategoryEditor();
     await loadSpecialCategoryList();
     await loadSpecialCategoryOptions();
     loadSpecialServiceList();
