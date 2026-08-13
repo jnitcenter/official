@@ -3826,3 +3826,42 @@ body.light-mode .order-table td{
     cursor:pointer;
 }
 .special-service-menu-item:hover{background:rgba(34,197,94,.08);}
+
+
+/* Special Category / Special Service menu sizing: match Dashboard, Profile and Order History */
+.special-category-menu-item{
+    min-height:0 !important;
+    gap:10px !important;
+    padding:13px 15px !important;
+    font-size:16px !important;
+    font-weight:600 !important;
+}
+.special-category-menu-icon{
+    width:24px !important;
+    height:24px !important;
+    flex:0 0 24px !important;
+}
+.special-category-menu-star{
+    font-size:21px !important;
+    line-height:1 !important;
+}
+.special-category-services .special-service-menu-item{
+    min-height:0 !important;
+    gap:10px !important;
+    padding:11px 15px 11px 48px !important;
+    font-size:16px !important;
+    font-weight:600 !important;
+}
+.special-service-menu-item{
+    min-height:0 !important;
+    gap:10px !important;
+    padding:13px 15px !important;
+    font-size:16px !important;
+    font-weight:600 !important;
+}
+.special-service-menu-icon{
+    width:24px !important;
+    height:24px !important;
+    flex:0 0 24px !important;
+    object-fit:cover;
+}
