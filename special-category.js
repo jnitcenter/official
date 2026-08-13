@@ -44,8 +44,14 @@ async function loadCategory(){
         if(categorySnap.exists()){
             category = {id:categorySnap.id,...categorySnap.data()};
         }else{
-            // Legacy fallback: allow a category name/id to be passed.
-            category = {id:categoryId,name:categoryId,image:""};
+            // Default Special Category 1-20 fallback. Existing Firestore data is untouched.
+            const match = /^special-category-(\d{2})$/i.exec(categoryId);
+            if(match && Number(match[1]) >= 1 && Number(match[1]) <= 20){
+                category = {id:categoryId,name:`Special Category ${Number(match[1])}`,image:""};
+            }else{
+                // Legacy fallback: allow a category name/id to be passed.
+                category = {id:categoryId,name:categoryId,image:""};
+            }
         }
 
         const categoryName = String(category.name || category.title || categoryId).trim();

@@ -42,7 +42,31 @@ HEADER
   <button type="button" class="admin-nav-item" data-target="adminOrders"><span>🛒</span><b>Orders</b></button>
   <button type="button" class="admin-nav-item" data-target="adminServices"><span>⚙</span><b>Services</b></button>
   <button type="button" class="admin-nav-item" data-target="adminCategories"><span>▦</span><b>Categories</b></button>
-  <button type="button" class="admin-nav-item" data-target="adminSpecialCategories"><span>🪪</span><b>Special Categories</b></button>
+  <div class="admin-nav-group" id="specialCategoryNavGroup">
+    <button type="button" class="admin-nav-item special-category-parent" data-target="adminSpecialCategories" aria-expanded="false"><span>🪪</span><b>Special Categories</b><em class="special-category-nav-chevron">›</em></button>
+    <div class="admin-special-category-subnav" id="adminSpecialCategorySubnav" hidden>
+      <button type="button" class="admin-special-category-slot" data-special-slot="1">⭐ Special Category 1</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="2">⚡ Special Category 2</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="3">👑 Special Category 3</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="4">💎 Special Category 4</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="5">🚀 Special Category 5</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="6">🎁 Special Category 6</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="7">🔥 Special Category 7</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="8">❤️ Special Category 8</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="9">🎵 Special Category 9</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="10">📷 Special Category 10</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="11">🎯 Special Category 11</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="12">💰 Special Category 12</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="13">🏆 Special Category 13</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="14">✨ Special Category 14</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="15">🌟 Special Category 15</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="16">🎨 Special Category 16</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="17">🛡️ Special Category 17</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="18">📱 Special Category 18</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="19">🌐 Special Category 19</button>
+      <button type="button" class="admin-special-category-slot" data-special-slot="20">💠 Special Category 20</button>
+    </div>
+  </div>
   <button type="button" class="admin-nav-item" data-target="adminSubCategories"><span>📁</span><b>Sub Categories</b></button>
   <button type="button" class="admin-nav-item" data-target="adminSpecialServices"><span>♥</span><b>Special Services</b></button>
   <button type="button" class="admin-nav-item" data-target="adminSlide"><span>▣</span><b>Slider / Notice</b></button>
@@ -565,34 +589,14 @@ SPECIAL CATEGORY MANAGEMENT
             They appear in the User Menu under My Profile.
         </p>
 
-        <label>Special Category Name</label>
-        <input type="text" id="specialCategoryName" placeholder="e.g. NID Services">
-
-        <label>Category Picture URL</label>
-        <input type="url" id="specialCategoryImage"
-               placeholder="https://example.com/special-category.jpg"
-               autocomplete="off">
-
-        <label style="display:flex;align-items:center;gap:8px;">
-            <input type="checkbox" id="specialCategoryActive" checked>
-            Active
-        </label>
-
-        <br>
-
-        <button type="button" class="green-btn" id="saveSpecialCategoryBtn"
-                onclick="saveSpecialCategory()">
-            ⭐ Add Special Category
-        </button>
-
-        <button type="button" class="green-btn" id="updateSpecialCategoryBtn"
-                onclick="saveSpecialCategory()" style="display:none">
-            ✏️ Update Special Category
-        </button>
+        <p style="color:#94a3b8;line-height:1.6;">
+            ২০টি fixed slot আছে। এখানে service যোগ না করা পর্যন্ত কোনো Special Category customer-এর কাছে দেখাবে না।
+            Service যোগ করতে নিচের Special Services অংশে একটি slot নির্বাচন করুন।
+        </p>
 
         <hr>
 
-        <h3>📋 Existing Special Categories</h3>
+        <h3>📋 Special Category 1–20</h3>
         <div id="specialCategoryList">
             <p>Loading special categories...</p>
         </div>

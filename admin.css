@@ -2386,6 +2386,14 @@ body{
   opacity:.9;
 }
 .admin-nav-item b{font-weight:650}
+.admin-nav-group{width:100%;}
+.special-category-parent{position:relative;}
+.special-category-nav-chevron{margin-left:auto;font-style:normal;opacity:.75;transition:transform .2s ease;}
+.special-category-parent.is-expanded .special-category-nav-chevron{transform:rotate(90deg);}
+.admin-special-category-subnav{padding:3px 0 7px 30px;display:flex;flex-direction:column;gap:3px;}
+.admin-special-category-subnav[hidden]{display:none;}
+.admin-special-category-slot{width:calc(100% - 4px);min-height:38px;border:0;border-left:2px solid rgba(34,197,94,.25);border-radius:7px;background:rgba(15,23,42,.35);color:#cbd5e1;padding:8px 10px;text-align:left;font:600 13px/1.2 Arial,sans-serif;cursor:pointer;}
+.admin-special-category-slot:hover{background:rgba(34,197,94,.10);color:#fff;border-left-color:#22c55e;}
 .admin-nav-item:hover{
   background:#18263b;
   color:#fff;

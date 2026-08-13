@@ -1881,7 +1881,7 @@ function renderSpecialServiceButton(service, escapeHtmlFn){
         <button type="button" class="special-service-menu-item" data-service-id="${id}" title="${name}">
             ${image
                 ? `<img class="special-service-menu-icon" src="${escapeHtmlFn(image)}" alt="" loading="lazy" onerror="this.style.display='none';">`
-                : `<span class="special-service-menu-icon">⭐</span>`}
+                : `<span class="special-service-menu-icon">🪪</span>`}
             <span class="special-service-menu-name">${name}</span>
         </button>`;
 }
