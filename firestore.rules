@@ -1,0 +1,115 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Public catalog data.
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /subCategories/{subCategoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /specialCategories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // User profiles.
+    // A signed-in user can read/update only their own profile.
+    // Admins can manage all user profiles.
+    match /users/{userId} {
+      allow create: if isOwner(userId);
+      allow read: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Orders: customers can create/read/update their own orders;
+    // admins can manage all orders.
+    match /orders/{orderId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // Balance requests.
+    match /balanceRequests/{requestId} {
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid;
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Notifications.
+    // Users can manage their own notifications. Admins can manage all.
+    // A signed-in user may also create a notification addressed to an admin,
+    // because the current client sends order/support/payment alerts this way.
+    match /notifications/{notificationId} {
+      allow create: if signedIn()
+        && (
+          request.resource.data.userId == request.auth.uid
+          || (
+            exists(/databases/$(database)/documents/users/$(request.resource.data.userId))
+            && get(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.role == 'admin'
+          )
+          || isAdmin()
+        );
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // Live support chat is stored as one document per customer UID.
+    match /supportChats/{chatId} {
+      allow create: if isAdmin() || isOwner(chatId);
+      allow read: if isAdmin() || isOwner(chatId);
+      allow update: if isAdmin() || isOwner(chatId);
+      allow delete: if isAdmin() || isOwner(chatId);
+    }
+
+    // Publicly readable site settings used by the customer dashboard.
+    // Only admins may write them.
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
