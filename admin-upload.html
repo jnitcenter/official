@@ -25,12 +25,19 @@
 type="hidden"
 id="orderId">
 
-<label>Choose Result File</label>
-
-<input
-    type="text"
-    id="resultLink"
-    placeholder="Paste Google Drive Link">
+<label>Result Delivery Method</label>
+<div class="result-methods" style="display:grid;gap:12px;margin:10px 0 18px">
+  <div style="padding:12px;border:1px solid #2b6f88;border-radius:10px">
+    <strong>Option 1 — Google Drive Link</strong>
+    <input type="url" id="resultLink" placeholder="Paste Google Drive share link" style="width:100%;margin-top:8px">
+  </div>
+  <div style="padding:12px;border:1px solid #2b6f88;border-radius:10px">
+    <strong>Option 2 — Upload PDF</strong>
+    <input type="file" id="resultPdf" accept="application/pdf,.pdf" style="width:100%;margin-top:8px">
+    <small>PDF only, maximum 10 MB. Firebase Storage must be enabled and its rules configured.</small>
+    <div id="uploadStatus" role="status" style="margin-top:6px"></div>
+  </div>
+</div>
 
 <label>Admin Note</label>
 

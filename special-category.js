@@ -364,23 +364,21 @@ async function placeOrder(){
             createdAt:Date.now()
         });
 
-        await sendNotification(
-            user.uid,
-            "📦 Order Submitted",
-            `Your ${currentService.name || "special service"} order has been received successfully.`,
-            "order"
-        );
-
-        const admins = await getDocs(query(collection(db,"users"),where("role","==","admin")));
-        for(const admin of admins.docs){
+        // Order creation is the primary operation. Notification failures must not
+        // make a successfully-created order appear to have failed to the customer.
+        try {
             await sendNotification(
-                admin.id,
-                "📥 New Order Received",
-                `${userData.name || user.email} placed a new ${currentService.name || "special service"} order.`,
+                user.uid,
+                "📦 Order Submitted",
+                `Your ${currentService.name || "special service"} order has been received successfully.`,
                 "order"
             );
+        } catch (notificationError) {
+            console.warn("Order was created, but customer notification failed:", notificationError);
         }
 
+        // Do not query every user from a customer session. Firestore rules correctly
+        // restrict that query; admin notifications should be sent by a trusted backend.
         showPopup("success","Order Placed","Your order has been submitted successfully.");
     }catch(err){
         console.error("Special order error:",err);
