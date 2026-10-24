@@ -34,8 +34,15 @@ id="orderId">
   <div style="padding:12px;border:1px solid #2b6f88;border-radius:10px">
     <strong>Option 2 — Upload PDF</strong>
     <input type="file" id="resultPdf" accept="application/pdf,.pdf" style="width:100%;margin-top:8px">
-    <small>PDF only, maximum 10 MB. Firebase Storage must be enabled and its rules configured.</small>
-    <div id="uploadStatus" role="status" style="margin-top:6px"></div>
+    <small>PDF only, maximum 10 MB.</small>
+    <div id="uploadStatus" role="status" aria-live="polite" style="margin-top:12px;font-weight:600"></div>
+    <div id="uploadProgressWrap" style="display:none;margin-top:10px" aria-label="PDF upload progress">
+      <div style="height:12px;background:#334155;border-radius:999px;overflow:hidden">
+        <div id="uploadProgressBar" style="height:100%;width:0%;background:#22c55e;border-radius:999px;transition:width .2s ease"></div>
+      </div>
+      <div id="uploadProgressDetails" style="margin-top:7px;font-size:.9em;opacity:.9"></div>
+      <div style="margin-top:8px;font-size:.9em;opacity:.9">ⓘ Please keep this page open while uploading.</div>
+    </div>
   </div>
 </div>
 

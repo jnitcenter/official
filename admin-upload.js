@@ -77,7 +77,13 @@ loadOrder();
 
     try {
         if (pdfFile) {
-            if (uploadStatus) uploadStatus.textContent = "Uploading PDF...";
+            const progressWrap = document.getElementById("uploadProgressWrap");
+            const progressBar = document.getElementById("uploadProgressBar");
+            const progressDetails = document.getElementById("uploadProgressDetails");
+            if (progressWrap) progressWrap.style.display = "block";
+            if (uploadStatus) uploadStatus.textContent = "Uploading PDF... 0%";
+            if (progressBar) progressBar.style.width = "0%";
+            if (progressDetails) progressDetails.textContent = `0 MB of ${(pdfFile.size / (1024 * 1024)).toFixed(1)} MB uploaded`;
             const safeName = pdfFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
             const storagePath = `order-results/${orderId}/${Date.now()}-${safeName}`;
             const fileRef = ref(storage, storagePath);
@@ -87,14 +93,21 @@ loadOrder();
                 uploadTask.on("state_changed",
                     (snapshot) => {
                         const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                        const uploadedMB = (snapshot.bytesTransferred / (1024 * 1024)).toFixed(2);
+                        const totalMB = (snapshot.totalBytes / (1024 * 1024)).toFixed(2);
                         if (uploadStatus) uploadStatus.textContent = `Uploading PDF... ${percent}%`;
+                        if (progressBar) progressBar.style.width = `${percent}%`;
+                        if (progressDetails) progressDetails.textContent = `${uploadedMB} MB of ${totalMB} MB uploaded`;
                     },
                     (uploadError) => reject(uploadError),
                     () => resolve()
                 );
             });
             resultLink = await getDownloadURL(fileRef);
-            if (uploadStatus) uploadStatus.textContent = "PDF uploaded. Saving order result...";
+            if (uploadStatus) uploadStatus.textContent = "PDF uploaded successfully. Saving result...";
+            if (progressBar) progressBar.style.width = "100%";
+            if (progressDetails) progressDetails.textContent = `${(pdfFile.size / (1024 * 1024)).toFixed(2)} MB of ${(pdfFile.size / (1024 * 1024)).toFixed(2)} MB uploaded`;
+
         }
 
         await updateDoc(doc(db, "orders", orderId), {
@@ -123,7 +136,7 @@ loadOrder();
     } catch (err) {
         console.error(err);
         const code = err?.code ? ` (${err.code})` : "";
-        if (uploadStatus) uploadStatus.textContent = `Failed${code}: ${err?.message || "Unknown error"}`;
+        if (uploadStatus) uploadStatus.textContent = `Upload/save failed${code}: ${err?.message || "Unknown error"}`;
         showPopup("⚠️", "Save Failed", `${err?.message || "Unable to save result."}${code}. Check Firebase Storage bucket, Storage Rules, and admin permissions.`);
     } finally {
         if (button) { button.disabled = false; button.textContent = "📤 Upload Result"; }
