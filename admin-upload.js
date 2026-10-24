@@ -11,7 +11,7 @@ import {
 
 import {
     ref,
-    uploadBytes,
+    uploadBytesResumable,
     getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -81,7 +81,18 @@ loadOrder();
             const safeName = pdfFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
             const storagePath = `order-results/${orderId}/${Date.now()}-${safeName}`;
             const fileRef = ref(storage, storagePath);
-            await uploadBytes(fileRef, pdfFile, { contentType: "application/pdf" });
+            // Show upload progress and surface Firebase Storage errors clearly.
+            const uploadTask = uploadBytesResumable(fileRef, pdfFile, { contentType: "application/pdf" });
+            await new Promise((resolve, reject) => {
+                uploadTask.on("state_changed",
+                    (snapshot) => {
+                        const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                        if (uploadStatus) uploadStatus.textContent = `Uploading PDF... ${percent}%`;
+                    },
+                    (uploadError) => reject(uploadError),
+                    () => resolve()
+                );
+            });
             resultLink = await getDownloadURL(fileRef);
             if (uploadStatus) uploadStatus.textContent = "PDF uploaded. Saving order result...";
         }
@@ -111,7 +122,9 @@ loadOrder();
         setTimeout(() => { window.location.href = "admin.html?view=orders"; }, 2000);
     } catch (err) {
         console.error(err);
-        showPopup("⚠️", "Save Failed", err?.message || "Unable to save result. Check Firebase Storage and Firestore rules.");
+        const code = err?.code ? ` (${err.code})` : "";
+        if (uploadStatus) uploadStatus.textContent = `Failed${code}: ${err?.message || "Unknown error"}`;
+        showPopup("⚠️", "Save Failed", `${err?.message || "Unable to save result."}${code}. Check Firebase Storage bucket, Storage Rules, and admin permissions.`);
     } finally {
         if (button) { button.disabled = false; button.textContent = "📤 Upload Result"; }
     }
